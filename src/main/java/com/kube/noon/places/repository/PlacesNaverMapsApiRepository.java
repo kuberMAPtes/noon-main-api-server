@@ -47,7 +47,7 @@ public class PlacesNaverMapsApiRepository implements PlacesRepository {
 
     public PlacesNaverMapsApiRepository(
             @Value("${geocode.naver.access-key}") String accessKey,
-            @Value("${ltQji73AZTUhgagOchAGCUXcSV7hy5QQQXNZNw9q}") String secretKey
+            @Value("${geocode.naver.secret-key}") String secretKey
     ) {
         this.accessKey = accessKey;
         this.secretKey = secretKey;
