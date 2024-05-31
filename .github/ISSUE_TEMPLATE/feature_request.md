@@ -1,12 +1,3 @@
----
-name: Feature request
-about: Suggest an idea for this project
-title: 'tag : title'
-labels: ''
-assignees: ''
-
----
-
 ## 개요
 (하나의 이슈에 대한 내용을 서술해주세요)
 
