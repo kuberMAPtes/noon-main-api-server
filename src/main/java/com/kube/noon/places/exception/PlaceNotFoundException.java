@@ -2,6 +2,10 @@ package com.kube.noon.places.exception;
 
 public class PlaceNotFoundException extends Exception {
 
+    public PlaceNotFoundException(String message) {
+        super(message);
+    }
+
     public PlaceNotFoundException(String message, Throwable cause) {
         super(message, cause);
     }
