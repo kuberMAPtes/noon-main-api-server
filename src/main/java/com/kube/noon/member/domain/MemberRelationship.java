@@ -36,6 +36,9 @@ public class MemberRelationship {
 
     @Column(name = "from_id", length = 20, nullable = false)
     private String fromId;
+    //내가 내 프로필 볼 때 : fromId = 현준 으로 객체를 찾으면 팔로잉리스트
+    //내가 내 프로필 볼 때 : toId = 현준 으로 객체를 찾으면 팔로워리스트
+    //내가 타인의 프로필 볼 때 : fromId = 철수로 객체를 찾으면 철수의 팔로잉 리스트
 
     @Column(name = "to_id", length = 20, nullable = false)
     private String toId;
@@ -45,7 +48,7 @@ public class MemberRelationship {
     private RelationshipType relationshipType;
 
     @Column(name = "activated", nullable = false)
-    private Boolean activated = true;
+    private boolean activated = true;
 
     @ManyToOne
     @JoinColumn(name = "from_id", referencedColumnName = "member_id", insertable = false, updatable = false)

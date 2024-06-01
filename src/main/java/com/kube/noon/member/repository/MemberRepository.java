@@ -6,6 +6,7 @@ import com.kube.noon.member.domain.Search;
 import com.kube.noon.member.dto.*;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MemberRepository {
 
@@ -14,15 +15,13 @@ public interface MemberRepository {
     public void addMemberRelationship(MemberRelationship memberRelationship
     );
 
-    public Member findMemberById(String memberId);//JPA
+    public Optional<Member> findMemberById(String memberId);
 
-    public MemberProfileDto findMemberProfileById(String memberId);
+    public Optional<Member> findMemberByNickname(String nickname);//JPA
 
-    public Member findMemberByNickname(String nickname);//JPA
+    public List<Member> findMemberList(Search<?> search);//JPA
 
-    public List<Member> findMemberList(Search search);//JPA
-
-    public List<MemberRelationship> findMemberRelationshipList(Search search);//JPA
+    public List<MemberRelationship> findMemberRelationshipList(Search<?> search);//JPA
 
     public void updateMember(Member member);
 

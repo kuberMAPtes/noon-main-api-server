@@ -16,9 +16,9 @@ public interface MemberBinder {
 
     Member AddMemberDtotoEntity(AddMemberDto dto);
 
-    MemberRelationship AddMemberRelationshiptoEntity(AddMemberRelationshipDto dto);
+    MemberRelationship AddMemberRelationshipDtotoEntity(AddMemberRelationshipDto dto);
 
-    Member MemberProfiletoEntity(MemberProfileDto dto);
+    Member MemberProfileDtotoEntity(MemberProfileDto dto);
 
     Search SearchDtoToEntity(SearchDto dto);
 

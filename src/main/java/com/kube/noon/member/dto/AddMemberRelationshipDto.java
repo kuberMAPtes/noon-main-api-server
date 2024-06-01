@@ -14,7 +14,7 @@ import lombok.*;
 @Builder
 public class AddMemberRelationshipDto {
 
-    private Integer memberRelationshipId;
+    private int memberRelationshipId;
 
 //    private String fromId;
 
@@ -22,7 +22,7 @@ public class AddMemberRelationshipDto {
 
     private RelationshipType relationshipType;
 
-    private Boolean activated = true;
+    private boolean activated = true;
 
     private Member fromMember;
 

@@ -31,9 +31,9 @@ public class MemberProfileDto {
 
     private String profileIntro;
 
-    private String dajungScore;
+    private int dajungScore;
 
-    private Boolean signedOff;
+    private boolean signedOff;
 
     private PublicRange buildingSubscriptionPublicRange;
 

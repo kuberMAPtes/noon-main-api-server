@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDateTime ;
 
 @Entity
 @Table(name = "members")
@@ -48,10 +48,10 @@ public class Member {
     private String profileIntro;
 
     @Column(name = "dajung_score")
-    private Integer dajungScore;
+    private int dajungScore;
 
     @Column(name = "signed_off")
-    private Boolean signedOff;
+    private boolean signedOff;
 
     @Column(name = "building_subscription_public_range")
     private PublicRange buildingSubscriptionPublicRange;

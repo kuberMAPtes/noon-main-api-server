@@ -1,6 +1,9 @@
 package com.kube.noon.member.dto;
 
+import com.kube.noon.common.PublicRange;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @ToString
 @EqualsAndHashCode
@@ -23,23 +26,23 @@ public class UpdateMemberDto {
 
     private String phoneNumber;
 
-    private String unlockTime;
+    private LocalDateTime unlockTime;
 
     private String profilePhotoUrl;
 
     private String profileIntro;
 
-    private Integer dajungScore;
+    private int dajungScore;
 
 //    private Boolean signedOff;
 
-    private String buildingSubscriptionPublicRange;
+    private PublicRange buildingSubscriptionPublicRange;
 
-    private String allFeedPublicRange;
+    private PublicRange allFeedPublicRange;
 
-    private String memberProfilePublicRange;
+    private PublicRange memberProfilePublicRange;
 
-    private String receivingAllNotificationAllowed;
+    private PublicRange receivingAllNotificationAllowed;
 
 
 }
