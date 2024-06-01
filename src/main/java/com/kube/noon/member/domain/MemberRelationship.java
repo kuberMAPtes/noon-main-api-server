@@ -1,0 +1,59 @@
+package com.kube.noon.member.domain;
+
+
+import com.kube.noon.member.domain.Member;
+import com.kube.noon.member.enums.RelationshipType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.Column;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+
+@Entity
+@Table(name = "member_relationship", indexes = {
+        @Index(name = "idx_from_id", columnList = "from_id"),
+        @Index(name = "idx_to_id", columnList = "to_id")
+})
+@Data // Lombok 어노테이션으로 getter, setter, toString, equals, hashCode 자동 생성
+@NoArgsConstructor // 기본 생성자 생성
+@AllArgsConstructor // 모든 필드를 포함하는 생성자 생성
+public class MemberRelationship {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "member_relationship_id")
+    private Integer memberRelationshipId;
+
+    @Column(name = "from_id", length = 20, nullable = false)
+    private String fromId;
+
+    @Column(name = "to_id", length = 20, nullable = false)
+    private String toId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "relationship_type", nullable = false)
+    private RelationshipType relationshipType;
+
+    @Column(name = "activated", nullable = false)
+    private Boolean activated = true;
+
+    @ManyToOne
+    @JoinColumn(name = "from_id", referencedColumnName = "member_id", insertable = false, updatable = false)
+    private Member fromMember;
+
+    @ManyToOne
+    @JoinColumn(name = "to_id", referencedColumnName = "member_id", insertable = false, updatable = false)
+    private Member toMember;
+
+
+}

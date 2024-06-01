@@ -1,0 +1,38 @@
+package com.kube.noon.member.dto;
+
+import com.kube.noon.common.PublicRange;
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import lombok.*;
+
+@ToString
+@EqualsAndHashCode
+@NoArgsConstructor
+@Getter
+@Setter
+@AllArgsConstructor
+@Builder
+public class MemberProfileDto {
+
+    @NonNull
+    private String memberId;
+
+    private String nickname;
+
+    private String profilePhotoUrl;
+
+    private String profileIntro;
+
+    private String dajungScore;
+
+    private Boolean signedOff;
+
+    private PublicRange buildingSubscriptionPublicRange;
+
+    private PublicRange allFeedPublicRange;
+
+    private PublicRange memberProfilePublicRange;
+
+    private PublicRange receivingAllNotificationAllowed;
+
+}
