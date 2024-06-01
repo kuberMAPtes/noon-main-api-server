@@ -1,13 +1,11 @@
 package com.kube.noon.places.dto;
 
 import com.kube.noon.places.domain.Place;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 @ToString
 public class PlaceDto {
     private String placeName;

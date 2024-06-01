@@ -14,6 +14,8 @@ import java.util.List;
  * @see com.kube.noon.places.repository.PlacesRepository
  * @see com.kube.noon.places.repository.PlacesNaverMapsApiRepository
  * @see com.kube.noon.places.domain.Place
+ * @see PlaceDto
+ * @see PlacesServiceImpl
  */
 public interface PlacesService {
 
