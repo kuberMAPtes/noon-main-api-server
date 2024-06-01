@@ -10,6 +10,6 @@ import lombok.ToString;
 public class Place {
     private String placeName;
     private String roadAddress;
-    private double x;
-    private double y;
+    private double latitude;
+    private double longitude;
 }

@@ -33,8 +33,8 @@ class TestPlacesServiceImpl {
 
         for (PlaceDto result : results) {
             log.info("도로명주소={}", result.getRoadAddress());
-            log.info("위도={}", result.getX());
-            log.info("경도={}", result.getY());
+            log.info("위도={}", result.getLatitude());
+            log.info("경도={}", result.getLongitude());
         }
     }
 
@@ -72,8 +72,8 @@ class TestPlacesServiceImpl {
         for (int i = 0; i < results.length; i++) {
             log.info("결과 {}", i + 1);
             log.info("도로명주소={}", results[i].getRoadAddress());
-            log.info("위도={}", results[i].getX());
-            log.info("경도={}\n", results[i].getY());
+            log.info("위도={}", results[i].getLatitude());
+            log.info("경도={}\n", results[i].getLongitude());
         }
 
         // 첫 번째 좌표와 두 번째 좌표는 같은 건물

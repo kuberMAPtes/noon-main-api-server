@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.kube.noon.places.domain.Place;
 import com.kube.noon.places.exception.PlaceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +29,8 @@ class TestPlacesNaverMapsApiRepository {
 
         for (Place result : results) {
             log.info("도로명주소={}", result.getRoadAddress());
-            log.info("위도={}", result.getX());
-            log.info("경도={}", result.getY());
+            log.info("위도={}", result.getLatitude());
+            log.info("경도={}", result.getLongitude());
         }
     }
 
@@ -56,8 +55,8 @@ class TestPlacesNaverMapsApiRepository {
         for (int i = 0; i < results.length; i++) {
             log.info("결과 {}", i + 1);
             log.info("도로명주소={}", results[i].getRoadAddress());
-            log.info("위도={}", results[i].getX());
-            log.info("경도={}\n", results[i].getY());
+            log.info("위도={}", results[i].getLatitude());
+            log.info("경도={}\n", results[i].getLongitude());
         }
 
         // 첫 번째 좌표와 두 번째 좌표는 같은 건물

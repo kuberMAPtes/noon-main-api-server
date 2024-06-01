@@ -10,8 +10,8 @@ import lombok.*;
 public class PlaceDto {
     private String placeName;
     private String roadAddress;
-    private double x;
-    private double y;
+    private double latitude;
+    private double longitude;
 
     private PlaceDto() {
     }
@@ -20,8 +20,8 @@ public class PlaceDto {
         return PlaceDto.builder()
                 .placeName(place.getPlaceName())
                 .roadAddress(place.getRoadAddress())
-                .x(place.getX())
-                .y(place.getY())
+                .latitude(place.getLatitude())
+                .longitude(place.getLongitude())
                 .build();
     }
 }
