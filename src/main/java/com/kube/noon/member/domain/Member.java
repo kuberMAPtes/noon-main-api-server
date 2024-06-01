@@ -23,6 +23,7 @@ public class Member {
 
     @Id
     @NonNull
+    @Column(name= "member_id")
     private String memberId;
 
     @Column(name = "member_role")

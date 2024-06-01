@@ -13,9 +13,13 @@ public class UpdateMemberDto {
 
     private String memberId;
 
+//    private String memberRole;
+
     private String pwd;
 
     private String nickname;
+
+//    private String pwd;
 
     private String phoneNumber;
 
@@ -26,6 +30,8 @@ public class UpdateMemberDto {
     private String profileIntro;
 
     private Integer dajungScore;
+
+//    private Boolean signedOff;
 
     private String buildingSubscriptionPublicRange;
 

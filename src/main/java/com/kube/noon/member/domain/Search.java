@@ -1,4 +1,4 @@
-package com.kube.noon.member.dto;
+package com.kube.noon.member.domain;
 
 
 import lombok.Getter;
@@ -11,7 +11,7 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @ToString
-public class SearchDto {
+public class Search {
 
     ///Field
     private int currentPage;

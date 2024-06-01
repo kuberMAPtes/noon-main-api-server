@@ -2,6 +2,7 @@ package com.kube.noon.member.repository;
 
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
+import com.kube.noon.member.domain.Search;
 import com.kube.noon.member.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -13,14 +14,14 @@ import java.util.List;
 public class MemberRepositoryImpl implements MemberRepository {
     private final MemberJpaRepository jpaRepository;
     private final MemberMapper mapper;
-    
+
     @Override
-    public void addMember(AddMemberDto memberDto) {
+    public void addMember(Member member) {
 
     }
 
     @Override
-    public void addMemberRelationship(AddMemberRelationshipDto addMemberRelationshipDto) {
+    public void addMemberRelationship(MemberRelationship memberRelationship) {
 
     }
 
@@ -40,17 +41,17 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
-    public List<Member> findMemberList(SearchDto searchDto) {
-        return null;
+    public List<Member> findMemberList(Search search) {
+        return List.of();
     }
 
     @Override
-    public List<MemberRelationship> findMemberRelationshipList(SearchDto searchDto) {
-        return null;
+    public List<MemberRelationship> findMemberRelationshipList(Search search) {
+        return List.of();
     }
 
     @Override
-    public void updateMember(UpdateMemberDto updateMemberDto) {
+    public void updateMember(Member member) {
 
     }
 

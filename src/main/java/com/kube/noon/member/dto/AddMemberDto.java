@@ -15,9 +15,9 @@ public class AddMemberDto {
 
     private String memberRole;
 
-    private String pwd;
-
     private String nickname;
+
+    private String pwd;
 
     private String phoneNumber;
 

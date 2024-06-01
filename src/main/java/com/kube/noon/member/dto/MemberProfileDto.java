@@ -17,7 +17,15 @@ public class MemberProfileDto {
     @NonNull
     private String memberId;
 
+//    private String memberRole;
+
     private String nickname;
+
+//    private String pwd;
+
+//    private String phoneNumber;
+
+//    private String unlockTime;
 
     private String profilePhotoUrl;
 
@@ -33,6 +41,6 @@ public class MemberProfileDto {
 
     private PublicRange memberProfilePublicRange;
 
-    private PublicRange receivingAllNotificationAllowed;
+//    private PublicRange receivingAllNotificationAllowed;
 
 }

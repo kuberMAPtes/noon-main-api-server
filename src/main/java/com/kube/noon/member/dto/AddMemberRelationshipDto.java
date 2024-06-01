@@ -16,9 +16,9 @@ public class AddMemberRelationshipDto {
 
     private Integer memberRelationshipId;
 
-    private String fromId;
+//    private String fromId;
 
-    private String toId;
+//    private String toId;
 
     private RelationshipType relationshipType;
 

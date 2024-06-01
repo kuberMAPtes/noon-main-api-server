@@ -6,7 +6,12 @@
 
 
 <mapper namespace="com.kube.noon.member.mapper.MemberMapper">
-    <resultMap id="memberSelectUnit" type="member">
-        <id property=""
-    </resultMap>
+
+<!--    <resultMap id="memberSelectUnit" type="member">-->
+<!--        <id property=""-->
+<!--    </resultMap>-->
+
+
+
+
 </mapper>
