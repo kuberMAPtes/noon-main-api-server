@@ -46,7 +46,7 @@ class TestPlacesNaverMapsApiRepository {
                 new double[] { 37.552292, 126.851102 }
         ).map((latLng) -> {
             try {
-                return this.placesRepository.findByLatLng(latLng[latIdx], latLng[lngIdx]);
+                return this.placesRepository.findByPosition(latLng[latIdx], latLng[lngIdx]);
             } catch (PlaceNotFoundException e) {
                 throw new RuntimeException(e);
             }

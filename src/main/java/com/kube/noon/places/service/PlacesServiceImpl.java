@@ -33,9 +33,9 @@ public class PlacesServiceImpl implements PlacesService {
     }
 
     @Override
-    public PlaceDto getPlaceByLatLng(double latitude, double longitude) throws PlaceNotFoundException {
+    public PlaceDto getPlaceByPosition(double latitude, double longitude) throws PlaceNotFoundException {
         log.info("latitude={}, longitude={}", latitude, longitude);
-        Place findPlace = this.placesRepository.findByLatLng(latitude, longitude);
+        Place findPlace = this.placesRepository.findByPosition(latitude, longitude);
         return PlaceDto.from(findPlace);
     }
 }

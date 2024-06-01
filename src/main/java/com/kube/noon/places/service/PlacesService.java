@@ -33,5 +33,5 @@ public interface PlacesService {
      * @return latitude, longitude에 위치한 장소의 정보
      * @throws PlaceNotFoundException 주어진 latitude, longitude에 위치한 장소가 없을 경우
      */
-    PlaceDto getPlaceByLatLng(double latitude, double longitude) throws PlaceNotFoundException;
+    PlaceDto getPlaceByPosition(double latitude, double longitude) throws PlaceNotFoundException;
 }

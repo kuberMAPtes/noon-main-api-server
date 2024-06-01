@@ -63,7 +63,7 @@ class TestPlacesServiceImpl {
                 new double[] { 37.552292, 126.851102 }
         ).map((latLng) -> {
             try {
-                return this.placesService.getPlaceByLatLng(latLng[latIdx], latLng[lngIdx]);
+                return this.placesService.getPlaceByPosition(latLng[latIdx], latLng[lngIdx]);
             } catch (PlaceNotFoundException e) {
                 throw new RuntimeException(e);
             }
@@ -92,6 +92,6 @@ class TestPlacesServiceImpl {
     @ParameterizedTest
     void getPlaceByLatLng_한국에_존재하지_않는_위도_및_경도(double latitude, double longitude) {
         assertThatExceptionOfType(PlaceNotFoundException.class)
-                .isThrownBy(() -> this.placesService.getPlaceByLatLng(latitude, longitude));
+                .isThrownBy(() -> this.placesService.getPlaceByPosition(latitude, longitude));
     }
 }

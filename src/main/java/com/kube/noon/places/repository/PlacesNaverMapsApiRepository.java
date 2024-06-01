@@ -85,7 +85,7 @@ public class PlacesNaverMapsApiRepository implements PlacesRepository {
     }
 
     @Override
-    public Place findByLatLng(double latitude, double longitude) throws PlaceNotFoundException {
+    public Place findByPosition(double latitude, double longitude) throws PlaceNotFoundException {
         try {
             HttpHeaders headers = getCommonHeaders();
 
