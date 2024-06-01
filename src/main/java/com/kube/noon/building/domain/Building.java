@@ -1,9 +1,15 @@
 package com.kube.noon.building.domain;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "building", indexes = {
         @Index(name = "idx_building_building_name", columnList = "building_name"),
         @Index(name = "idx_building_road_addr", columnList = "road_addr"),

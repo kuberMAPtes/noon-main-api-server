@@ -1,7 +1,9 @@
 package com.kube.noon.common.zzim;
 
 import com.kube.noon.building.domain.Building;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,5 +21,13 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
      *
      * @author 허예지
      */
-    List<Building> findUserBuildingSubscriptionListByMemberId(String memberId);
+    @Query(value = """
+            SELECT *
+            FROM building
+            WHERE building_id IN (SELECT building_id
+                    FROM zzim
+                    WHERE zzim_type='SUBSCRIPTION' AND member_id = :memberId AND activated = 1)
+            """, nativeQuery = true)
+    public List<Building> findBuildingSubscriptionListByMemberId(@Param("memberId") String memberId);
+
 }

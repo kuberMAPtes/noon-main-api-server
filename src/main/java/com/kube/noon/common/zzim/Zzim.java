@@ -1,12 +1,14 @@
 package com.kube.noon.common.zzim;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
-
-@Data
+@Getter
 @Entity
+@Builder
 @Table(name = "zzim")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Zzim {
 
     @Id

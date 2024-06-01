@@ -9,4 +9,5 @@ public interface BuildingProfileRepository extends JpaRepository<Building, Integ
 
     Building findBuildingProfileByBuildingId(int buildingId);
 
+
 }
