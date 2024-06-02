@@ -23,7 +23,7 @@ public interface MemberRepository {
 
     void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl);
 
-    void deleteMemberRelationship(String memberRelationshipId);
+    void deleteMemberRelationship(int memberRelationshipId);
 
     void deleteMember(String memberId);
 }

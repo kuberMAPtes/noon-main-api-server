@@ -7,9 +7,14 @@ import com.kube.noon.member.domain.QMemberRelationship;
 import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
 import com.kube.noon.member.enums.RelationshipType;
+import com.kube.noon.member.exception.MemberNotFoundException;
+import com.kube.noon.member.exception.MemberUpdateException;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,15 +23,18 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class MemberRepositoryImpl implements MemberRepository,MemberJpaRepositoryQuery{
     private final MemberJpaRepository memberJpaRepository;
     private final MemberRelationshipJpaRepository memberRelationshipJpaRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     private JPAQueryFactory queryFactory;
 
     @Override
     public void addMember(Member member) {
+        log.info("Adding member: {}", member);
         memberJpaRepository.save(member);
     }
 
@@ -85,20 +93,63 @@ public class MemberRepositoryImpl implements MemberRepository,MemberJpaRepositor
     @Override
     public void updatePassword(String memberId, String newPassword) {
 
+        memberJpaRepository.findMemberById(memberId).ifPresentOrElse(
+                member -> {
+                    String encryptedPassword = passwordEncoder.encode(newPassword);
+                    member.setPwd(encryptedPassword);
+                    memberJpaRepository.save(member);
+                },
+                () -> {
+                    throw new IllegalArgumentException("Member not found");
+                }
+
+        );
     }
 
     @Override
-    public void updatePhoneNumber(String memberId, String newPassword) {
+    public void updatePhoneNumber(String memberId, String newPhoneNumber) {
 
+        try {
+            log.info("회원 전화번호 업데이트 중 :  {}", memberId);
+            memberJpaRepository.findMemberById(memberId).ifPresentOrElse(
+                    member -> {
+                        member.setPhoneNumber(newPhoneNumber);
+                        memberJpaRepository.save(member);
+                        log.info("회원 전화번호 업데이트 성공! :  {}", memberId);
+                    }, () -> {
+                        throw new MemberNotFoundException(String.format("ID로 회원을 찾을 수 없음! :: %s", memberId));
+
+                    }
+            );
+        } catch (DataAccessException e) {
+            throw new MemberUpdateException(String.format("회원 전화번호 업데이트 실패! : %s", memberId),e);
+        }
     }
 
     @Override
     public void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl) {
-
+        try{
+            log.info("회원 프로필 사진 업데이트 중 : {}", memberId);
+            memberJpaRepository.findMemberById(memberId).ifPresentOrElse(
+                    member -> {
+                        member.setProfilePhotoUrl(newProfilePhotoUrl);
+                        memberJpaRepository.save(member);
+                    },()->{
+                        throw new MemberNotFoundException(String.format("ID로 회원을 찾을 수 없음 : %s",memberId);
+            }
+            );
+        } catch (DataAccessException e) {
+            throw new MemberUpdateException(String.format("회원 프로필 사진 업데이트 실패 : %s",memberId),e);
+        }
     }
 
     @Override
-    public void deleteMemberRelationship(String memberRelationshipId) {
+    public void deleteMemberRelationship(int memberRelationshipId) {
+        try {
+            log.info("회원 관계 삭제 중 : {}",memberRelationshipId);
+            memberRelationshipJpaRepository.deleteById(memberRelationshipId);
+            log.info("회원 관계 삭제 성공 : {}",memberRelationshipId);
+        } catch ()
 
     }
 
