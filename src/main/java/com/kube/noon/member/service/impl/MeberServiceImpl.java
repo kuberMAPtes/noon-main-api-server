@@ -46,12 +46,12 @@ public class MeberServiceImpl implements MemberService {
     }
 
     @Override
-    public List<Member> findMemberList(SearchDto searchDto) {
+    public List<Member> findMemberList(MemberSearchCriteriaDto criteriaDto) {
         return List.of();
     }
 
     @Override
-    public List<MemberRelationship> findMemberRelationshipList(SearchDto searchDto) {
+    public List<MemberRelationship> findMemberRelationshipList(MemberRelationshipSearchCriteriaDto criteriaDto) {
         return List.of();
     }
 

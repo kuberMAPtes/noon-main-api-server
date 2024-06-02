@@ -18,9 +18,9 @@ public interface MemberService {
 
     public Member findMemberByNickname(String nickname);//JPA
 
-    public List<Member> findMemberList(SearchDto searchDto);//JPA
+    public List<Member> findMemberList(MemberSearchCriteriaDto searchDto);//JPA
 
-    public List<MemberRelationship> findMemberRelationshipList(SearchDto searchDto);//JPA
+    public List<MemberRelationship> findMemberRelationshipList(MemberRelationshipSearchCriteriaDto criteriaDto);
 
     public void updateMember(UpdateMemberDto updateMemberDto);
 

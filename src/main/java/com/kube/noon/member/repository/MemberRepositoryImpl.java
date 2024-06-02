@@ -2,22 +2,28 @@ package com.kube.noon.member.repository;
 
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
-import com.kube.noon.member.domain.Search;
+import com.kube.noon.member.domain.QMember;
+import com.kube.noon.member.domain.QMemberRelationship;
+import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
+import com.kube.noon.member.dto.MemberSearchCriteriaDto;
+import com.kube.noon.member.enums.RelationshipType;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-import static com.kube.noon.member.enums.MemberSearchCondition.*;
-
 
 @Repository
 @RequiredArgsConstructor
-public class MemberRepositoryImpl implements MemberRepository {
+public class MemberRepositoryImpl implements MemberRepository,MemberJpaRepositoryQuery{
     private final MemberJpaRepository memberJpaRepository;
-    private final MemberRelationshipJpaRepository relationshipJpaRepository;
-    private final MemberMapper mapper;
+    private final MemberRelationshipJpaRepository memberRelationshipJpaRepository;
+
+    @Autowired
+    private JPAQueryFactory queryFactory;
 
     @Override
     public void addMember(Member member) {
@@ -26,7 +32,7 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     @Override
     public void addMemberRelationship(MemberRelationship memberRelationship) {
-        relationshipJpaRepository.save(memberRelationship);
+        memberRelationshipJpaRepository.save(memberRelationship);
     }
 
     @Override
@@ -39,35 +45,41 @@ public class MemberRepositoryImpl implements MemberRepository {
         return memberJpaRepository.findMemberByNickname(nickname);
     }
 
+
     @Override
-    public List<Member> findMemberList(Search<?> search) {
+    public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria) {
+        criteria.setSignedOff(true);
+        QMember member = QMember.member;
 
-        return switch (search.getMemberSearchCondition()) {
-            case MEMBER_ID ->
-                    memberJpaRepository.findMemberByMemberIdContainingIgnoreCase((String) search.getSearchKeyword());
-            case NICKNAME ->
-                    memberJpaRepository.findMemberByNicknameContainingIgnoreCase((String) search.getSearchKeyword());
-            case UNLOCK_TIME ->
-                    memberJpaRepository.findMemberByUnlockTimeBetween(search.getStartTime(), search.getEndTime());
-            case PHONE_NUMBER ->
-                    memberJpaRepository.findMemberByPhoneNumberContainingIgnoreCase((String) search.getSearchKeyword());
-            case SIGNED_OFF -> memberJpaRepository.findMemberBySignOff((boolean) search.getSearchKeyword());
-        };
-
+//        SELECT * FROM member
+        return queryFactory.selectFrom(member)
+                .where(
+                        criteria.getMemberId() != null ? member.memberId.containsIgnoreCase(criteria.getMemberId()) : null,
+                        criteria.getNickname() != null ? member.nickname.containsIgnoreCase(criteria.getNickname()) : null,
+                        criteria.getStartTime() != null && criteria.getEndTime() != null ? member.unlockTime.between(criteria.getStartTime(), criteria.getEndTime()) : null,
+                        criteria.getPhoneNumber() != null ? member.phoneNumber.containsIgnoreCase(criteria.getPhoneNumber()) : null,
+                        criteria.getSignedOff() != null ? member.signedOff.eq(criteria.getSignedOff()) : null
+                )
+                .fetch();
     }
 
-    //팔로잉리스트 팔로워리스트 차단리스트
+
     @Override
-    public List<MemberRelationship> findMemberRelationshipList(Search<?> search) {
-        return switch(search.getMemberRelationshipSearchCondition()){
-            case FOLLOW ->
-                memberJpaRepository.findMemberRelationshipBy
-        }
+    public List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria) {
+        QMemberRelationship ms = QMemberRelationship.memberRelationship;
+
+        return queryFactory.selectFrom(ms)
+                .where(
+                        criteria.isFollowing() ? ms.fromId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)): null,
+                        criteria.isFollower() ? ms.toId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)): null,
+                        criteria.isBlocking() ? ms.fromId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)): null,
+                        criteria.isBlocker() ? ms.toId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)): null
+                ).fetch();
     }
 
     @Override
     public void updateMember(Member member) {
-
+        memberJpaRepository.save(member);
     }
 
     @Override

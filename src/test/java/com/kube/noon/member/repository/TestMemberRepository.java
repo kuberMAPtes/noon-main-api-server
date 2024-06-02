@@ -43,7 +43,7 @@ public class TestMemberRepository {
                 .memberProfilePublicRange(PUBLIC)
                 .receivingAllNotificationAllowed(PUBLIC)
                 .build();
-        Member member = MemberBinder.INSTANCE.AddMemberDtotoEntity(addMemberDto);
+        Member member = MemberBinder.INSTANCE.AddMemberDtotoMember(addMemberDto);
         System.out.println("""
                 Member객체 :: """+member);
         System.out.println(memberRepository.findMemberById("testId"));

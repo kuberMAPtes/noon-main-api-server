@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.kube.noon.member.mapper.MemberRelationshipMapper">
+
+    <select id="selectMemberRelationshipList" resultType="com.kube.noon.member.domain.MemberRelationship">
+        SELECT * FROM member_relationship
+        WHERE
+        activated = 1
+        AND relationship_type = #{relationshipType}
+        <if test="condition == 'FOLLOWING'">
+            AND from_id = #{memberId}
+        </if>
+        <if test="condition == 'FOLLOWED_BY'">
+            AND to_id = #{memberId}
+        </if>
+        <if test="condition == 'BLOCKING'">
+            AND from_id = #{memberId}
+        </if>
+        <if test="condition == 'BLOCKED_BY'">
+            AND to_id = #{memberId}
+        </if>
+    </select>
+
+</mapper>
