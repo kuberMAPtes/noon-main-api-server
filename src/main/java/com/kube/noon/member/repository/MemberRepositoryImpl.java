@@ -8,6 +8,7 @@ import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
 import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.exception.MemberNotFoundException;
+import com.kube.noon.member.exception.MemberRelationshipUpdateException;
 import com.kube.noon.member.exception.MemberUpdateException;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -149,12 +150,20 @@ public class MemberRepositoryImpl implements MemberRepository,MemberJpaRepositor
             log.info("회원 관계 삭제 중 : {}",memberRelationshipId);
             memberRelationshipJpaRepository.deleteById(memberRelationshipId);
             log.info("회원 관계 삭제 성공 : {}",memberRelationshipId);
-        } catch ()
+        } catch (DataAccessException e){
+            throw new MemberRelationshipUpdateException(String.format("회원 관계 삭제 실패 : %s",memberRelationshipId),e);
+        }
 
     }
 
     @Override
     public void deleteMember(String memberId) {
-
+        try{
+            log.info("회원 삭제 중 : {}", memberId);
+            memberJpaRepository.deleteById(memberId);
+            log.info("회원 삭제 성공 : {}",memberId);
+        } catch (DataAccessException e){
+            throw new MemberUpdateException(String.format("회원 삭제 실패 : %s",memberId),e);
+        }
     }
 }
