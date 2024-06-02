@@ -13,15 +13,18 @@ public interface MemberBinder {
     MemberBinder INSTANCE = Mappers.getMapper(MemberBinder.class);
 
     Member AddMemberDtoToMember(AddMemberDto dto);
+    AddMemberDto MemberToAddMemberDto(Member member);
 
     MemberRelationship AddMemberRelationshipDtoToMember(AddMemberRelationshipDto dto);
+    AddMemberRelationshipDto MemberToAddMemberRelationshipDto(MemberRelationship memberRelationship);
 
     Member MemberProfileDtoToMember(MemberProfileDto dto);
+    MemberProfileDto MemberToMemberProfileDto(Member member);
 
+    UpdateMemberDto MemberToUpdateMemberDto(Member member);
     Member UpdateMemberDtoToMember(UpdateMemberDto dto);
 
     MemberProfileDto memberToMemberProfileDto(Member member);
-
     Member memberProfileDtoToMember(MemberProfileDto dto);
 
 }

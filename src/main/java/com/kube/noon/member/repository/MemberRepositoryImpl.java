@@ -13,7 +13,6 @@ import com.kube.noon.member.exception.MemberUpdateException;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
@@ -25,13 +24,12 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-public class MemberRepositoryImpl implements MemberRepository,MemberJpaRepositoryQuery{
+public class MemberRepositoryImpl implements MemberRepository {
+
     private final MemberJpaRepository memberJpaRepository;
     private final MemberRelationshipJpaRepository memberRelationshipJpaRepository;
     private final PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JPAQueryFactory queryFactory;
+    private final JPAQueryFactory queryFactory;
 
     @Override
     public void addMember(Member member) {
@@ -79,10 +77,10 @@ public class MemberRepositoryImpl implements MemberRepository,MemberJpaRepositor
 
         return queryFactory.selectFrom(ms)
                 .where(
-                        criteria.isFollowing() ? ms.fromId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)): null,
-                        criteria.isFollower() ? ms.toId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)): null,
-                        criteria.isBlocking() ? ms.fromId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)): null,
-                        criteria.isBlocker() ? ms.toId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)): null
+                        criteria.isFollowing() ? ms.fromId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)) : null,
+                        criteria.isFollower() ? ms.toId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)) : null,
+                        criteria.isBlocking() ? ms.fromId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)) : null,
+                        criteria.isBlocker() ? ms.toId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)) : null
                 ).fetch();
     }
 
@@ -123,47 +121,47 @@ public class MemberRepositoryImpl implements MemberRepository,MemberJpaRepositor
                     }
             );
         } catch (DataAccessException e) {
-            throw new MemberUpdateException(String.format("회원 전화번호 업데이트 실패! : %s", memberId),e);
+            throw new MemberUpdateException(String.format("회원 전화번호 업데이트 실패! : %s", memberId), e);
         }
     }
 
     @Override
     public void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl) {
-        try{
+        try {
             log.info("회원 프로필 사진 업데이트 중 : {}", memberId);
             memberJpaRepository.findMemberById(memberId).ifPresentOrElse(
                     member -> {
                         member.setProfilePhotoUrl(newProfilePhotoUrl);
                         memberJpaRepository.save(member);
-                    },()->{
-                        throw new MemberNotFoundException(String.format("ID로 회원을 찾을 수 없음 : %s",memberId);
-            }
+                    }, () -> {
+                        throw new MemberNotFoundException(String.format("ID로 회원을 찾을 수 없음 : %s", memberId));
+                    }
             );
         } catch (DataAccessException e) {
-            throw new MemberUpdateException(String.format("회원 프로필 사진 업데이트 실패 : %s",memberId),e);
+            throw new MemberUpdateException(String.format("회원 프로필 사진 업데이트 실패 : %s", memberId), e);
         }
     }
 
     @Override
     public void deleteMemberRelationship(int memberRelationshipId) {
         try {
-            log.info("회원 관계 삭제 중 : {}",memberRelationshipId);
+            log.info("회원 관계 삭제 중 : {}", memberRelationshipId);
             memberRelationshipJpaRepository.deleteById(memberRelationshipId);
-            log.info("회원 관계 삭제 성공 : {}",memberRelationshipId);
-        } catch (DataAccessException e){
-            throw new MemberRelationshipUpdateException(String.format("회원 관계 삭제 실패 : %s",memberRelationshipId),e);
+            log.info("회원 관계 삭제 성공 : {}", memberRelationshipId);
+        } catch (DataAccessException e) {
+            throw new MemberRelationshipUpdateException(String.format("회원 관계 삭제 실패 : %s", memberRelationshipId), e);
         }
 
     }
 
     @Override
     public void deleteMember(String memberId) {
-        try{
+        try {
             log.info("회원 삭제 중 : {}", memberId);
             memberJpaRepository.deleteById(memberId);
-            log.info("회원 삭제 성공 : {}",memberId);
-        } catch (DataAccessException e){
-            throw new MemberUpdateException(String.format("회원 삭제 실패 : %s",memberId),e);
+            log.info("회원 삭제 성공 : {}", memberId);
+        } catch (DataAccessException e) {
+            throw new MemberUpdateException(String.format("회원 삭제 실패 : %s", memberId), e);
         }
     }
 }
