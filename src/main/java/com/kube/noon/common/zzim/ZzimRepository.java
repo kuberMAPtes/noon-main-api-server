@@ -38,7 +38,7 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
     @Modifying
     @Transactional
     @Query("UPDATE Zzim SET activated = :activated WHERE buildingId = :buildingId AND memberId = :memberId")
-    void updateZzimAcrivated(@Param("buildingId") int buildingId, @Param("memberId") String memberId, @Param("activated") boolean activated);
+    void updateZzimActivated(@Param("buildingId") int buildingId, @Param("memberId") String memberId, @Param("activated") boolean activated);
 
     /**
      * 빌딩아이디, 구독자아이디, 구독제공자아이디로 Zzim레코드를 조회한다.
