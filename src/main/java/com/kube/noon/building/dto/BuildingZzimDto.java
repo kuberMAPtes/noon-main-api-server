@@ -38,7 +38,7 @@ public class BuildingZzimDto {
     public Zzim toEntity() {
         return Zzim.builder()
                 .memberId(this.memberId)
-                .feedId(0) // Assuming default feedId is 0
+                .feedId(0)
                 .buildingId(this.buildingId)
                 .subscriptionProviderId(this.subscriptionProviderId)
                 .zzimType(this.zzimType)

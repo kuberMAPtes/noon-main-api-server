@@ -20,7 +20,7 @@ public class Zzim {
     private String memberId;
 
     @Column(name = "feed_id")
-    private int feedId;
+    private Integer feedId;
 
     @Column(name = "building_id", nullable = false)
     private int buildingId;
