@@ -17,6 +17,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 
+/**
+ * RestTemplate 기반 BuildingWikiService 구현체
+ * 동기식 통신이 이루어지기 때문에 상당히 느리다.
+ *
+ * @author PGD
+ */
 @Slf4j
 @Service
 @Profile("prod")
