@@ -14,13 +14,14 @@ public interface MemberService {
 
     public Member findMemberById(String memberId);//JPA
 
+    //레포지토리에서 없음
     public MemberProfileDto findMemberProfileById(String memberId);
 
     public Member findMemberByNickname(String nickname);//JPA
 
-    public List<Member> findMemberList(MemberSearchCriteriaDto searchDto);//JPA
+    public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto searchDto);//JPA
 
-    public List<MemberRelationship> findMemberRelationshipList(MemberRelationshipSearchCriteriaDto criteriaDto);
+    public List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteriaDto);
 
     public void updateMember(UpdateMemberDto updateMemberDto);
 

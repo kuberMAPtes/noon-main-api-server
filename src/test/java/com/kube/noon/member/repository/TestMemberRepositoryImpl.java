@@ -56,9 +56,10 @@ public class TestMemberRepositoryImpl {
      * 회원 관계 추가 테스트
      * 1. 중복체크를 DB 에서 전혀 못함. 중복된 값을 허용함. Service 레이어에서 중복체크를 해야 함.
      */
-//    @Test
+    @Test
     @DisplayName("회원 관계 추가 테스트")
     void addMemberRelationship() {
+
         MemberRelationship mr1 = getMemberRelationship(FOLLOW, "member_99", "member_1");
         MemberRelationship mr2 = getMemberRelationship(FOLLOW, "member_1", "member_99");
         MemberRelationship mr3 = getMemberRelationship(BLOCK, "member_99", "member_1");
@@ -72,10 +73,10 @@ public class TestMemberRepositoryImpl {
 
 
         for (MemberRelationship mr : foundMemberRelationship) {
-            log.info("member_1의 FromId 리스트 출력 : {}", mr.getFromId());
+            log.info("member_1의 FromId 리스트 출력 : {}", mr.getFromMember().getMemberId());
         }
         for (MemberRelationship mr : foundMemberRelationship) {
-            log.info("member_1의 ToId 리스트 출력 : {}", mr.getToId());
+            log.info("member_1의 ToId 리스트 출력 : {}", mr.getToMember().getMemberId());
 //            System.out.println("가즈아아아\n"+ mr.getToMember().getNickname());
 //            System.out.println(mr.getFromMember().getNickname());
             System.out.println("가즈아아아");
@@ -163,7 +164,7 @@ public class TestMemberRepositoryImpl {
     @Test
     @DisplayName("회원 관계 삭제 테스트")
     void deleteMemberRelationship() {
-        MemberRelationship mr = getMemberRelationship(FOLLOW, "member_99", "member_1");
+        MemberRelationship mr = this.getMemberRelationship(FOLLOW, "member_99", "member_1");
         memberRepository.deleteMemberRelationship("member_1", "member_99", FOLLOW);
         MemberRelationshipSearchCriteriaDto mrsc = getMemberRelationshipSearchCriteriaDto("member_99", true, false, false, false);
         List<MemberRelationship> foundMemberRelationship = memberRepository.findMemberRelationshipListByCriteria(mrsc);
@@ -179,7 +180,7 @@ public class TestMemberRepositoryImpl {
     }
 
 
-    private static @NotNull Member getMember() {
+    private @NotNull Member getMember() {
         String dateString = "0001-01-01 01:01:01";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime dateTime = LocalDateTime.parse(dateString, formatter);
@@ -201,7 +202,7 @@ public class TestMemberRepositoryImpl {
         return newMember;
     }
 
-    private static @NotNull MemberSearchCriteriaDto getMemberSearchCriteriaDto(String memberId, String nickname, LocalDateTime startTime, LocalDateTime endTime, String phoneNumber, Boolean signedOff) {
+    private @NotNull MemberSearchCriteriaDto getMemberSearchCriteriaDto(String memberId, String nickname, LocalDateTime startTime, LocalDateTime endTime, String phoneNumber, Boolean signedOff) {
         return MemberSearchCriteriaDto.builder()
                 .memberId(memberId)
                 .nickname(nickname)
@@ -212,16 +213,16 @@ public class TestMemberRepositoryImpl {
                 .build();
     }
 
-    private static @NotNull MemberRelationship getMemberRelationship(RelationshipType relationshipType, String fromId, String toId) {
+    private @NotNull MemberRelationship getMemberRelationship(RelationshipType relationshipType, String fromId, String toId) {
         MemberRelationship mr = new MemberRelationship();
         mr.setRelationshipType(relationshipType);//FOLLOW
-        mr.setFromId(fromId);//"member_1"
-        mr.setToId(toId);//"member_99"
+        mr.setFromMember(memberRepository.findMemberById(fromId).get());//"member_1"
+        mr.setToMember(memberRepository.findMemberById(toId).get());//"member_99"
         mr.setActivated(true);
         return mr;
     }
 
-    private static @NotNull MemberRelationshipSearchCriteriaDto getMemberRelationshipSearchCriteriaDto(String memberId, boolean following, boolean follower, boolean blocking, boolean blocker) {
+    private @NotNull MemberRelationshipSearchCriteriaDto getMemberRelationshipSearchCriteriaDto(String memberId, boolean following, boolean follower, boolean blocking, boolean blocker) {
 
         return MemberRelationshipSearchCriteriaDto.builder().
                 memberId(memberId)

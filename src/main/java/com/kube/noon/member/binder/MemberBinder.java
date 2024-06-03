@@ -27,4 +27,17 @@ public interface MemberBinder {
     MemberProfileDto memberToMemberProfileDto(Member member);
     Member memberProfileDtoToMember(MemberProfileDto dto);
 
+    // 공통 변환 메서드 추가
+    default Member toMember(Object dto) {
+        if (dto instanceof AddMemberDto) {
+            return AddMemberDtoToMember((AddMemberDto) dto);
+        } else if (dto instanceof MemberProfileDto) {
+            return MemberProfileDtoToMember((MemberProfileDto) dto);
+        } else if (dto instanceof UpdateMemberDto) {
+            return UpdateMemberDtoToMember((UpdateMemberDto) dto);
+        } else {
+            throw new IllegalArgumentException("지원되지 않는 DTO 타입입니다: " + dto.getClass());
+        }
+    }
+
 }

@@ -105,10 +105,10 @@ public class MemberRepositoryImpl implements MemberRepository {
                 log.info("조건에 맞는 회원 관계가 없음");
             } else {
                 for(MemberRelationship mr : lm){
-                    log.info("member_1의 FromId 리스트 출력 : {}",mr.getFromId());
+                    log.info("member_1의 FromId 리스트 출력 : {}",mr.getFromMember().getMemberId());
                 }
                 for(MemberRelationship mr : lm){
-                    log.info("member_1의 ToId 리스트 출력 : {}",mr.getToId());
+                    log.info("member_1의 ToId 리스트 출력 : {}",mr.getToMember().getMemberId());
                 }
             }
 
@@ -188,7 +188,7 @@ public class MemberRepositoryImpl implements MemberRepository {
     public void deleteMemberRelationship(String fromId, String toId, RelationshipType relationshipType) {
         try {
             log.info("회원 관계 삭제 중 : fromId : {},toId : {}, relationshipType : {} ", fromId,toId, relationshipType);
-            memberRelationshipJpaRepository.deleteByToIdAndFromIdAndRelationshipType(toId, fromId, relationshipType);
+            memberRelationshipJpaRepository.deleteByToMember_MemberIdAndFromMember_MemberIdAndRelationshipType(toId, fromId, relationshipType);
             log.info("회원 관계 삭제 성공");
         } catch (DataAccessException e) {
             throw new MemberRelationshipUpdateException(String.format("회원 관계 삭제 실패"), e);

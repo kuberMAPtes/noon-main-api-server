@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MemberRelationshipJpaRepository extends JpaRepository<MemberRelationship, Integer>,MemberRelationshipJpaRepositoryQuery{
 
-    void deleteByToIdAndFromIdAndRelationshipType(String toId, String fromId, RelationshipType relationshipType);
+    void deleteByToMember_MemberIdAndFromMember_MemberIdAndRelationshipType(String toId, String fromId, RelationshipType relationshipType);
 
 }

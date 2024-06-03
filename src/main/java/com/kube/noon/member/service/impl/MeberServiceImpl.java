@@ -1,28 +1,26 @@
 package com.kube.noon.member.service.impl;
 
+import com.kube.noon.member.binder.MemberBinder;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.*;
 import com.kube.noon.member.repository.MemberRepository;
 import com.kube.noon.member.service.MemberService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class MeberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
 
-    @Autowired
-    public MeberServiceImpl(MemberRepository memberRepository) {
-        this.memberRepository = memberRepository;
-    }
 
     @Override
     public void addMember(AddMemberDto memberDto) {
-
+        MemberBinder.INSTANCE.toMember(memberDto);
     }
 
     @Override
@@ -46,14 +44,15 @@ public class MeberServiceImpl implements MemberService {
     }
 
     @Override
-    public List<Member> findMemberList(MemberSearchCriteriaDto criteriaDto) {
+    public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto searchDto) {
         return List.of();
     }
 
     @Override
-    public List<MemberRelationship> findMemberRelationshipList(MemberRelationshipSearchCriteriaDto criteriaDto) {
+    public List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteriaDto) {
         return List.of();
     }
+
 
     @Override
     public void updateMember(UpdateMemberDto updateMemberDto) {

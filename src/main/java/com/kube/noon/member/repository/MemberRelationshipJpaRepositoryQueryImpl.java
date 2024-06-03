@@ -24,16 +24,16 @@ public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelations
         BooleanBuilder builder = new BooleanBuilder();
 
         if (criteria.isFollowing()) {
-            builder.or(ms.fromId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
+            builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
         }
         if (criteria.isFollower()) {
-            builder.or(ms.toId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
+            builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
         }
         if (criteria.isBlocking()) {
-            builder.or(ms.fromId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
+            builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
         }
         if (criteria.isBlocker()) {
-            builder.or(ms.toId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
+            builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
         }
 
         return queryFactory.selectFrom(ms)

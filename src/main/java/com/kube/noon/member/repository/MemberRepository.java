@@ -36,7 +36,7 @@ public interface MemberRepository {
 
     void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl);
 
-    void deleteMemberRelationship(String toId, String fromId, RelationshipType relationshipType);
+    void deleteMemberRelationship(String fromId, String toId, RelationshipType relationshipType);
 
     void deleteMember(String memberId);
 }
