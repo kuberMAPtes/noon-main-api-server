@@ -2,6 +2,7 @@ package com.kube.noon.places.service;
 
 import com.kube.noon.places.dto.PlaceDto;
 import com.kube.noon.places.exception.PlaceNotFoundException;
+import com.kube.noon.places.repository.PlacesNaverMapsApiRepositoryImpl;
 
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
  *
  * @author pgd
  * @see com.kube.noon.places.repository.PlacesRepository
- * @see com.kube.noon.places.repository.PlacesNaverMapsApiRepository
+ * @see PlacesNaverMapsApiRepositoryImpl
  * @see com.kube.noon.places.domain.Place
  * @see PlaceDto
  * @see PlacesServiceImpl
@@ -24,7 +25,7 @@ public interface PlacesService {
      * @param searchKeyword 장소 검색 키워드
      * @return searchKeyword에 부합하는 장소들을 반환. 반환되는 List의 길이는 1보다 클 수 있고, 1일 수 있고, 0일 수 있다.
      */
-    List<PlaceDto> getPlaceList(String searchKeyword);
+    public List<PlaceDto> getPlaceList(String searchKeyword);
 
     /**
      * 주어진 위도, 경도에 위치한 장소 정보를 얻는다.
@@ -33,5 +34,5 @@ public interface PlacesService {
      * @return latitude, longitude에 위치한 장소의 정보
      * @throws PlaceNotFoundException 주어진 latitude, longitude에 위치한 장소가 없을 경우
      */
-    PlaceDto getPlaceByPosition(double latitude, double longitude) throws PlaceNotFoundException;
+    public PlaceDto getPlaceByPosition(double latitude, double longitude) throws PlaceNotFoundException;
 }
