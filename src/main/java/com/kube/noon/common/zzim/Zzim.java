@@ -28,8 +28,9 @@ public class Zzim {
     @Column(name = "subscription_provider_id", nullable = false, length = 20)
     private String subscriptionProviderId;
 
-    @Column(name = "zzim_type")
-    private String zzimType;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "zzim_type", columnDefinition = "ENUM('LIKE','BOOKMARK','SUBSCRIPTION')")
+    private ZzimType zzimType;
 
     @Column(name = "activated")
     private boolean activated;
