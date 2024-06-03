@@ -75,7 +75,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
         }else{
 
-            zzimRepository.updateZzimAcrivated(buildingId, memberId, true);
+            zzimRepository.updateZzimActivated(buildingId, memberId, true);
             return BuildingZzimDto.fromEntity(zzimRepository.findByBuildingIdAndMemberId(buildingId, memberId));
 
         }
@@ -96,7 +96,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
      */
     public BuildingZzimDto deleteSubscription(String memberId, int buildingId) {
 
-        zzimRepository.updateZzimAcrivated(buildingId, memberId, false);
+        zzimRepository.updateZzimActivated(buildingId, memberId, false);
 
         Zzim zzim = zzimRepository.findByBuildingIdAndMemberId(buildingId, memberId);
 
