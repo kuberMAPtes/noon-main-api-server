@@ -8,10 +8,8 @@ package com.kube.noon.building.service;
 public interface BuildingWikiService {
 
     /**
-     * 빈 건물 위키 페이지를 생성한다.
+     * 빈 위키 페이지를 생성한다. title에 해당하는 페이지가 이미 있을 경우, 페이지를 생성하지 않는다.
      * @param title 생성할 건물 위키 페이지의 제목
-     * @return 건물 위키가 생성되면 true, 이미 title에 해당하는 건물위키가 존재하여 새로운 건물
-     *         위키가 생성되지 않았으면 false를 반환한다.
      */
     public void addPage(String title);
 }
