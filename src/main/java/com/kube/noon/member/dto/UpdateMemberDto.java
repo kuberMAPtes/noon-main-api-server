@@ -28,7 +28,7 @@ public class UpdateMemberDto {
 
     private String profileIntro;
 
-    private int dajungScore;
+    private Integer dajungScore;
 
 //    private Boolean signedOff;
 
@@ -38,7 +38,7 @@ public class UpdateMemberDto {
 
     private PublicRange memberProfilePublicRange;
 
-    private boolean receivingAllNotificationAllowed;
+    private Boolean receivingAllNotificationAllowed;
 
 
 }

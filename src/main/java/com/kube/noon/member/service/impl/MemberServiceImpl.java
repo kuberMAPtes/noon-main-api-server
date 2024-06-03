@@ -60,7 +60,7 @@ public class MemberServiceImpl implements MemberService {
                         throw new MemberSecurityBreachException("자기 자신과의 관계는 추가할 수 없습니다.");
                     }
 
-                    if (member.isSignedOff()){
+                    if (member.getSignedOff()){
                         throw new MemberSecurityBreachException("탈퇴한 회원과의 관계는 추가할 수 없습니다.");
                     }
 

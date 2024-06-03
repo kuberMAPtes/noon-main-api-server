@@ -49,11 +49,7 @@ public class MemberJpaRepositoryQueryImpl implements MemberJpaRepositoryQuery {
     public void updateMember(Member member){
         QMember qm = QMember.member;
 
-        // Create a new update clause
         JPAUpdateClause updateClause = queryFactory.update(qm);
-
-        // Conditionally update each field if it is not null
-
 
         if(member.getNickname() != null) {
             updateClause.set(qm.nickname, member.getNickname());
@@ -67,7 +63,7 @@ public class MemberJpaRepositoryQueryImpl implements MemberJpaRepositoryQuery {
         if(member.getProfileIntro() != null) {
             updateClause.set(qm.profileIntro, member.getProfileIntro());
         }
-        if(member.getDajungScore() != 0) {
+        if(member.getDajungScore() != null) {
             updateClause.set(qm.dajungScore, member.getDajungScore());
         }
         if (member.getBuildingSubscriptionPublicRange() != null) {
@@ -79,40 +75,12 @@ public class MemberJpaRepositoryQueryImpl implements MemberJpaRepositoryQuery {
         if (member.getMemberProfilePublicRange() != null) {
             updateClause.set(qm.memberProfilePublicRange, member.getMemberProfilePublicRange());
         }
-        if (member.isReceivingAllNotificationAllowed()) {
-            updateClause.set(qm.receivingAllNotificationAllowed, member.isReceivingAllNotificationAllowed());
+        if (member.getReceivingAllNotificationAllowed()!=null) {
+            updateClause.set(qm.receivingAllNotificationAllowed, member.getReceivingAllNotificationAllowed());
         }
-
         // Execute the update if there are any fields to update
         if (!updateClause.isEmpty()) {
             updateClause.where(qm.memberId.eq(member.getMemberId())).execute();
         }
-
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

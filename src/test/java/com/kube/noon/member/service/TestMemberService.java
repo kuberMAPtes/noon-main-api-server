@@ -65,7 +65,8 @@ public class TestMemberService {
     @Test
     @DisplayName("회원 찾기 테스트")
     void findMemberById() {
-        log.info("회원 찾기 테스트");
+        log.info("회원 찾기 테스트 :: member_1 :: ");
+        log.info(ANSI_RED + memberService.findMemberById("member_1") + ANSI_RESET);
         assertThat(memberService.findMemberById("member_1")).isNotNull();
     }
     @Test
