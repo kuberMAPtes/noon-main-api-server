@@ -5,6 +5,7 @@ import com.kube.noon.member.domain.QMember;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.jpa.impl.JPAUpdateClause;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -43,4 +44,75 @@ public class MemberJpaRepositoryQueryImpl implements MemberJpaRepositoryQuery {
                 .fetch();
 
     }
+
+    @Override
+    public void updateMember(Member member){
+        QMember qm = QMember.member;
+
+        // Create a new update clause
+        JPAUpdateClause updateClause = queryFactory.update(qm);
+
+        // Conditionally update each field if it is not null
+
+
+        if(member.getNickname() != null) {
+            updateClause.set(qm.nickname, member.getNickname());
+        }
+        if(member.getUnlockTime() != null) {
+            updateClause.set(qm.unlockTime, member.getUnlockTime());
+        }
+        if(member.getProfilePhotoUrl() != null) {
+            updateClause.set(qm.profilePhotoUrl, member.getProfilePhotoUrl());
+        }
+        if(member.getProfileIntro() != null) {
+            updateClause.set(qm.profileIntro, member.getProfileIntro());
+        }
+        if(member.getDajungScore() != 0) {
+            updateClause.set(qm.dajungScore, member.getDajungScore());
+        }
+        if (member.getBuildingSubscriptionPublicRange() != null) {
+            updateClause.set(qm.buildingSubscriptionPublicRange, member.getBuildingSubscriptionPublicRange());
+        }
+        if (member.getAllFeedPublicRange() != null) {
+            updateClause.set(qm.allFeedPublicRange, member.getAllFeedPublicRange());
+        }
+        if (member.getMemberProfilePublicRange() != null) {
+            updateClause.set(qm.memberProfilePublicRange, member.getMemberProfilePublicRange());
+        }
+        if (member.isReceivingAllNotificationAllowed()) {
+            updateClause.set(qm.receivingAllNotificationAllowed, member.isReceivingAllNotificationAllowed());
+        }
+
+        // Execute the update if there are any fields to update
+        if (!updateClause.isEmpty()) {
+            updateClause.where(qm.memberId.eq(member.getMemberId())).execute();
+        }
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

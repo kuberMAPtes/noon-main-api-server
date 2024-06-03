@@ -123,11 +123,27 @@ public class TestMemberRepository {
     @Test
     @DisplayName("회원 업데이트 테스트")
     void updateMember() {
-
         memberRepository.updateMember(getMember());
         assertThat(memberRepository.findMemberById("member_99999").get().getProfilePhotoUrl())
                 .isEqualTo("https://www.naver.com");
-
+    }
+    @Test
+    @DisplayName("회원 업데이트 테스트 : null 값이 들어왔을 때")
+    void updateMember2(){
+        //널을 넣어도 널이 안되어야 함.
+        //업데이트한 건 업데이트 되어야함
+        Member member = getMember();
+        member.setMemberProfilePublicRange(null);
+        member.setAllFeedPublicRange(null);
+        member.setBuildingSubscriptionPublicRange(null);
+        member.setReceivingAllNotificationAllowed(true);
+        member.setNickname("새로운 닉네임");
+        memberRepository.updateMember(member);
+        assertThat(memberRepository.findMemberById("member_99999").get().getNickname()).isEqualTo("새로운 닉네임");
+        assertThat(memberRepository.findMemberById("member_99999").get().getAllFeedPublicRange()).isNotNull();
+        assertThat(memberRepository.findMemberById("member_99999").get().getBuildingSubscriptionPublicRange()).isNotNull();
+        assertThat(memberRepository.findMemberById("member_99999").get().getMemberProfilePublicRange()).isNotNull();
+        assertThat(memberRepository.findMemberById("member_99999").get().isReceivingAllNotificationAllowed()).isTrue();
     }
 
     @Test

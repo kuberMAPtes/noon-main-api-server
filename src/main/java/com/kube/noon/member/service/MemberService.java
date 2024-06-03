@@ -6,6 +6,7 @@ import com.kube.noon.member.dto.*;
 import com.kube.noon.member.enums.RelationshipType;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MemberService {
 
@@ -13,12 +14,12 @@ public interface MemberService {
 
     public void addMemberRelationship(AddMemberRelationshipDto addMemberRelationshipDto);
 
-    public Member findMemberById(String memberId);//JPA
+    public Optional<Member> findMemberById(String memberId);//JPA
 
     //레포지토리에서 없음
-    public MemberProfileDto findMemberProfileById(String memberId);
+    public Optional<MemberProfileDto> findMemberProfileById(String memberId);
 
-    public Member findMemberByNickname(String nickname);//JPA
+    public Optional<Member> findMemberByNickname(String nickname);//JPA
 
     public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto searchDto);//JPA
 

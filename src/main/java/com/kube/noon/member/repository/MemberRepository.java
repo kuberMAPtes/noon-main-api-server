@@ -30,8 +30,6 @@ public interface MemberRepository {
 
     List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria);
 
-
-
     void updateMember(Member member);
 
     void updatePassword(String memberId, String newPassword);
