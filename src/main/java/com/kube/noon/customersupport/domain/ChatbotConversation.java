@@ -4,7 +4,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class Chatbot {
+public class ChatbotConversation {
     private String userQuestion;
     private String chatbotAnswer;
     private Date questionTimeNDate;
