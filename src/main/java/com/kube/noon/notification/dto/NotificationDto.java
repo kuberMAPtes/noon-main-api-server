@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * @author PGD
+ */
 @NoArgsConstructor
 @Getter
 @Setter

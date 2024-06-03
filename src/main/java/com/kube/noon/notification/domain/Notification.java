@@ -4,6 +4,9 @@ import com.kube.noon.notification.converter.NotificationTypeConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * @author PGD
+ */
 @Getter
 @Setter
 @NoArgsConstructor
