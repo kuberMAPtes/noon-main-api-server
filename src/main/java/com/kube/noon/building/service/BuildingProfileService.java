@@ -10,6 +10,7 @@ public interface BuildingProfileService {
 
     Zzim addSubscription(String memberId, int buildingId);
     Zzim deleteSubscription(String memberId, int buildingId);
+    List<Building> addSubscriptionFromSomeone(String memberId, String someoneId);
     List<BuildingDto> getUserBuildingSubscriptionList(String memberId);
     Building getBuildingProfile(int buildingId);
     List<BuildingDto> getBuildingSubscriptionListByMemberId(String memberId);
