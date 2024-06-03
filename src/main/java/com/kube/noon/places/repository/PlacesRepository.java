@@ -9,5 +9,5 @@ public interface PlacesRepository {
 
     List<Place> findByPlaceName(String placeName);
 
-    public Place findByLatLng(double latitude, double longitude) throws PlaceNotFoundException;
+    public Place findByPosition(double latitude, double longitude) throws PlaceNotFoundException;
 }
