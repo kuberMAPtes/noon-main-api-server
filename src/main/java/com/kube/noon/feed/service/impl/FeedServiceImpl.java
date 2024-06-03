@@ -1,6 +1,6 @@
 package com.kube.noon.feed.service.impl;
 
-import com.kube.noon.feed.entity.Feed;
+import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.feed.service.FeedService;
 import lombok.RequiredArgsConstructor;

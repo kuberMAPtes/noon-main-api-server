@@ -1,4 +1,4 @@
-package com.kube.noon.feed.entity;
+package com.kube.noon.feed.domain;
 
 import com.kube.noon.common.FileType;
 import jakarta.persistence.*;
@@ -35,4 +35,13 @@ public class FeedAttachment {
 
     @Column(name = "activated", nullable = false)
     private boolean activated = true;
+
+    public void setActivated(boolean activated) {
+        this.activated = activated;
+    }
+
+    @Override
+    public String toString() {
+        return "attachmentId : " + attachmentId + " fileUrl : " + fileUrl + " activated : " + activated;
+    }
 }

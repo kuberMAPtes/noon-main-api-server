@@ -1,7 +1,7 @@
 package com.kube.noon.feed.service;
 
 import com.kube.noon.feed.dto.FeedDto;
-import com.kube.noon.feed.entity.Feed;
+import com.kube.noon.feed.domain.Feed;
 
 import java.io.IOException;
 import java.util.List;

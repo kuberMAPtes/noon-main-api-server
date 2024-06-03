@@ -2,8 +2,8 @@ package com.kube.noon.feed.dto;
 
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.common.PublicRange;
-import com.kube.noon.feed.entity.FeedComment;
-import com.kube.noon.feed.entity.TagFeed;
+import com.kube.noon.feed.domain.FeedComment;
+import com.kube.noon.feed.domain.TagFeed;
 import lombok.*;
 
 import java.time.LocalDateTime;

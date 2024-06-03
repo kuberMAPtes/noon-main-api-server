@@ -1,4 +1,4 @@
-package com.kube.noon.feed.entity;
+package com.kube.noon.feed.domain;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -38,5 +38,15 @@ public class FeedComment {
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "member_id" nullable = false)
 //    private Member member;
+
+    public void setActivated(boolean activated) {
+        this.activated = activated;
+
+    }
+
+    @Override
+    public String toString() {
+        return "commentId : " + commentId + " commenterId : " + commenterId + " commentText : " + commentText + " activated : " + activated;
+    }
 }
 

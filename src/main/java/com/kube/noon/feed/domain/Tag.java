@@ -1,4 +1,4 @@
-package com.kube.noon.feed.entity;
+package com.kube.noon.feed.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,4 +25,9 @@ public class Tag {
 
     @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TagFeed> tagFeeds;
+
+    @Override
+    public String toString() {
+        return "tagText : " + tagText;
+    }
 }

@@ -1,6 +1,5 @@
-package com.kube.noon.feed.entity;
+package com.kube.noon.feed.domain;
 
-import com.kube.noon.building.domain.Building;
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.common.PublicRange;
 import jakarta.persistence.*;
@@ -71,9 +70,13 @@ public class Feed {
 //    @JoinColumn(name = "member_id", nullable = false)
 //    private Member member;
 
+    public void setActivated(boolean activated) {
+        this.activated = activated;
+    }
+
     @Override
     public String toString() {
-        return "Feed : " + feedId;
+        return "Feed : " + feedId + " feedTitle: " + title + " feedText: " + feedText + " activated : " + activated;
     }
 
 }

@@ -1,4 +1,4 @@
-package com.kube.noon.feed.entity;
+package com.kube.noon.feed.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,4 +25,9 @@ public class TagFeed {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id", nullable = false)
     private Tag tag;
+
+    @Override
+    public String toString() {
+        return "tagFeedId : " + tagFeedId;
+    }
 }
