@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.net.URI;
 
 @Slf4j
 @Service
+@Profile("prod")
 public class BuildingWikiRestTemplateServiceImpl implements BuildingWikiService {
     private final String buildingWikiUrl;
     private final RestTemplate restTemplate;
