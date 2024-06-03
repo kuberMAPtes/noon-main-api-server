@@ -28,7 +28,7 @@ import java.util.List;
 
 @Slf4j
 @Repository
-public class PlacesNaverMapsApiRepository implements PlacesRepository {
+public class PlacesNaverMapsApiRepositoryImpl implements PlacesRepository {
     private static final String GEOCODE_ACCESS_KEY_HEADER = "X-NCP-APIGW-API-KEY-ID";
     private static final String GEOCODE_SECRET_KEY_HEADER = "X-NCP-APIGW-API-KEY";
     private static final String NAVER_CLOUD_GEOCODE_API_URL = "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode";
@@ -45,7 +45,7 @@ public class PlacesNaverMapsApiRepository implements PlacesRepository {
     private final String secretKey;
     private final RestTemplate restTemplate;
 
-    public PlacesNaverMapsApiRepository(
+    public PlacesNaverMapsApiRepositoryImpl(
             @Value("${geocode.naver.access-key}") String accessKey,
             @Value("${geocode.naver.secret-key}") String secretKey
     ) {
