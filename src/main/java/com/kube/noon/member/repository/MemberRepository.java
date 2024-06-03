@@ -4,10 +4,16 @@ import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
+import com.kube.noon.member.enums.RelationshipType;
 
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 서비스레이어만들때 주의할 점
+ * 다정온도max,제한
+ * findMemberRelationshipListByCriteria는 멤버도 리턴해야돼
+ */
 public interface MemberRepository {
 
     void addMember(Member member);
@@ -30,7 +36,8 @@ public interface MemberRepository {
 
     void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl);
 
-    void deleteMemberRelationship(int memberRelationshipId);
+    void deleteMemberRelationship(String toId, String fromId, RelationshipType relationshipType);
 
     void deleteMember(String memberId);
 }
+

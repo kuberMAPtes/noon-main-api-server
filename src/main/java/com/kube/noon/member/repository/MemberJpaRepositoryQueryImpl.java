@@ -1,51 +1,46 @@
 package com.kube.noon.member.repository;
 
 import com.kube.noon.member.domain.Member;
-import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.domain.QMember;
-import com.kube.noon.member.domain.QMemberRelationship;
-import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
-import com.kube.noon.member.enums.RelationshipType;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
+@RequiredArgsConstructor
 public class MemberJpaRepositoryQueryImpl implements MemberJpaRepositoryQuery {
 
     private final JPAQueryFactory queryFactory;
-
-    public MemberJpaRepositoryQueryImpl(JPAQueryFactory queryFactory) {
-        this.queryFactory = queryFactory;
-    }
 
     @Override
     public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria) {
         QMember member = QMember.member;
 
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (criteria.getMemberId() != null) {
+            builder.or(member.memberId.containsIgnoreCase(criteria.getMemberId()));
+        }
+        if (criteria.getNickname() != null) {
+            builder.or(member.nickname.containsIgnoreCase(criteria.getNickname()));
+        }
+        if (criteria.getStartTime() != null && criteria.getEndTime() != null) {
+            builder.or(member.unlockTime.between(criteria.getStartTime(), criteria.getEndTime()));
+        }
+        if (criteria.getPhoneNumber() != null) {
+            builder.or(member.phoneNumber.containsIgnoreCase(criteria.getPhoneNumber()));
+        }
+        if (criteria.getSignedOff() != null) {
+            builder.or(member.signedOff.eq(criteria.getSignedOff()));
+        }
+
         return queryFactory.selectFrom(member)
-                .where(
-                        criteria.getMemberId() != null ? member.memberId.containsIgnoreCase(criteria.getMemberId()) : null,
-                        criteria.getNickname() != null ? member.nickname.containsIgnoreCase(criteria.getNickname()) : null,
-                        criteria.getStartTime() != null && criteria.getEndTime() != null ? member.unlockTime.between(criteria.getStartTime(), criteria.getEndTime()) : null,
-                        criteria.getPhoneNumber() != null ? member.phoneNumber.containsIgnoreCase(criteria.getPhoneNumber()) : null,
-                        criteria.getSignedOff() != null ? member.signedOff.eq(criteria.getSignedOff()) : null
-                )
+                .where(builder)
                 .fetch();
-    }
 
-    @Override
-    public List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria) {
-        QMemberRelationship ms = QMemberRelationship.memberRelationship;
-
-        return queryFactory.selectFrom(ms)
-                .where(
-                        criteria.isFollowing() ? ms.fromId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)) : null,
-                        criteria.isFollower() ? ms.toId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)) : null,
-                        criteria.isBlocking() ? ms.fromId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)) : null,
-                        criteria.isBlocker() ? ms.toId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)) : null
-                ).fetch();
     }
 }

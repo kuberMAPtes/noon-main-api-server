@@ -1,12 +1,14 @@
 package com.kube.noon.member.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class MemberSearchCriteriaDto {
 
     private String memberId;

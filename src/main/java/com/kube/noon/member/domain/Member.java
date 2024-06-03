@@ -5,12 +5,14 @@ import com.kube.noon.member.enums.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
+@ToString
 @Table(name = "members")
 public class Member {
 

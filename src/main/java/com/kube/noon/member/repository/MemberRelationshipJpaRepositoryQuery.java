@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface MemberRelationshipJpaRepositoryQuery {
     List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria);
+
 }
