@@ -1,5 +1,6 @@
 package com.kube.noon.building.service;
 
+import com.kube.noon.building.service.buildingwiki.BuildingWikiEmptyServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

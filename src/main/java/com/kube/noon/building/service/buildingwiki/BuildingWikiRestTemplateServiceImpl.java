@@ -1,5 +1,6 @@
-package com.kube.noon.building.service;
+package com.kube.noon.building.service.buildingwiki;
 
+import com.kube.noon.building.service.BuildingWikiService;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;

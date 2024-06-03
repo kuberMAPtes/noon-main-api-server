@@ -1,5 +1,6 @@
 package com.kube.noon.building.service;
 
+import com.kube.noon.building.service.buildingwiki.BuildingWikiRestTemplateServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

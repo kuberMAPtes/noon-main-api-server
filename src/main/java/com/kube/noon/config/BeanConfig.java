@@ -1,6 +1,6 @@
 package com.kube.noon.config;
 
-import com.kube.noon.building.service.BuildingWikiEmptyServiceImpl;
+import com.kube.noon.building.service.buildingwiki.BuildingWikiEmptyServiceImpl;
 import com.kube.noon.building.service.BuildingWikiService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
