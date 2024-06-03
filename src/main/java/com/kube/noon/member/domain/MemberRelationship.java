@@ -8,6 +8,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
+/**
+ * //    내가 내 프로필 볼 때 : fromId = 현준 으로 객체를 찾으면 팔로잉리스트
+ * //    내가 내 프로필 볼 때 : toId = 현준 으로 객체를 찾으면 팔로워리스트
+ * //    내가 타인의 프로필 볼 때 : fromId = 철수로 객체를 찾으면 철수의 팔로잉 리스트
+ */
 @Entity
 @Table(name = "member_relationship", indexes = {
         @Index(name = "idx_from_id", columnList = "from_id"),
@@ -22,15 +27,6 @@ public class MemberRelationship {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_relationship_id")
     private int memberRelationshipId;
-
-//    @Column(name = "from_id", length = 20, nullable = false)
-//    private String fromId;
-//    //내가 내 프로필 볼 때 : fromId = 현준 으로 객체를 찾으면 팔로잉리스트
-//    //내가 내 프로필 볼 때 : toId = 현준 으로 객체를 찾으면 팔로워리스트
-//    //내가 타인의 프로필 볼 때 : fromId = 철수로 객체를 찾으면 철수의 팔로잉 리스트
-//
-//    @Column(name = "to_id", length = 20, nullable = false)
-//    private String toId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "relationship_type", nullable = false)

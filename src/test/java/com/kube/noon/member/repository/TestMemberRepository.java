@@ -28,7 +28,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @Slf4j
 @SpringBootTest
 @Transactional
-public class TestMemberRepositoryImpl {
+public class TestMemberRepository {
 
     @Autowired
     private MemberRepository memberRepository;

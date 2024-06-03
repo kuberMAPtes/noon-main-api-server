@@ -3,6 +3,7 @@ package com.kube.noon.member.service;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.*;
+import com.kube.noon.member.enums.RelationshipType;
 
 import java.util.List;
 
@@ -31,7 +32,7 @@ public interface MemberService {
 
     public void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl);
 
-    public void deleteMemberRelationship(String memberRelationshipId);
+    public void deleteMemberRelationship(String fromId, String toId, RelationshipType relationshipType);
 
     public void deleteMember(String memberId);
 

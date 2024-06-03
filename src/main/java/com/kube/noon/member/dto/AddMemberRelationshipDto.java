@@ -1,6 +1,5 @@
 package com.kube.noon.member.dto;
 
-import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.enums.RelationshipType;
 import lombok.*;
 
@@ -14,18 +13,10 @@ import lombok.*;
 @Builder
 public class AddMemberRelationshipDto {
 
-    private int memberRelationshipId;
+    private String fromId;
 
-//    private String fromId;
-
-//    private String toId;
+    private String toId;
 
     private RelationshipType relationshipType;
-
-    private boolean activated = true;
-
-    private Member fromMember;
-
-    private Member toMember;
 
 }

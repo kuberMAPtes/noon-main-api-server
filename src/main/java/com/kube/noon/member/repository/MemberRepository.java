@@ -26,7 +26,11 @@ public interface MemberRepository {
 
     List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria);
 
+    Optional<MemberRelationship> findMemberRelationship(String fromId, String toId, RelationshipType relationshipType);
+
     List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria);
+
+
 
     void updateMember(Member member);
 
