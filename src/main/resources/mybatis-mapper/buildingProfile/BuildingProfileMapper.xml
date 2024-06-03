@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kube.noon.building.repository.mapper.BuildingProfileMapper">
+
+    <resultMap id="BuildingResultMap" type="com.kube.noon.building.domain.Building">
+        <id property="buildingId" column="building_id"/>
+        <result property="buildingName" column="building_name"/>
+        <result property="profileActivated" column="profile_activated"/>
+        <result property="roadAddr" column="road_addr"/>
+        <result property="longitude" column="longitude"/>
+        <result property="latitude" column="latitude"/>
+        <result property="feedAiSummary" column="feed_ai_summary"/>
+    </resultMap>
+
+    <resultMap id="MemberResultMap" type="com.kube.noon.member.domain.Member">
+        <id property="memberId" column="member_id"/>
+        <result property="memberRole" column="member_role"/>
+        <result property="nickname" column="nickname"/>
+        <result property="password" column="pwd"/>
+        <result property="phoneNumber" column="phone_number"/>
+        <result property="unlockTime" column="unlock_time"/>
+        <result property="profilePhotoUrl" column="profile_photo_url"/>
+        <result property="profileIntro" column="profile_intro"/>
+        <result property="dajungScore" column="dajung_score"/>
+        <result property="signedOff" column="signed_off"/>
+        <result property="buildingSubscriptionPublicRange" column="building_subscription_public_range"/>
+        <result property="allFeedPublicRange" column="all_feed_public_range"/>
+        <result property="memberProfilePublicRange" column="member_profile_public_range"/>
+        <result property="receivingAllNotificationAllowed" column="receiving_all_notification_allowed"/>
+    </resultMap>
+
+    <select id="findBuildingSubscriptionListByMemberId" resultMap="BuildingResultMap">
+        SELECT *
+        FROM building
+        WHERE building_id IN (
+            SELECT building_id
+            FROM zzim
+            WHERE zzim_type='SUBSCRIPTION' AND member_id = #{memberId} AND activated = 1
+        )
+    </select>
+
+
+    <select id="findBuildingSubscriberListByBuildingId" resultMap="MemberResultMap">
+        SELECT *
+        FROM members
+        WHERE member_id IN (
+            SELECT member_id
+            FROM zzim
+            WHERE building_id = #{buildingId} AND activated = 1
+        )
+    </select>
+</mapper>
+
