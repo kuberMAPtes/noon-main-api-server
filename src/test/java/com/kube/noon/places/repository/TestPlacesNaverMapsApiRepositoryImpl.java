@@ -15,10 +15,10 @@ import java.util.stream.Stream;
 
 @Slf4j
 @SpringBootTest
-class TestPlacesNaverMapsApiRepository {
+class TestPlacesNaverMapsApiRepositoryImpl {
 
     @Autowired
-    PlacesNaverMapsApiRepository placesRepository;
+    PlacesNaverMapsApiRepositoryImpl placesRepository;
 
     @DisplayName("장소명으로 도로명주소, 위도, 경도 가져오기 테스트")
     @Test
