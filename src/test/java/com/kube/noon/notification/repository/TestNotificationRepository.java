@@ -10,16 +10,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.jdbc.support.JdbcUtils;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * @author PGD
@@ -93,6 +94,31 @@ public class TestNotificationRepository {
         assertThat(notificationId).isNotNull();
     }
 
+    @DisplayName("Notification 저장 - notificationId 값 세팅")
+    @Test
+    void save_setNotificationId() {
+        Notification testCase = new Notification();
+        testCase.setNotificationId(1);
+        testCase.setReceiverId("sample-receiver");
+        testCase.setNotificationText("sample-text");
+        testCase.setNotificationType(NotificationType.COMMENT);
+        this.notificationRepository.save(testCase);
+
+        log.info("testCase.getNotificationId={}", testCase.getNotificationId());
+
+        assertThat(testCase.getNotificationId()).isEqualTo(1);
+
+        Optional<Notification> byId = this.notificationRepository.findById(testCase.getNotificationId());
+
+        // testCase.setNotificationId(1) 메소드로 notificationId를 세팅해도
+        // GenerationType.IDENTITY인 이상 notification_id는 AUTO_INCREMENT에 의해
+        // 자동으로 세팅돼 저장된다.
+        // 즉, notification_id가 1인 레코드는 데이터베이스에 없다.
+        assertThat(byId.isEmpty()).isTrue();
+        assertThatExceptionOfType(NoSuchElementException.class)
+                .isThrownBy(() -> byId.get());
+    }
+
     @DisplayName("Notification 조회")
     @Test
     void findById() {
@@ -115,5 +141,20 @@ public class TestNotificationRepository {
         assertThat(findNotification.getReceiverId()).isEqualTo(testCase.getReceiverId());
         assertThat(findNotification.getNotificationText()).isEqualTo(testCase.getNotificationText());
         assertThat(findNotification.getNotificationType()).isEqualTo(testCase.getNotificationType());
+    }
+
+    @DisplayName("Notification 조회 - 없는 레코드 조회")
+    @Test
+    void findById_notExistRecord() {
+        Notification testCase =
+                new Notification("sample-receiver", "sample-text", NotificationType.COMMENT);
+
+        this.notificationRepository.save(testCase);
+
+        Optional<Notification> findNotification = this.notificationRepository.findById(Integer.MAX_VALUE);
+
+        assertThat(findNotification.isEmpty()).isTrue();
+        assertThatExceptionOfType(NoSuchElementException.class)
+                .isThrownBy(findNotification::get);
     }
 }
