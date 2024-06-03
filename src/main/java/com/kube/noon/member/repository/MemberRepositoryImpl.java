@@ -1,5 +1,6 @@
 package com.kube.noon.member.repository;
 
+import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
@@ -25,6 +26,11 @@ public class MemberRepositoryImpl implements MemberRepository {
     @Override
     public void addMember(Member member) {
         log.info("회원 추가 중 : {}", member);
+
+        member.setMemberProfilePublicRange(PublicRange.PUBLIC);
+        member.setBuildingSubscriptionPublicRange(PublicRange.PUBLIC);
+        member.setAllFeedPublicRange(PublicRange.PUBLIC);
+
         memberJpaRepository.save(member);
         log.info("회원 추가 성공 : {}", member);
     }
@@ -101,7 +107,7 @@ public class MemberRepositoryImpl implements MemberRepository {
     @Override
     public void updateMember(Member member) {
         log.info("회원 업데이트 중");
-        memberJpaRepository.save(member);
+        memberJpaRepository.updateMember(member);
         log.info("회원 업데이트 성공");
     }
 

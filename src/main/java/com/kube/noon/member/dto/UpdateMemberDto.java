@@ -18,13 +18,9 @@ public class UpdateMemberDto {
 
 //    private String memberRole;
 
-    private String pwd;
-
     private String nickname;
 
 //    private String pwd;
-
-    private String phoneNumber;
 
     private LocalDateTime unlockTime;
 
@@ -32,7 +28,7 @@ public class UpdateMemberDto {
 
     private String profileIntro;
 
-    private int dajungScore;
+    private Integer dajungScore;
 
 //    private Boolean signedOff;
 
@@ -42,7 +38,7 @@ public class UpdateMemberDto {
 
     private PublicRange memberProfilePublicRange;
 
-    private boolean receivingAllNotificationAllowed;
+    private Boolean receivingAllNotificationAllowed;
 
 
 }
