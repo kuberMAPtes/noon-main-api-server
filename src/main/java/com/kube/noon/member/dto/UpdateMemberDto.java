@@ -42,7 +42,7 @@ public class UpdateMemberDto {
 
     private PublicRange memberProfilePublicRange;
 
-    private PublicRange receivingAllNotificationAllowed;
+    private boolean receivingAllNotificationAllowed;
 
 
 }

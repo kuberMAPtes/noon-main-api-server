@@ -1,71 +1,63 @@
 package com.kube.noon.member.domain;
 
-import com.kube.noon.member.enums.Role;
 import com.kube.noon.common.PublicRange;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.*;
+import com.kube.noon.member.enums.Role;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.time.LocalDateTime ;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "members")
-@ToString
-@EqualsAndHashCode
-@NoArgsConstructor
 @Getter
-@AllArgsConstructor
 @Setter
-@Builder
+@Table(name = "members")
 public class Member {
 
     @Id
-    @NonNull
-    @Column(name= "member_id")
+    @Column(name = "member_id", length = 20)
     private String memberId;
 
-    @Column(name = "member_role")
-    private Role memberRole;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "member_role", nullable = false, columnDefinition = "ENUM('MEMBER','ADMIN') default 'MEMBER'")
+    private Role memberRole = Role.MEMBER;
 
-    @Column(name = "nickname")
+    @Column(name = "nickname", length = 30, unique = true, nullable = false)
     private String nickname;
 
-    @Column(name = "pwd")
+    @Column(name = "pwd", length = 5000, nullable = false)
     private String pwd;
 
-    @Column(name = "phone_number")
+    @Column(name = "phone_number", length = 20, unique = true, nullable = false)
     private String phoneNumber;
 
-    @Column(name = "unlock_time")
-    private LocalDateTime unlockTime;
+    @Column(name = "unlock_time", columnDefinition = "DATETIME DEFAULT '0001-01-01 01:01:01'")
+    private LocalDateTime unlockTime = LocalDateTime.of(1, 1, 1, 1, 1, 1);
 
-    @Column(name = "profile_photo_url")
+    @Column(name = "profile_photo_url", columnDefinition = "TEXT")
     private String profilePhotoUrl;
 
-    @Column(name = "profile_intro")
+    @Column(name = "profile_intro", length = 200)
     private String profileIntro;
 
-    @Column(name = "dajung_score")
-    private int dajungScore;
+    @Column(name = "dajung_score", nullable = false, columnDefinition = "INT default 0")
+    private int dajungScore = 0;
 
-    @Column(name = "signed_off")
-    private boolean signedOff;
+    @Column(name = "signed_off", nullable = false, columnDefinition = "BOOLEAN default FALSE")
+    private boolean signedOff = false;
 
-    @Column(name = "building_subscription_public_range")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "building_subscription_public_range", columnDefinition = "ENUM('PUBLIC','FOLLOWER_ONLY','MUTUAL_ONLY','PRIVATE')")
     private PublicRange buildingSubscriptionPublicRange;
 
-    @Column(name = "all_feed_public_range")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "all_feed_public_range", columnDefinition = "ENUM('PUBLIC','FOLLOWER_ONLY','MUTUAL_ONLY','PRIVATE')")
     private PublicRange allFeedPublicRange;
 
-    @Column(name = "member_profile_public_range")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "member_profile_public_range", columnDefinition = "ENUM('PUBLIC','FOLLOWER_ONLY','MUTUAL_ONLY','PRIVATE')")
     private PublicRange memberProfilePublicRange;
 
-    @Column(name = "receiving_all_notification_allowed")
-    private PublicRange receivingAllNotificationAllowed;
-
-
-
-
+    @Column(name = "receiving_all_notification_allowed", nullable = false, columnDefinition = "BOOLEAN default FALSE")
+    private boolean receivingAllNotificationAllowed;
 }

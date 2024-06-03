@@ -41,7 +41,7 @@ public class AddMemberDto {
 
     private PublicRange memberProfilePublicRange;
 
-    private PublicRange receivingAllNotificationAllowed;
+    private boolean receivingAllNotificationAllowed;
 
 
 

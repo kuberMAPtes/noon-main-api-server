@@ -9,7 +9,7 @@ public interface MemberJpaRepository extends JpaRepository<Member, String>, Memb
 
     Optional<Member> findMemberByNickname(String nickname);
 
-    Optional<Member> findMemberById(String memberId);
+    Optional<Member> findMemberByMemberId(String memberId);
 
 //    List<Member> findMemberByMemberIdContainingIgnoreCase(String memberId);
 //

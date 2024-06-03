@@ -2,11 +2,8 @@ package com.kube.noon.member.repository;
 
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
-import com.kube.noon.member.domain.QMember;
-import com.kube.noon.member.domain.QMemberRelationship;
 import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
-import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.exception.MemberNotFoundException;
 import com.kube.noon.member.exception.MemberRelationshipUpdateException;
 import com.kube.noon.member.exception.MemberUpdateException;
@@ -33,18 +30,35 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     @Override
     public void addMember(Member member) {
-        log.info("Adding member: {}", member);
-        memberJpaRepository.save(member);
+        try {
+            log.info("회원 추가 중 : {}", member);
+            memberJpaRepository.save(member);
+            log.info("회원 추가 성공 : {}", member);
+        } catch (DataAccessException e) {
+            throw new MemberUpdateException(String.format("회원 추가 실패 : %s",member),e);
+        }
     }
 
     @Override
     public void addMemberRelationship(MemberRelationship memberRelationship) {
-        memberRelationshipJpaRepository.save(memberRelationship);
+        try {
+            log.info("회원 관계 추가 중 : {}", memberRelationship);
+            memberRelationshipJpaRepository.save(memberRelationship);
+            log.info("회원 관계 추가 성공 : {}", memberRelationship);
+        } catch (DataAccessException e) {
+            throw new MemberRelationshipUpdateException(String.format("회원 관계 추가 실패 : %s",memberRelationship),e);
+        }
     }
 
     @Override
     public Optional<Member> findMemberById(String memberId) {
-        return memberJpaRepository.findMemberById(memberId);
+        try {
+            log.info("회원 찾는 중 ID: {}", memberId);
+            Optional<Member> op =  memberJpaRepository.findMemberByMemberId(memberId);
+            op.ifPresentOrElse(
+                    member -> log.info("회원 찾기 성공 : {}",member),
+                    ()->log.info("회원 찾기 실패 : 해당 ID의 회원이 없음")
+            );
     }
 
     @Override
@@ -52,36 +66,14 @@ public class MemberRepositoryImpl implements MemberRepository {
         return memberJpaRepository.findMemberByNickname(nickname);
     }
 
-
     @Override
     public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria) {
-        criteria.setSignedOff(true);
-        QMember member = QMember.member;
-
-//        SELECT * FROM member
-        return queryFactory.selectFrom(member)
-                .where(
-                        criteria.getMemberId() != null ? member.memberId.containsIgnoreCase(criteria.getMemberId()) : null,
-                        criteria.getNickname() != null ? member.nickname.containsIgnoreCase(criteria.getNickname()) : null,
-                        criteria.getStartTime() != null && criteria.getEndTime() != null ? member.unlockTime.between(criteria.getStartTime(), criteria.getEndTime()) : null,
-                        criteria.getPhoneNumber() != null ? member.phoneNumber.containsIgnoreCase(criteria.getPhoneNumber()) : null,
-                        criteria.getSignedOff() != null ? member.signedOff.eq(criteria.getSignedOff()) : null
-                )
-                .fetch();
+        return memberJpaRepository.findMemberListByCriteria(criteria);
     }
-
 
     @Override
     public List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria) {
-        QMemberRelationship ms = QMemberRelationship.memberRelationship;
-
-        return queryFactory.selectFrom(ms)
-                .where(
-                        criteria.isFollowing() ? ms.fromId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)) : null,
-                        criteria.isFollower() ? ms.toId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)) : null,
-                        criteria.isBlocking() ? ms.fromId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)) : null,
-                        criteria.isBlocker() ? ms.toId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)) : null
-                ).fetch();
+        return memberJpaRepository.findMemberRelationshipListByCriteria(criteria);
     }
 
     @Override
@@ -92,7 +84,7 @@ public class MemberRepositoryImpl implements MemberRepository {
     @Override
     public void updatePassword(String memberId, String newPassword) {
 
-        memberJpaRepository.findMemberById(memberId).ifPresentOrElse(
+        memberJpaRepository.findMemberByMemberId(memberId).ifPresentOrElse(
                 member -> {
                     String encryptedPassword = passwordEncoder.encode(newPassword);
                     member.setPwd(encryptedPassword);
@@ -110,7 +102,7 @@ public class MemberRepositoryImpl implements MemberRepository {
 
         try {
             log.info("회원 전화번호 업데이트 중 :  {}", memberId);
-            memberJpaRepository.findMemberById(memberId).ifPresentOrElse(
+            memberJpaRepository.findMemberByMemberId(memberId).ifPresentOrElse(
                     member -> {
                         member.setPhoneNumber(newPhoneNumber);
                         memberJpaRepository.save(member);
@@ -129,7 +121,7 @@ public class MemberRepositoryImpl implements MemberRepository {
     public void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl) {
         try {
             log.info("회원 프로필 사진 업데이트 중 : {}", memberId);
-            memberJpaRepository.findMemberById(memberId).ifPresentOrElse(
+            memberJpaRepository.findMemberByMemberId(memberId).ifPresentOrElse(
                     member -> {
                         member.setProfilePhotoUrl(newProfilePhotoUrl);
                         memberJpaRepository.save(member);

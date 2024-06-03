@@ -1,8 +1,6 @@
 package com.kube.noon.member.dto;
 
 import com.kube.noon.common.PublicRange;
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
 import lombok.*;
 
 @ToString
@@ -41,6 +39,6 @@ public class MemberProfileDto {
 
     private PublicRange memberProfilePublicRange;
 
-//    private PublicRange receivingAllNotificationAllowed;
+//    private boolean receivingAllNotificationAllowed;
 
 }
