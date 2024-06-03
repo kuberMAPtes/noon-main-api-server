@@ -2,10 +2,12 @@ package com.kube.noon.building.service;
 
 import com.kube.noon.building.domain.Building;
 import com.kube.noon.building.dto.BuildingDto;
+import com.kube.noon.building.dto.BuildingZzimDto;
 import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
 import com.kube.noon.building.repository.BuildingProfileRepository;
 import com.kube.noon.common.zzim.Zzim;
 import com.kube.noon.common.zzim.ZzimRepository;
+import com.kube.noon.common.zzim.ZzimType;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -55,7 +57,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
      * @author 허예지
      */
     @Transactional
-    public Zzim addSubscription(String memberId, int buildingId) {
+    public BuildingZzimDto addSubscription(String memberId, int buildingId) {
 
         boolean historyExist = zzimRepository.existsByBuildingIdAndMemberIdAndSubscriptionProviderId(buildingId, memberId, memberId);
 
@@ -65,16 +67,16 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
                     .feedId(null)
                     .buildingId(buildingId)
                     .subscriptionProviderId(memberId)
-                    .zzimType("SUBSCRIPTION")
+                    .zzimType(ZzimType.SUBSCRIPTION)
                     .activated(true)
                     .build();
 
-            return zzimRepository.save(zzim);
+            return BuildingZzimDto.fromEntity(zzimRepository.save(zzim));
 
         }else{
 
-            zzimRepository.updateActivatedByBuildingIdAndMemberIdAndSubscriptionProviderId(buildingId, memberId, true);
-            return zzimRepository.findByBuildingIdAndMemberId(buildingId, memberId);
+            zzimRepository.updateZzimAcrivated(buildingId, memberId, true);
+            return BuildingZzimDto.fromEntity(zzimRepository.findByBuildingIdAndMemberId(buildingId, memberId));
 
         }
     }
@@ -92,11 +94,13 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
      *
      * @author 허예지
      */
-    public Zzim deleteSubscription(String memberId, int buildingId) {
+    public BuildingZzimDto deleteSubscription(String memberId, int buildingId) {
 
-        zzimRepository.updateActivatedByBuildingIdAndMemberIdAndSubscriptionProviderId(buildingId, memberId, false);
+        zzimRepository.updateZzimAcrivated(buildingId, memberId, false);
 
-        return zzimRepository.findByBuildingIdAndMemberId(buildingId, memberId);
+        Zzim zzim = zzimRepository.findByBuildingIdAndMemberId(buildingId, memberId);
+
+        return BuildingZzimDto.fromEntity(zzim);
     }
 
 
@@ -114,7 +118,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
      * @Author 허예지
      */
     @Override
-    public List<Building> addSubscriptionFromSomeone(String memberId, String someoneId) {
+    public List<BuildingDto> addSubscriptionFromSomeone(String memberId, String someoneId) {
         List<Building> mySubscriptionList = buildingProfileMapper.findBuildingSubscriptionListByMemberId(memberId);
         List<Building> someoneSubscriptionList = buildingProfileMapper.findBuildingSubscriptionListByMemberId(someoneId);
         List<Zzim> subscriptionsToAdd = new ArrayList<>();
@@ -127,7 +131,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
                         .feedId(null)
                         .buildingId(building.getBuildingId())
                         .subscriptionProviderId(someoneId)
-                        .zzimType("SUBSCRIPTION")
+                        .zzimType(ZzimType.SUBSCRIPTION)
                         .activated(true)
                         .build());
 
@@ -136,9 +140,13 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
         zzimRepository.saveAll(subscriptionsToAdd);
 
-        return buildingProfileMapper.findBuildingSubscriptionListByMemberId(memberId);
-    }
+        List<Building> buildings = buildingProfileMapper.findBuildingSubscriptionListByMemberId(memberId);
 
+        return buildings.stream()
+                .map(BuildingDto::fromEntity)
+                .collect(Collectors.toList());
+
+    }
 
 
 
@@ -153,8 +161,9 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     }
 
     @Override
-    public Building getBuildingProfile(int buildingId) {
-        return buildingProfileRepository.findBuildingProfileByBuildingId(buildingId);
+    public BuildingDto getBuildingProfile(int buildingId) {
+        Building building = buildingProfileRepository.findBuildingProfileByBuildingId(buildingId);
+        return BuildingDto.fromEntity(building);
     }
 
     @Override
