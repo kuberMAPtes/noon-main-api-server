@@ -105,7 +105,6 @@
             <version>1.5.0.Final</version>
             <scope>provided</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.querydsl/querydsl-jpa -->
         <dependency>
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-jpa</artifactId>
@@ -119,6 +118,7 @@
             <classifier>jakarta</classifier>
             <scope>provided</scope>
         </dependency>
+
 
     </dependencies>
 

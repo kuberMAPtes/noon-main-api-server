@@ -43,10 +43,10 @@ public class Member {
     private String profileIntro;
 
     @Column(name = "dajung_score", nullable = false, columnDefinition = "INT default 0")
-    private int dajungScore = 0;
+    private Integer dajungScore = 0;
 
     @Column(name = "signed_off", nullable = false, columnDefinition = "BOOLEAN default FALSE")
-    private boolean signedOff = false;
+    private Boolean signedOff = false;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "building_subscription_public_range", columnDefinition = "ENUM('PUBLIC','FOLLOWER_ONLY','MUTUAL_ONLY','PRIVATE')")
@@ -61,5 +61,5 @@ public class Member {
     private PublicRange memberProfilePublicRange;
 
     @Column(name = "receiving_all_notification_allowed", nullable = false, columnDefinition = "BOOLEAN default FALSE")
-    private boolean receivingAllNotificationAllowed;
+    private Boolean receivingAllNotificationAllowed;
 }

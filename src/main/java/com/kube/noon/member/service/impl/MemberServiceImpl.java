@@ -17,6 +17,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -59,7 +60,7 @@ public class MemberServiceImpl implements MemberService {
                         throw new MemberSecurityBreachException("자기 자신과의 관계는 추가할 수 없습니다.");
                     }
 
-                    if (member.isSignedOff()){
+                    if (member.getSignedOff()){
                         throw new MemberSecurityBreachException("탈퇴한 회원과의 관계는 추가할 수 없습니다.");
                     }
 
@@ -81,10 +82,10 @@ public class MemberServiceImpl implements MemberService {
 
 
     @Override
-    public Member findMemberById(String memberId) {
+    public Optional<Member> findMemberById(String memberId) {
         try {
-            return memberRepository.findMemberById(memberId)
-                    .orElseThrow(() -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", memberId)));
+            return Optional.ofNullable(memberRepository.findMemberById(memberId)
+                    .orElseThrow(() -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", memberId))));
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
             throw e;
@@ -93,11 +94,11 @@ public class MemberServiceImpl implements MemberService {
 
 
     @Override
-    public MemberProfileDto findMemberProfileById(String memberId) {
+    public Optional<MemberProfileDto> findMemberProfileById(String memberId) {
         try {
             Member member = memberRepository.findMemberById(memberId)
                     .orElseThrow(() -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", memberId)));
-            return MemberBinder.INSTANCE.toDto(member, MemberProfileDto.class);
+            return Optional.ofNullable(MemberBinder.INSTANCE.toDto(member, MemberProfileDto.class));
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
             throw e;
@@ -105,10 +106,10 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Member findMemberByNickname(String nickname) {
+    public Optional<Member> findMemberByNickname(String nickname) {
         try {
-            return memberRepository.findMemberByNickname(nickname)
-                    .orElseThrow(() -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", nickname)));
+            return Optional.ofNullable(memberRepository.findMemberByNickname(nickname)
+                    .orElseThrow(() -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", nickname))));
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
             throw e;

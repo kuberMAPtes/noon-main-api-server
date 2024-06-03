@@ -6,6 +6,9 @@ import com.kube.noon.member.dto.MemberSearchCriteriaDto;
 import java.util.List;
 
 public interface MemberJpaRepositoryQuery {
+
     List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria);
+
+    void updateMember(Member member);
 
 }

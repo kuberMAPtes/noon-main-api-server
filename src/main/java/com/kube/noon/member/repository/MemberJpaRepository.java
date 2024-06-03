@@ -11,16 +11,4 @@ public interface MemberJpaRepository extends JpaRepository<Member, String>, Memb
 
     Optional<Member> findMemberByMemberId(String memberId);
 
-//    List<Member> findMemberByMemberIdContainingIgnoreCase(String memberId);
-//
-//    List<Member> findMemberByNicknameContainingIgnoreCase(String nickname);
-//
-//    List<Member> findMemberByUnlockTimeBetween(LocalDateTime startTime, LocalDateTime endTime);
-//
-//    List<Member> findMemberByPhoneNumberContainingIgnoreCase(String phoneNumber);
-//
-//    List<Member> findMemberBySignOff(boolean signOff);
-
-
-
 }
