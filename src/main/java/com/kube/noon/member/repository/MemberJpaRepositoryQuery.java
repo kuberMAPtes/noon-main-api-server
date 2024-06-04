@@ -9,6 +9,4 @@ public interface MemberJpaRepositoryQuery {
 
     List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria);
 
-    void updateMember(Member member);
-
 }

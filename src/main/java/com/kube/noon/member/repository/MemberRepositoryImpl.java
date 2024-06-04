@@ -6,6 +6,7 @@ import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
 import com.kube.noon.member.enums.RelationshipType;
+import com.kube.noon.member.exception.MemberNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -107,7 +108,42 @@ public class MemberRepositoryImpl implements MemberRepository {
     @Override
     public void updateMember(Member member) {
         log.info("회원 업데이트 중");
-        memberJpaRepository.updateMember(member);
+//        memberJpaRepository.updateMember(member);
+        Member existingMember = memberJpaRepository.findMemberByMemberId(member.getMemberId())
+                .orElseThrow(() -> new MemberNotFoundException("Member not found"));
+
+        if (member.getNickname() != null) {
+            existingMember.setNickname(member.getNickname());
+        }
+        if (member.getUnlockTime() != null) {
+            existingMember.setUnlockTime(member.getUnlockTime());
+        }
+        if (member.getProfilePhotoUrl() != null) {
+            existingMember.setProfilePhotoUrl(member.getProfilePhotoUrl());
+        }
+        if (member.getProfileIntro() != null) {
+            existingMember.setProfileIntro(member.getProfileIntro());
+        }
+        if (member.getDajungScore() != null) {
+            existingMember.setDajungScore(member.getDajungScore());
+        }
+        if (member.getBuildingSubscriptionPublicRange() != null) {
+            existingMember.setBuildingSubscriptionPublicRange(member.getBuildingSubscriptionPublicRange());
+        }
+        if (member.getAllFeedPublicRange() != null) {
+            existingMember.setAllFeedPublicRange(member.getAllFeedPublicRange());
+        }
+        if (member.getMemberProfilePublicRange() != null) {
+            existingMember.setMemberProfilePublicRange(member.getMemberProfilePublicRange());
+        }
+        if (member.getReceivingAllNotificationAllowed() != null) {
+            existingMember.setReceivingAllNotificationAllowed(member.getReceivingAllNotificationAllowed());
+        }
+
+        // 엔티티는 영속성 컨텍스트에 의해 관리되므로, 별도의 save 호출이 필요없을 수도 있습니다.
+        // 그러나 명시적으로 호출하여 변경사항을 저장하는 것도 좋습니다.
+        memberJpaRepository.save(existingMember);
+
         log.info("회원 업데이트 성공");
     }
 
