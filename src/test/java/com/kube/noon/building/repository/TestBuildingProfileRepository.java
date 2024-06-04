@@ -70,7 +70,7 @@ class TestBuildingProfileRepository {
         for (Member member : members) {
 
             log.info("회원아이디={}", member.getMemberId());
-            log.info("회원비밀번호={}", member.getPassword());
+            log.info("회원비밀번호={}", member.getPwd());
             log.info("프로필사진경로={}", member.getProfilePhotoUrl());
             log.info("닉네임={}", member.getNickname());
             log.info("다정수치={}", member.getDajungScore());

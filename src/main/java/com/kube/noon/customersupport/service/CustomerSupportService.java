@@ -10,6 +10,6 @@ public interface CustomerSupportService {
     List<ReportDto> getReportList();
     ReportDto getReportByReportId(int reportId);
     ReportDto addReport(ReportDto reportDto);
-    ReportProcessingDto updateReport(int reportId);
+    ReportProcessingDto updateReport(ReportProcessingDto reportProcessingDto, String unlockDuration);
 
 }

@@ -3,8 +3,7 @@ package com.kube.noon.customersupport.dto.report;
 import com.kube.noon.customersupport.domain.Report;
 import com.kube.noon.member.domain.Member;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +11,11 @@ import java.time.LocalDateTime;
  * 신고 처리 내용을 담는 Dto
  *
  */
-@Data
+@ToString
+@NoArgsConstructor
+@Getter
+@Setter
+@AllArgsConstructor
 @Builder
 public class ReportProcessingDto {
 
