@@ -30,8 +30,6 @@ public class MemberProfileDto {
 
     private List<FeedDto> feedDtoList;
 
-    private List<FeedDto> feedDtoList;
-
     private PublicRange buildingSubscriptionPublicRange;
 
     private PublicRange allFeedPublicRange;

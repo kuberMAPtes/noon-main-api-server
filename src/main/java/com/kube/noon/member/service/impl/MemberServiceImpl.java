@@ -243,16 +243,6 @@ public class MemberServiceImpl implements MemberService {
         log.info("회원 삭제 성공 : {}", memberId);
     }
 
-
-    private void checkMemberisSignedOff(String memberId) {
-        memberRepository.findMemberById(memberId)
-                .ifPresent(member -> {
-                    if (member.getSignedOff()) {
-                        throw new MemberSecurityBreachException("탈퇴한 회원입니다.");
-                    }
-                });
-    }
-
     private void checkMemberisSignedOff(String memberId) {
         memberRepository.findMemberById(memberId)
                 .ifPresent(member -> {
