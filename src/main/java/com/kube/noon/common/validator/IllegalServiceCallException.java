@@ -49,4 +49,8 @@ public class IllegalServiceCallException extends IllegalArgumentException {
         super(cause);
         this.problems = problems;
     }
+
+    public Map<String, Object> getProblems() {
+        return this.problems;
+    }
 }
