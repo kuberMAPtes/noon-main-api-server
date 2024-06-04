@@ -4,7 +4,7 @@ package com.kube.noon.member.binder;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.AddMemberDto;
-import com.kube.noon.member.dto.AddMemberRelationshipDto;
+import com.kube.noon.member.dto.MemberRelationshipDto;
 import com.kube.noon.member.dto.MemberProfileDto;
 import com.kube.noon.member.dto.UpdateMemberDto;
 import org.mapstruct.Mapper;
@@ -49,11 +49,11 @@ public interface MemberBinder {
 
     @Mapping(target = "fromMember", source = "fromId", qualifiedByName = "toMemberEntity")
     @Mapping(target = "toMember", source = "toId", qualifiedByName = "toMemberEntity")
-    MemberRelationship addMemberRelationshipDtoToMemberRelationship(AddMemberRelationshipDto dto);
+    MemberRelationship addMemberRelationshipDtoToMemberRelationship(MemberRelationshipDto dto);
 
     @Mapping(source = "fromMember.memberId", target = "fromId")
     @Mapping(source = "toMember.memberId", target = "toId")
-    AddMemberRelationshipDto memberRelationshipToAddMemberRelationshipDto(MemberRelationship memberRelationship);
+    MemberRelationshipDto memberRelationshipToAddMemberRelationshipDto(MemberRelationship memberRelationship);
 
     @Named("toMemberEntity")
     default Member toMemberEntity(String memberId) {
@@ -89,14 +89,14 @@ public interface MemberBinder {
         }
     }
     default <T> MemberRelationship toMemberRelationship(T dto) {
-        if (dto instanceof AddMemberRelationshipDto){
-            return addMemberRelationshipDtoToMemberRelationship(((AddMemberRelationshipDto) dto));
+        if (dto instanceof MemberRelationshipDto){
+            return addMemberRelationshipDtoToMemberRelationship(((MemberRelationshipDto) dto));
         } else {
             throw new IllegalArgumentException("지원되지 않는 DTO 타입입니다: " + dto.getClass());
         }
     }
     default <T> T toDto(MemberRelationship memberRelationship, Class<T> dtoClass){
-        if (dtoClass.equals(AddMemberRelationshipDto.class)){
+        if (dtoClass.equals(MemberRelationshipDto.class)){
             return dtoClass.cast(memberRelationshipToAddMemberRelationshipDto(memberRelationship));
         } else {
             throw new IllegalArgumentException("지원되지 않는 DTO 타입입니다: " + dtoClass);

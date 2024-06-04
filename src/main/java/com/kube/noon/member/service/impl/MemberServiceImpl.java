@@ -6,7 +6,6 @@ import com.kube.noon.member.binder.MemberBinder;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.*;
-import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.exception.MemberNotFoundException;
 import com.kube.noon.member.exception.MemberRelationshipUpdateException;
 import com.kube.noon.member.exception.MemberSecurityBreachException;
@@ -22,6 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 파라미터는 식별에 반드시 필요한 데이터만 받는다
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -35,7 +37,7 @@ public class MemberServiceImpl implements MemberService {
     public void addMember(AddMemberDto memberDto) {
         try {
 
-            if(memberDto.isSocialSignUp()){
+            if(memberDto.getSocialSignUp()){
                 memberDto.setPwd("social_sign_up");
             }
 
@@ -48,15 +50,16 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override//팔로우 or 차단
-    public void addMemberRelationship(AddMemberRelationshipDto dto) {
+    public void addMemberRelationship(MemberRelationshipDto dto) {
         try {
             checkMemberisSignedOff(dto.getFromId());
             memberRepository
-                    .findMemberById(dto.getFromId())
+                    .findMemberByMemberId(dto.getFromId())
                     .ifPresent(member -> {
                 try {
+                    MemberRelationship mr = MemberBinder.INSTANCE.toMemberRelationship(dto);
                     memberRepository
-                            .findMemberRelationship(member.getMemberId(),dto.getToId(),dto.getRelationshipType())
+                            .findMemberRelationship(mr.getFromMember().getMemberId(),mr.getToMember().getMemberId())
                             .ifPresent(relationship -> {
                                 throw new MemberSecurityBreachException("이미 추가된 관계입니다.");
                             });
@@ -81,9 +84,9 @@ public class MemberServiceImpl implements MemberService {
 
 
     @Override
-    public Optional<Member> findMemberById(String memberId) {
+    public Optional<Member> findMemberByMemberId(String memberId) {
         try {
-            return Optional.ofNullable(memberRepository.findMemberById(memberId)
+            return Optional.ofNullable(memberRepository.findMemberByMemberId(memberId)
                     .orElseThrow(() -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", memberId))));
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
@@ -98,7 +101,7 @@ public class MemberServiceImpl implements MemberService {
 
 
 
-            Member member = memberRepository.findMemberById(memberId)
+            Member member = memberRepository.findMemberByMemberId(memberId)
                     .orElseThrow(() -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", memberId)));
 
 
@@ -192,30 +195,30 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void deleteMemberRelationship(String fromId, String toId, RelationshipType relationshipType) {
-        try {
-            checkMemberisSignedOff(fromId);
-            memberRepository.deleteMemberRelationship(fromId,toId,relationshipType);
-        } catch (DataAccessException e) {
-            throw new MemberRelationshipUpdateException(String.format("회원 관계 삭제 실패"), e);
-        }
+    public void deleteMemberRelationship(MemberRelationshipDto dto) {
+        log.info("회원 관계 삭제 중 : {}", dto);
+        checkMemberisSignedOff(dto.getFromId());
+        MemberRelationship mr = MemberBinder.INSTANCE.toMemberRelationship(dto);
+        mr.setActivated(false);
+        memberRepository.updateMemberRelationship(mr);
+        log.info("회원 관계 삭제 성공");
     }
 
     @Override
     public void deleteMember(String memberId) {
-        try {
-            checkMemberisSignedOff(memberId);
-
-//            memberRepository.memberId 관리자인지 확인하는 로직 필요
-
-            memberRepository.deleteMember(memberId);
-    } catch (DataAccessException e) {
-        throw new MemberUpdateException(String.format("회원 삭제 실패"), e);
+        log.info("회원 삭제 중 : {}", memberId);
+        checkMemberisSignedOff(memberId);
+        memberRepository.updateMember(Member
+                .builder()
+                .memberId(memberId)
+                .signedOff(true)
+                .build());
+        log.info("회원 삭제 성공 : {}", memberId);
     }
-    }
+
 
     private void checkMemberisSignedOff(String memberId) {
-        memberRepository.findMemberById(memberId)
+        memberRepository.findMemberByMemberId(memberId)
                 .ifPresent(member -> {
                     if (member.getSignedOff()) {
                         throw new MemberSecurityBreachException("탈퇴한 회원입니다.");

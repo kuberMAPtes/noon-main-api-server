@@ -4,7 +4,6 @@ import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
-import com.kube.noon.member.enums.RelationshipType;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,13 +19,13 @@ public interface MemberRepository {
 
     void addMemberRelationship(MemberRelationship memberRelationship);
 
-    Optional<Member> findMemberById(String memberId);
+    Optional<Member> findMemberByMemberId(String memberId);
 
     Optional<Member> findMemberByNickname(String nickname);
 
     List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria);
 
-    Optional<MemberRelationship> findMemberRelationship(String fromId, String toId, RelationshipType relationshipType);
+    Optional<MemberRelationship> findMemberRelationship(String fromId, String toId);
 
     List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria);
 
@@ -38,8 +37,8 @@ public interface MemberRepository {
 
     void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl);
 
-    void deleteMemberRelationship(String fromId, String toId, RelationshipType relationshipType);
+    void updateMemberRelationship(MemberRelationship memberRelationship);
 
-    void deleteMember(String memberId);
+    void deleteMemberRelationship(String fromId, String toId);
 }
 

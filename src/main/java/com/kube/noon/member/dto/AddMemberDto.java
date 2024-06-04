@@ -19,6 +19,6 @@ public class AddMemberDto {
 
     private String phoneNumber;
 
-    private boolean socialSignUp;
+    private Boolean socialSignUp;
 
 }

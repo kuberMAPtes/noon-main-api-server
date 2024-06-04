@@ -4,7 +4,7 @@ import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.AddMemberDto;
-import com.kube.noon.member.dto.AddMemberRelationshipDto;
+import com.kube.noon.member.dto.MemberRelationshipDto;
 import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
 import com.kube.noon.member.enums.RelationshipType;
@@ -48,13 +48,13 @@ public class TestMemberService {
                 .socialSignUp(true)
                 .build());
         log.info("회원 추가 테스트");
-        assertThat(memberService.findMemberById("member_1230")).isNotNull();
+        assertThat(memberService.findMemberByMemberId("member_1230")).isNotNull();
     }
 
     @Test
     @DisplayName("회원 관계 추가 테스트")
     void addMemberRelationship() {
-        memberService.addMemberRelationship(AddMemberRelationshipDto.builder()
+        memberService.addMemberRelationship(MemberRelationshipDto.builder()
                 .fromId("member_1")
                 .toId("member_2")
                 .relationshipType(RelationshipType.FOLLOW)
@@ -64,10 +64,10 @@ public class TestMemberService {
 
     @Test
     @DisplayName("회원 찾기 테스트")
-    void findMemberById() {
+    void findMemberByMemberId() {
         log.info("회원 찾기 테스트 :: member_1 :: ");
-        log.info(ANSI_RED + memberService.findMemberById("member_1") + ANSI_RESET);
-        assertThat(memberService.findMemberById("member_1")).isNotNull();
+        log.info(ANSI_RED + memberService.findMemberByMemberId("member_1") + ANSI_RESET);
+        assertThat(memberService.findMemberByMemberId("member_1")).isNotNull();
     }
     @Test
     @DisplayName("회원 프로필  찾기 테스트")
@@ -139,8 +139,8 @@ public class TestMemberService {
     private @NotNull MemberRelationship getMemberRelationship(String fromId, String toId,RelationshipType relationshipType) {
         MemberRelationship mr = new MemberRelationship();
         mr.setRelationshipType(relationshipType);//FOLLOW
-        mr.setFromMember(memberService.findMemberById(fromId).get());//"member_1"
-        mr.setToMember(memberService.findMemberById(toId).get());//"member_99"
+        mr.setFromMember(memberService.findMemberByMemberId(fromId).get());//"member_1"
+        mr.setToMember(memberService.findMemberByMemberId(toId).get());//"member_99"
         mr.setActivated(true);
         return mr;
     }

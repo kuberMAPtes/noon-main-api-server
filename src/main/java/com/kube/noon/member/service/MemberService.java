@@ -3,7 +3,6 @@ package com.kube.noon.member.service;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.*;
-import com.kube.noon.member.enums.RelationshipType;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,9 +11,9 @@ public interface MemberService {
 
     public void addMember(AddMemberDto memberDto);//JPA
 
-    public void addMemberRelationship(AddMemberRelationshipDto addMemberRelationshipDto);
+    public void addMemberRelationship(MemberRelationshipDto memberRelationshipDto);
 
-    public Optional<Member> findMemberById(String memberId);//JPA
+    public Optional<Member> findMemberByMemberId(String memberId);//JPA
 
     //레포지토리에서 없음
     public Optional<MemberProfileDto> findMemberProfileById(String memberId);
@@ -33,7 +32,7 @@ public interface MemberService {
 
     public void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl);
 
-    public void deleteMemberRelationship(String fromId, String toId, RelationshipType relationshipType);
+    public void deleteMemberRelationship(MemberRelationshipDto dto);
 
     public void deleteMember(String memberId);
 

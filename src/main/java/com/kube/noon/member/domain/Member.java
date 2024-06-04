@@ -3,8 +3,7 @@ package com.kube.noon.member.domain;
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.enums.Role;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +11,9 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Table(name = "members")
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Member {
 
     private static final String ANSI_RESET = "\u001B[0m";
