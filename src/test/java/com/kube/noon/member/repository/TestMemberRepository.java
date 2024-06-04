@@ -36,12 +36,10 @@ public class TestMemberRepository {
 //    @Autowired
 //    private PasswordEncoder passwordEncoder;
 
-    //    @Test
+    @Test
     @DisplayName("회원 추가 테스트")
     void addMember() {
-
         Member m = getMember();
-
 //        System.out.println(passwordEncoder.encode("newPassword"));
 //        newMember.setPwd(passwordEncoder.encode("newPassword"));
 
@@ -60,10 +58,10 @@ public class TestMemberRepository {
     @DisplayName("회원 관계 추가 테스트")
     void addMemberRelationship() {
 
-        MemberRelationship mr1 = getMemberRelationship(FOLLOW, "member_99", "member_1");
-        MemberRelationship mr2 = getMemberRelationship(FOLLOW, "member_1", "member_99");
-        MemberRelationship mr3 = getMemberRelationship(BLOCK, "member_99", "member_1");
-        MemberRelationship mr4 = getMemberRelationship(BLOCK, "member_1", "member_99");
+        MemberRelationship mr1 = getMemberRelationship(FOLLOW, "member_7", "member_1");
+        MemberRelationship mr2 = getMemberRelationship(FOLLOW, "member_1", "member_7");
+        MemberRelationship mr3 = getMemberRelationship(BLOCK, "member_8", "member_1");
+        MemberRelationship mr4 = getMemberRelationship(BLOCK, "member_1", "member_8");
         MemberRelationshipSearchCriteriaDto mrsc = getMemberRelationshipSearchCriteriaDto("member_1", true, true, false, false);
         memberRepository.addMemberRelationship(mr1);
         memberRepository.addMemberRelationship(mr2);
@@ -82,6 +80,10 @@ public class TestMemberRepository {
             System.out.println("가즈아아아");
             System.out.println(mr.getToMember().toString());
         }
+        memberRepository.deleteMemberRelationship("member_1", "member_7");
+        memberRepository.deleteMemberRelationship("member_7", "member_1");
+        memberRepository.deleteMemberRelationship("member_1", "member_8");
+        memberRepository.deleteMemberRelationship("member_8", "member_1");
     }
 
     @Test
@@ -123,27 +125,48 @@ public class TestMemberRepository {
     @Test
     @DisplayName("회원 업데이트 테스트")
     void updateMember() {
-        memberRepository.updateMember(getMember());
-        assertThat(memberRepository.findMemberById("member_99999").get().getProfilePhotoUrl())
+
+        memberRepository.updateMember(
+                memberRepository.findMemberById("member_1")
+                        .map(
+                                member -> {
+                                    member.setProfilePhotoUrl("https://www.naver.com");
+                                    return member;
+                                }).orElseThrow());
+
+        assertThat(memberRepository.findMemberById("member_1").get().getProfilePhotoUrl())
                 .isEqualTo("https://www.naver.com");
+
+        memberRepository.updateMember(
+                memberRepository.findMemberById("member_1")
+                        .map(
+                                member -> {
+                                    member.setProfilePhotoUrl(null);
+                                    return member;
+                                }).orElseThrow());
+
+        assertThat(memberRepository.findMemberById("member_1").get().getProfilePhotoUrl())
+                .isNull();
     }
     @Test
     @DisplayName("회원 업데이트 테스트 : null 값이 들어왔을 때")
     void updateMember2(){
         //널을 넣어도 널이 안되어야 함.
         //업데이트한 건 업데이트 되어야함
-        Member member = getMember();
-        member.setMemberProfilePublicRange(null);
-        member.setAllFeedPublicRange(null);
-        member.setBuildingSubscriptionPublicRange(null);
+        Member member = memberRepository.findMemberById("member_1").orElseThrow();
+        Member rollbackMember = member;
+        member.setMemberProfilePublicRange(PublicRange.PRIVATE);
+        member.setAllFeedPublicRange(PublicRange.PRIVATE);
+        member.setBuildingSubscriptionPublicRange(PublicRange.PRIVATE);
         member.setReceivingAllNotificationAllowed(true);
         member.setNickname("새로운 닉네임");
         memberRepository.updateMember(member);
-        assertThat(memberRepository.findMemberById("member_99999").get().getNickname()).isEqualTo("새로운 닉네임");
-        assertThat(memberRepository.findMemberById("member_99999").get().getAllFeedPublicRange()).isNotNull();
-        assertThat(memberRepository.findMemberById("member_99999").get().getBuildingSubscriptionPublicRange()).isNotNull();
-        assertThat(memberRepository.findMemberById("member_99999").get().getMemberProfilePublicRange()).isNotNull();
-        assertThat(memberRepository.findMemberById("member_99999").get().isReceivingAllNotificationAllowed()).isTrue();
+        assertThat(memberRepository.findMemberById("member_1").get().getNickname()).isEqualTo("새로운 닉네임");
+        assertThat(memberRepository.findMemberById("member_1").get().getAllFeedPublicRange()).isEqualTo(PublicRange.PRIVATE);
+        assertThat(memberRepository.findMemberById("member_1").get().getBuildingSubscriptionPublicRange()).isEqualTo(PublicRange.PRIVATE);
+        assertThat(memberRepository.findMemberById("member_1").get().getMemberProfilePublicRange()).isEqualTo(PublicRange.PRIVATE);
+        assertThat(memberRepository.findMemberById("member_1").get().getReceivingAllNotificationAllowed()).isTrue();
+        memberRepository.updateMember(rollbackMember);
     }
 
     @Test
@@ -180,19 +203,24 @@ public class TestMemberRepository {
     @Test
     @DisplayName("회원 관계 삭제 테스트")
     void deleteMemberRelationship() {
-        MemberRelationship mr = this.getMemberRelationship(FOLLOW, "member_99", "member_1");
-        memberRepository.deleteMemberRelationship("member_1", "member_99", FOLLOW);
-        MemberRelationshipSearchCriteriaDto mrsc = getMemberRelationshipSearchCriteriaDto("member_99", true, false, false, false);
-        List<MemberRelationship> foundMemberRelationship = memberRepository.findMemberRelationshipListByCriteria(mrsc);
-        log.info("member_1의 FromId 리스트 출력 : {}", foundMemberRelationship);
+        MemberRelationship mr = memberRepository.findMemberRelationship("member_1","member_3").orElseThrow();
+        assertThat(mr.getActivated()).isTrue();
+        mr.setActivated(false);
+        memberRepository.updateMemberRelationship(mr);
+        assertThat(memberRepository.findMemberRelationship("member_1","member_3").get().getActivated()).isFalse();
+        memberRepository.updateMemberRelationship(MemberRelationship.builder().fromMember(memberRepository.findMemberById("member_1").get()).toMember(memberRepository.findMemberById("member_3").get()).activated(true).relationshipType(FOLLOW).build());
     }
 
     @Test
     @DisplayName("회원 삭제 테스트")
     void deleteMember() {
-        memberRepository.deleteMember("member_100");
-        Optional<Member> foundMember = memberRepository.findMemberById("member_100");
-        assertThat(foundMember).isEmpty();
+        Member member = memberRepository.findMemberById("member_1").orElseThrow();
+        assertThat(member.getSignedOff()).isFalse();
+        member.setSignedOff(true);
+        memberRepository.updateMember(member);
+        Optional<Member> foundMember = memberRepository.findMemberById("member_1");
+        assertThat(foundMember.get().getSignedOff()).isTrue();
+        memberRepository.updateMember(Member.builder().memberId("member_1").signedOff(false).build());
     }
 
 
@@ -232,8 +260,8 @@ public class TestMemberRepository {
     private @NotNull MemberRelationship getMemberRelationship(RelationshipType relationshipType, String fromId, String toId) {
         MemberRelationship mr = new MemberRelationship();
         mr.setRelationshipType(relationshipType);//FOLLOW
-        mr.setFromMember(memberRepository.findMemberById(fromId).get());//"member_1"
-        mr.setToMember(memberRepository.findMemberById(toId).get());//"member_99"
+        mr.setFromMember(memberRepository.findMemberById(fromId).get());//"member_99"
+        mr.setToMember(memberRepository.findMemberById(toId).get());//"member_1"
         mr.setActivated(true);
         return mr;
     }

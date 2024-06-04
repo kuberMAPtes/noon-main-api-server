@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class MemberSearchCriteriaDto {
 
     private String memberId;

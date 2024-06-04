@@ -3,7 +3,6 @@ package com.kube.noon.building.repository;
 import com.kube.noon.building.domain.Building;
 import com.kube.noon.building.dto.BuildingDto;
 import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
-import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.member.domain.Member;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -70,7 +69,7 @@ class TestBuildingProfileRepository {
         for (Member member : members) {
 
             log.info("회원아이디={}", member.getMemberId());
-            log.info("회원비밀번호={}", member.getPassword());
+            log.info("회원비밀번호={}", member.getPwd());
             log.info("프로필사진경로={}", member.getProfilePhotoUrl());
             log.info("닉네임={}", member.getNickname());
             log.info("다정수치={}", member.getDajungScore());

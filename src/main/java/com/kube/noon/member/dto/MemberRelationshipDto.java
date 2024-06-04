@@ -11,12 +11,14 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class AddMemberRelationshipDto {
+public class MemberRelationshipDto {
 
     private String fromId;
 
     private String toId;
 
     private RelationshipType relationshipType;
+
+    private Boolean activated;
 
 }
