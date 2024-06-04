@@ -2,6 +2,7 @@ package com.kube.noon.common.validator;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -32,7 +33,7 @@ public class ValidationAspect {
                 .values()
                 .forEach((bean) -> {
                     Class<?> cls = bean.getClass().getAnnotation(Validator.class).targetClass();
-                    Method[] publicMethods = cls.getMethods();
+                    Method[] publicMethods = bean.getClass().getMethods();
                     Map<String, Method> methodMap = new HashMap<>();
                     for (Method method : publicMethods) {
                         methodMap.put(method.getName(), method);
@@ -43,6 +44,7 @@ public class ValidationAspect {
 
     @AllArgsConstructor
     @Getter
+    @ToString
     private static class BeanAndMethod {
         private Object bean;
         private Map<String, Method> methodMap;
@@ -59,25 +61,31 @@ public class ValidationAspect {
         String targetMethodName = jp.getSignature().getName();
         Method validationMethod = beanAndMethod.getMethodMap().get(targetMethodName);
 
+        if (validationMethod == null) {
+            return jp.proceed(jp.getArgs());
+        }
+
         try {
-            Object returnValue = validationMethod.invoke(beanAndMethod.getBean(), jp.getArgs());
+            Object returnValue = jp.getArgs().length == 0
+                    ? validationMethod.invoke(beanAndMethod.getBean())
+                    : validationMethod.invoke(beanAndMethod.getBean(), jp.getArgs());
             if (returnValue == null) {
                 return jp.proceed(jp.getArgs());
             }
-            Boolean availableToProceed = (Boolean) returnValue;
+            Boolean availableToProceed = (Boolean)returnValue;
             if (availableToProceed) {
                 return jp.proceed(jp.getArgs());
             } else {
-                return null;
+                return null; // TODO: What to do?
             }
-        } catch (IllegalServiceCallException e) {
-            throw e;
         } catch (ClassCastException e) {
             return jp.proceed(jp.getArgs());
         } catch (IllegalArgumentException e) {
             log.warn("검증 메소드와 타겟 메소드의 파라미터가 일치하지 않습니다.", e);
             return jp.proceed(jp.getArgs());
-        } catch (InvocationTargetException | IllegalAccessException e) {
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+        } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
