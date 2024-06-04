@@ -45,7 +45,7 @@ public class TestMemberRepository {
 
         memberRepository.addMember(m);
 
-        Optional<Member> foundMember = memberRepository.findMemberByMemberId("member_99999");
+        Optional<Member> foundMember = memberRepository.findMemberById("member_99999");
         assertThat(foundMember).isPresent();
         assertThat(foundMember.get().getNickname()).isEqualTo("newMember");
     }
@@ -88,9 +88,9 @@ public class TestMemberRepository {
 
     @Test
     @DisplayName("회원ID로 찾기 테스트")
-    void findMemberByMemberId() {
+    void findMemberById() {
 
-        Optional<Member> foundMember = memberRepository.findMemberByMemberId("member_1");
+        Optional<Member> foundMember = memberRepository.findMemberById("member_1");
         assertThat(foundMember).isPresent();
         assertThat(foundMember.get().getNickname()).isEqualTo("nickname_1");
 
@@ -127,25 +127,25 @@ public class TestMemberRepository {
     void updateMember() {
 
         memberRepository.updateMember(
-                memberRepository.findMemberByMemberId("member_1")
+                memberRepository.findMemberById("member_1")
                         .map(
                                 member -> {
                                     member.setProfilePhotoUrl("https://www.naver.com");
                                     return member;
                                 }).orElseThrow());
 
-        assertThat(memberRepository.findMemberByMemberId("member_1").get().getProfilePhotoUrl())
+        assertThat(memberRepository.findMemberById("member_1").get().getProfilePhotoUrl())
                 .isEqualTo("https://www.naver.com");
 
         memberRepository.updateMember(
-                memberRepository.findMemberByMemberId("member_1")
+                memberRepository.findMemberById("member_1")
                         .map(
                                 member -> {
                                     member.setProfilePhotoUrl(null);
                                     return member;
                                 }).orElseThrow());
 
-        assertThat(memberRepository.findMemberByMemberId("member_1").get().getProfilePhotoUrl())
+        assertThat(memberRepository.findMemberById("member_1").get().getProfilePhotoUrl())
                 .isNull();
     }
     @Test
@@ -153,7 +153,7 @@ public class TestMemberRepository {
     void updateMember2(){
         //널을 넣어도 널이 안되어야 함.
         //업데이트한 건 업데이트 되어야함
-        Member member = memberRepository.findMemberByMemberId("member_1").orElseThrow();
+        Member member = memberRepository.findMemberById("member_1").orElseThrow();
         Member rollbackMember = member;
         member.setMemberProfilePublicRange(PublicRange.PRIVATE);
         member.setAllFeedPublicRange(PublicRange.PRIVATE);
@@ -161,11 +161,11 @@ public class TestMemberRepository {
         member.setReceivingAllNotificationAllowed(true);
         member.setNickname("새로운 닉네임");
         memberRepository.updateMember(member);
-        assertThat(memberRepository.findMemberByMemberId("member_1").get().getNickname()).isEqualTo("새로운 닉네임");
-        assertThat(memberRepository.findMemberByMemberId("member_1").get().getAllFeedPublicRange()).isEqualTo(PublicRange.PRIVATE);
-        assertThat(memberRepository.findMemberByMemberId("member_1").get().getBuildingSubscriptionPublicRange()).isEqualTo(PublicRange.PRIVATE);
-        assertThat(memberRepository.findMemberByMemberId("member_1").get().getMemberProfilePublicRange()).isEqualTo(PublicRange.PRIVATE);
-        assertThat(memberRepository.findMemberByMemberId("member_1").get().getReceivingAllNotificationAllowed()).isTrue();
+        assertThat(memberRepository.findMemberById("member_1").get().getNickname()).isEqualTo("새로운 닉네임");
+        assertThat(memberRepository.findMemberById("member_1").get().getAllFeedPublicRange()).isEqualTo(PublicRange.PRIVATE);
+        assertThat(memberRepository.findMemberById("member_1").get().getBuildingSubscriptionPublicRange()).isEqualTo(PublicRange.PRIVATE);
+        assertThat(memberRepository.findMemberById("member_1").get().getMemberProfilePublicRange()).isEqualTo(PublicRange.PRIVATE);
+        assertThat(memberRepository.findMemberById("member_1").get().getReceivingAllNotificationAllowed()).isTrue();
         memberRepository.updateMember(rollbackMember);
     }
 
@@ -174,7 +174,7 @@ public class TestMemberRepository {
     void updatePassword() {
         memberRepository.updatePassword("member_1", "newPassword");
 
-        Optional<Member> foundMember = memberRepository.findMemberByMemberId("member_1");
+        Optional<Member> foundMember = memberRepository.findMemberById("member_1");
         assertThat(foundMember).isPresent();
         assertThat(foundMember.get().getPwd()).isEqualTo("newPassword");
     }
@@ -184,7 +184,7 @@ public class TestMemberRepository {
     void updatePhoneNumber() {
         memberRepository.updatePhoneNumber("member_1", "010-1234-5678");
 
-        Optional<Member> foundMember = memberRepository.findMemberByMemberId("member_1");
+        Optional<Member> foundMember = memberRepository.findMemberById("member_1");
         assertThat(foundMember).isPresent();
         assertThat(foundMember.get().getPhoneNumber()).isEqualTo("010-1234-5678");
     }
@@ -194,7 +194,7 @@ public class TestMemberRepository {
     void updateProfilePhotoUrl() {
         memberRepository.updateMemberProfilePhoto("member_1", "https://newprofile.photo/url");
 
-        Optional<Member> foundMember = memberRepository.findMemberByMemberId("member_1");
+        Optional<Member> foundMember = memberRepository.findMemberById("member_1");
         assertThat(foundMember).isPresent();
         assertThat(foundMember.get().getProfilePhotoUrl()).isEqualTo("https://newprofile.photo/url");
 
@@ -208,17 +208,17 @@ public class TestMemberRepository {
         mr.setActivated(false);
         memberRepository.updateMemberRelationship(mr);
         assertThat(memberRepository.findMemberRelationship("member_1","member_3").get().getActivated()).isFalse();
-        memberRepository.updateMemberRelationship(MemberRelationship.builder().fromMember(memberRepository.findMemberByMemberId("member_1").get()).toMember(memberRepository.findMemberByMemberId("member_3").get()).activated(true).relationshipType(FOLLOW).build());
+        memberRepository.updateMemberRelationship(MemberRelationship.builder().fromMember(memberRepository.findMemberById("member_1").get()).toMember(memberRepository.findMemberById("member_3").get()).activated(true).relationshipType(FOLLOW).build());
     }
 
     @Test
     @DisplayName("회원 삭제 테스트")
     void deleteMember() {
-        Member member = memberRepository.findMemberByMemberId("member_1").orElseThrow();
+        Member member = memberRepository.findMemberById("member_1").orElseThrow();
         assertThat(member.getSignedOff()).isFalse();
         member.setSignedOff(true);
         memberRepository.updateMember(member);
-        Optional<Member> foundMember = memberRepository.findMemberByMemberId("member_1");
+        Optional<Member> foundMember = memberRepository.findMemberById("member_1");
         assertThat(foundMember.get().getSignedOff()).isTrue();
         memberRepository.updateMember(Member.builder().memberId("member_1").signedOff(false).build());
     }
@@ -260,8 +260,8 @@ public class TestMemberRepository {
     private @NotNull MemberRelationship getMemberRelationship(RelationshipType relationshipType, String fromId, String toId) {
         MemberRelationship mr = new MemberRelationship();
         mr.setRelationshipType(relationshipType);//FOLLOW
-        mr.setFromMember(memberRepository.findMemberByMemberId(fromId).get());//"member_99"
-        mr.setToMember(memberRepository.findMemberByMemberId(toId).get());//"member_1"
+        mr.setFromMember(memberRepository.findMemberById(fromId).get());//"member_99"
+        mr.setToMember(memberRepository.findMemberById(toId).get());//"member_1"
         mr.setActivated(true);
         return mr;
     }

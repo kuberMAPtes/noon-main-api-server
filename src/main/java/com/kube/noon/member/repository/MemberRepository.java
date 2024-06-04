@@ -19,7 +19,7 @@ public interface MemberRepository {
 
     void addMemberRelationship(MemberRelationship memberRelationship);
 
-    Optional<Member> findMemberByMemberId(String memberId);
+    Optional<Member> findMemberById(String memberId);
 
     Optional<Member> findMemberByNickname(String nickname);
 

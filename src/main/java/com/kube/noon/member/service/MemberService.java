@@ -13,7 +13,7 @@ public interface MemberService {
 
     public void addMemberRelationship(MemberRelationshipDto memberRelationshipDto);
 
-    public Optional<Member> findMemberByMemberId(String memberId);//JPA
+    public Optional<Member> findMemberById(String memberId);//JPA
 
     //레포지토리에서 없음
     public Optional<MemberProfileDto> findMemberProfileById(String memberId);
@@ -23,6 +23,8 @@ public interface MemberService {
     public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto searchDto);//JPA
 
     public List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteriaDto);
+
+    public Optional<MemberRelationship> findMemberRelationship(String fromId, String toId);
 
     public void updateMember(UpdateMemberDto updateMemberDto);
 
@@ -35,6 +37,5 @@ public interface MemberService {
     public void deleteMemberRelationship(MemberRelationshipDto dto);
 
     public void deleteMember(String memberId);
-
 
 }

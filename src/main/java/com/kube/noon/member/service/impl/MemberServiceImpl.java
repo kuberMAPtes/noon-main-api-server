@@ -37,7 +37,7 @@ public class MemberServiceImpl implements MemberService {
     public void addMember(AddMemberDto memberDto) {
         try {
 
-            if(memberDto.getSocialSignUp()){
+            if (memberDto.getSocialSignUp()) {
                 memberDto.setPwd("social_sign_up");
             }
 
@@ -54,24 +54,24 @@ public class MemberServiceImpl implements MemberService {
         try {
             checkMemberisSignedOff(dto.getFromId());
             memberRepository
-                    .findMemberByMemberId(dto.getFromId())
+                    .findMemberById(dto.getFromId())
                     .ifPresent(member -> {
-                try {
-                    MemberRelationship mr = MemberBinder.INSTANCE.toMemberRelationship(dto);
-                    memberRepository
-                            .findMemberRelationship(mr.getFromMember().getMemberId(),mr.getToMember().getMemberId())
-                            .ifPresent(relationship -> {
-                                throw new MemberSecurityBreachException("이미 추가된 관계입니다.");
-                            });
+                        try {
+                            MemberRelationship mr = MemberBinder.INSTANCE.toMemberRelationship(dto);
+                            memberRepository
+                                    .findMemberRelationship(mr.getFromMember().getMemberId(), mr.getToMember().getMemberId())
+                                    .ifPresent(relationship -> {
+                                        throw new MemberSecurityBreachException("이미 추가된 관계입니다.");
+                                    });
 
-                    if (member.getMemberId().equals(dto.getToId())) {
-                        throw new MemberSecurityBreachException("자기 자신과의 관계는 추가할 수 없습니다.");
-                    }
-                    //중복 추가가 되지 않아야 함
-                }catch (DataAccessException e){
-                    throw new MemberSecurityBreachException("회원 관계 추가 실패 : " + dto);
-                }
-            });
+                            if (member.getMemberId().equals(dto.getToId())) {
+                                throw new MemberSecurityBreachException("자기 자신과의 관계는 추가할 수 없습니다.");
+                            }
+                            //중복 추가가 되지 않아야 함
+                        } catch (DataAccessException e) {
+                            throw new MemberSecurityBreachException("회원 관계 추가 실패 : " + dto);
+                        }
+                    });
 
             MemberRelationship memberRelationship = MemberBinder.INSTANCE.toMemberRelationship(dto);
             memberRepository.addMemberRelationship(memberRelationship);
@@ -82,11 +82,10 @@ public class MemberServiceImpl implements MemberService {
     }
 
 
-
     @Override
-    public Optional<Member> findMemberByMemberId(String memberId) {
+    public Optional<Member> findMemberById(String memberId) {
         try {
-            return Optional.ofNullable(memberRepository.findMemberByMemberId(memberId)
+            return Optional.ofNullable(memberRepository.findMemberById(memberId)
                     .orElseThrow(() -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", memberId))));
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
@@ -100,18 +99,18 @@ public class MemberServiceImpl implements MemberService {
         try {
 
 
-
-            Member member = memberRepository.findMemberByMemberId(memberId)
+            Member member = memberRepository.findMemberById(memberId)
                     .orElseThrow(() -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", memberId)));
 
 
             List<FeedDto> feedDtoList = new ArrayList<FeedDto>();
 //            feedDtoList = feedService.findFeedListByMemberId(memberId);
 
-//            Optional<MemberProfileDto> Om = MemberBinder.INSTANCE.toDto(member, MemberProfileDto.class)
-//                    .setFeedDtoList(feedDtoList);
+            MemberProfileDto om = MemberBinder.INSTANCE.toDto(member, MemberProfileDto.class);
 
-            return null;
+//            om.setFeedDtoList(feedDtoList);
+
+            return Optional.ofNullable(om);
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
             throw e;
@@ -135,6 +134,17 @@ public class MemberServiceImpl implements MemberService {
         try {
             checkMemberisSignedOff(criteriaDto.getMemberId());
             return memberRepository.findMemberListByCriteria(criteriaDto);
+        } catch (DataAccessException e) {
+            log.error("DB 접근 관련 문제 발생", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public Optional<MemberRelationship> findMemberRelationship(String fromId, String toId) {
+        try {
+            checkMemberisSignedOff(fromId);
+            return memberRepository.findMemberRelationship(fromId, toId);
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
             throw e;
@@ -194,6 +204,11 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
+    /**
+     * 차단해제할거면 dto의 타입에 차단 넣는다.
+     *
+     * @param dto
+     */
     @Override
     public void deleteMemberRelationship(MemberRelationshipDto dto) {
         log.info("회원 관계 삭제 중 : {}", dto);
@@ -218,7 +233,7 @@ public class MemberServiceImpl implements MemberService {
 
 
     private void checkMemberisSignedOff(String memberId) {
-        memberRepository.findMemberByMemberId(memberId)
+        memberRepository.findMemberById(memberId)
                 .ifPresent(member -> {
                     if (member.getSignedOff()) {
                         throw new MemberSecurityBreachException("탈퇴한 회원입니다.");

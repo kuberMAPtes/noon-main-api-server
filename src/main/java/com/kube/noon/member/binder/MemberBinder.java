@@ -3,10 +3,7 @@ package com.kube.noon.member.binder;
 
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
-import com.kube.noon.member.dto.AddMemberDto;
-import com.kube.noon.member.dto.MemberRelationshipDto;
-import com.kube.noon.member.dto.MemberProfileDto;
-import com.kube.noon.member.dto.UpdateMemberDto;
+import com.kube.noon.member.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -17,35 +14,117 @@ public interface MemberBinder {
 
     MemberBinder INSTANCE = Mappers.getMapper(MemberBinder.class);
 
-    @Mapping(target = "memberRole", ignore = true) // Default value 설정
-    @Mapping(target = "unlockTime", ignore = true) // Default value 설정
-    @Mapping(target = "dajungScore", ignore = true) // Default value 설정
-    @Mapping(target = "signedOff", ignore = true) // Default value 설정
-    @Mapping(target = "buildingSubscriptionPublicRange", ignore = true) // Default value 설정
-    @Mapping(target = "allFeedPublicRange", ignore = true) // Default value 설정
-    @Mapping(target = "memberProfilePublicRange", ignore = true) // Default value 설정
-    @Mapping(target = "receivingAllNotificationAllowed", ignore = true) // Default value 설정
-    @Mapping(target = "profilePhotoUrl", ignore = true) // NULL 허용
-    @Mapping(target = "profileIntro", ignore = true) // NULL 허용
+    @Mapping(target = "memberRole", ignore = true)
+    @Mapping(target = "unlockTime", ignore = true)
+    @Mapping(target = "profilePhotoUrl", ignore = true)
+    @Mapping(target = "profileIntro", ignore = true)
+    @Mapping(target = "dajungScore", ignore = true)
+    @Mapping(target = "signedOff", ignore = true)
+    @Mapping(target = "buildingSubscriptionPublicRange", ignore = true)
+    @Mapping(target = "allFeedPublicRange", ignore = true)
+    @Mapping(target = "memberProfilePublicRange", ignore = true)
+    @Mapping(target = "receivingAllNotificationAllowed", ignore = true)
     Member addMemberDtoToMember(AddMemberDto dto);
 
-    AddMemberDto memberToAddMemberDto(Member member);
-
-    @Mapping(target = "memberRole", ignore = true) // Default value 설정
-    @Mapping(target = "pwd", ignore = true) // Default value 설정
+    @Mapping(target = "memberRole", ignore = true)
+    @Mapping(target = "pwd", ignore = true)
     @Mapping(target = "phoneNumber", ignore = true)
-    @Mapping(target = "unlockTime", ignore = true) // Default value 설정
+    @Mapping(target = "unlockTime", ignore = true)
     @Mapping(target = "receivingAllNotificationAllowed", ignore = true)
     Member memberProfileDtoToMember(MemberProfileDto dto);
-
-    MemberProfileDto memberToMemberProfileDto(Member member);
-
-    @Mapping(target = "memberRole", ignore = true) // Default value 설정
-    @Mapping(target = "pwd", ignore = true) // Default value 설정
-    @Mapping(target = "signedOff", ignore = true) // Default value 설정
+    
+    @Mapping(target = "memberRole", ignore = true)
+    @Mapping(target = "pwd", ignore = true)
+    @Mapping(target = "signedOff", ignore = true)
     Member updateMemberDtoToMember(UpdateMemberDto dto);
+    
+    @Mapping(target = "memberRole", ignore = true)
+    @Mapping(target = "nickname", ignore = true)
+    @Mapping(target = "phoneNumber", ignore = true)
+    @Mapping(target = "unlockTime", ignore = true)
+    @Mapping(target = "profilePhotoUrl", ignore = true)
+    @Mapping(target = "profileIntro", ignore = true)
+    @Mapping(target = "dajungScore", ignore = true)
+    @Mapping(target = "signedOff", ignore = true)
+    @Mapping(target = "buildingSubscriptionPublicRange", ignore = true)
+    @Mapping(target = "allFeedPublicRange", ignore = true)
+    @Mapping(target = "memberProfilePublicRange", ignore = true)
+    @Mapping(target = "receivingAllNotificationAllowed", ignore = true)
+    Member updatePasswordDtoToMember(UpdatePasswordDto dto);
+    
+    @Mapping(target = "memberRole", ignore = true)
+    @Mapping(target = "nickname", ignore = true)
+    @Mapping(target = "pwd", ignore = true)
+    @Mapping(target = "unlockTime", ignore = true)
+    @Mapping(target = "profilePhotoUrl", ignore = true)
+    @Mapping(target = "profileIntro", ignore = true)
+    @Mapping(target = "dajungScore", ignore = true)
+    @Mapping(target = "signedOff", ignore = true)
+    @Mapping(target = "buildingSubscriptionPublicRange", ignore = true)
+    @Mapping(target = "allFeedPublicRange", ignore = true)
+    @Mapping(target = "memberProfilePublicRange", ignore = true)
+    @Mapping(target = "receivingAllNotificationAllowed", ignore = true)
+    Member updatePhoneNumberDtoToMember(UpdatePhoneNumberDto dto);
 
+
+    @Mapping(target = "memberRole", ignore = true)
+    @Mapping(target = "nickname", ignore = true)
+    @Mapping(target = "pwd", ignore = true)
+    @Mapping(target = "phoneNumber", ignore = true)
+    @Mapping(target = "unlockTime", ignore = true)
+    @Mapping(target = "profileIntro", ignore = true)
+    @Mapping(target = "dajungScore", ignore = true)
+    @Mapping(target = "signedOff", ignore = true)
+    @Mapping(target = "buildingSubscriptionPublicRange", ignore = true)
+    @Mapping(target = "allFeedPublicRange", ignore = true)
+    @Mapping(target = "memberProfilePublicRange", ignore = true)
+    @Mapping(target = "receivingAllNotificationAllowed", ignore = true)
+    Member updateMemberProfilePhotoUrlDtoToMember(UpdateMemberProfilePhotoUrlDto dto);
+
+    AddMemberDto memberToAddMemberDto(Member member);
+    MemberProfileDto memberToMemberProfileDto(Member member);
     UpdateMemberDto memberToUpdateMemberDto(Member member);
+    UpdatePasswordDto memberToUpdatePasswordDto(Member member);
+    UpdatePhoneNumberDto memberToUpdatePhoneNumberDto(Member member);
+    UpdateMemberProfilePhotoUrlDto memberToUpdateMemberProfilePhotoUrlDto(Member member);
+
+    // 공통 변환 메서드 추가
+    default <T> Member toMember(T dto) {
+        if (dto instanceof AddMemberDto) {
+            return addMemberDtoToMember((AddMemberDto) dto);
+        } else if (dto instanceof MemberProfileDto) {
+            return memberProfileDtoToMember((MemberProfileDto) dto);
+        } else if (dto instanceof UpdateMemberDto) {
+            return updateMemberDtoToMember((UpdateMemberDto) dto);
+        } else if (dto instanceof  UpdatePasswordDto) {
+            return updatePasswordDtoToMember((UpdatePasswordDto) dto);
+        } else if (dto instanceof UpdatePhoneNumberDto) {
+            return updatePhoneNumberDtoToMember((UpdatePhoneNumberDto) dto);
+        } else if (dto instanceof UpdateMemberProfilePhotoUrlDto) {
+            return updateMemberProfilePhotoUrlDtoToMember((UpdateMemberProfilePhotoUrlDto) dto);
+        }
+        else {
+            throw new IllegalArgumentException("지원되지 않는 DTO 타입입니다: " + dto.getClass());
+        }
+    }
+    default <T> T toDto(Member member, Class<T> dtoClass) {
+        if (dtoClass.equals(AddMemberDto.class)) {
+            return dtoClass.cast(memberToAddMemberDto(member));
+        } else if (dtoClass.equals(MemberProfileDto.class)) {
+            return dtoClass.cast(memberToMemberProfileDto(member));
+        } else if (dtoClass.equals(UpdateMemberDto.class)) {
+            return dtoClass.cast(memberToUpdateMemberDto(member));
+        } else if (dtoClass.equals(UpdatePasswordDto.class)) {
+            return dtoClass.cast(memberToUpdatePasswordDto(member));
+        } else if (dtoClass.equals(UpdatePhoneNumberDto.class)) {
+            return dtoClass.cast(memberToUpdatePhoneNumberDto(member));
+        } else if (dtoClass.equals(UpdateMemberProfilePhotoUrlDto.class)) {
+            return dtoClass.cast(memberToUpdateMemberProfilePhotoUrlDto(member));
+        }
+        else {
+            throw new IllegalArgumentException("지원되지 않는 DTO 타입입니다: " + dtoClass);
+        }
+    }
 
     @Mapping(target = "fromMember", source = "fromId", qualifiedByName = "toMemberEntity")
     @Mapping(target = "toMember", source = "toId", qualifiedByName = "toMemberEntity")
@@ -65,29 +144,6 @@ public interface MemberBinder {
         return member;
     }
 
-    // 공통 변환 메서드 추가
-    default <T> Member toMember(T dto) {
-        if (dto instanceof AddMemberDto) {
-            return addMemberDtoToMember((AddMemberDto) dto);
-        } else if (dto instanceof MemberProfileDto) {
-            return memberProfileDtoToMember((MemberProfileDto) dto);
-        } else if (dto instanceof UpdateMemberDto) {
-            return updateMemberDtoToMember((UpdateMemberDto) dto);
-        } else {
-            throw new IllegalArgumentException("지원되지 않는 DTO 타입입니다: " + dto.getClass());
-        }
-    }
-    default <T> T toDto(Member member, Class<T> dtoClass) {
-        if (dtoClass.equals(AddMemberDto.class)) {
-            return dtoClass.cast(memberToAddMemberDto(member));
-        } else if (dtoClass.equals(MemberProfileDto.class)) {
-            return dtoClass.cast(memberToMemberProfileDto(member));
-        } else if (dtoClass.equals(UpdateMemberDto.class)) {
-            return dtoClass.cast(memberToUpdateMemberDto(member));
-        } else {
-            throw new IllegalArgumentException("지원되지 않는 DTO 타입입니다: " + dtoClass);
-        }
-    }
     default <T> MemberRelationship toMemberRelationship(T dto) {
         if (dto instanceof MemberRelationshipDto){
             return addMemberRelationshipDtoToMemberRelationship(((MemberRelationshipDto) dto));

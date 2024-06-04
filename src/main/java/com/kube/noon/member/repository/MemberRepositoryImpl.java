@@ -5,6 +5,7 @@ import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
+import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.exception.MemberNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,9 @@ public class MemberRepositoryImpl implements MemberRepository {
     public void addMember(Member member) {
         log.info("회원 추가 중 : {}", member);
 
+        member.setMemberRole(Role.MEMBER);
+        member.setDajungScore(0);
+        member.setSignedOff(false);
         member.setMemberProfilePublicRange(PublicRange.PUBLIC);
         member.setBuildingSubscriptionPublicRange(PublicRange.PUBLIC);
         member.setAllFeedPublicRange(PublicRange.PUBLIC);
@@ -49,12 +53,14 @@ public class MemberRepositoryImpl implements MemberRepository {
                 memberRelationship.getToMember().getMemberId()
         ).ifPresent((relationship)->{throw new MemberNotFoundException("회원관계가 이미 존재합니다");});
 
+        memberRelationship.setActivated(true);
+
         memberRelationshipJpaRepository.save(memberRelationship);
         log.info("회원 관계 추가 성공 : {}", memberRelationship);
     }
 
     @Override
-    public Optional<Member> findMemberByMemberId(String memberId) {
+    public Optional<Member> findMemberById(String memberId) {
         log.info("회원 찾는 중 ID: {}", memberId);
         Optional<Member> op = memberJpaRepository.findMemberByMemberId(memberId);
         op.ifPresentOrElse(
@@ -139,6 +145,9 @@ public class MemberRepositoryImpl implements MemberRepository {
         if (member.getDajungScore() != null) {
             newMember.setDajungScore(member.getDajungScore());
         }
+        if (member.getSignedOff()!=null) {
+            newMember.setSignedOff(member.getSignedOff());
+        }
         if (member.getBuildingSubscriptionPublicRange() != null) {
             newMember.setBuildingSubscriptionPublicRange(member.getBuildingSubscriptionPublicRange());
         }
@@ -159,9 +168,8 @@ public class MemberRepositoryImpl implements MemberRepository {
         log.info("회원 업데이트 성공");
     }
 
-    /**
-     * 그냥 save를 하면 add를 할 위험이 있으니 find한 후 save
-     * 없는걸 업데이트하면 에러가 나야 한다.
+    /**.
+     * mr에 넣은대로 바뀐다
      * @param mr
      */
     public void updateMemberRelationship(MemberRelationship mr) {
