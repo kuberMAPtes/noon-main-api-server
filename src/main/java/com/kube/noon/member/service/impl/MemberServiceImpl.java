@@ -1,5 +1,6 @@
 package com.kube.noon.member.service.impl;
 
+import com.kube.noon.common.badwordfiltering.BadWordFiltering;
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.member.binder.MemberBinder;
@@ -33,12 +34,21 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final FeedService feedService;
+    private final BadWordFiltering badWordFiltering;
+    private final String[] badWordSeparator = {
+            "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_", "=", "+",
+            "`", "~", "[", "]", "{", "}", ";", ":", "\'", "\",", "\\", ".", "/", "<", ">", "?"
+    };
 //    private final SettingService settingService;
 
     @Override
     public void addMember(AddMemberDto memberDto) {
         try {
             log.info("회원 추가 중 : DTO {}", memberDto);
+
+            memberDto.getMemberId();
+
+
             if (memberDto.getSocialSignUp()) {
                 memberDto.setPwd("social_sign_up");
             }
@@ -243,6 +253,45 @@ public class MemberServiceImpl implements MemberService {
         log.info("회원 삭제 성공 : {}", memberId);
     }
 
+    @Override
+    public boolean checkNickname(String nickname) {
+
+        memberRepository.findMemberByNickname(nickname)
+                .ifPresent(member -> {
+                    throw new MemberSecurityBreachException("닉네임이 중복됩니다.");
+                });
+
+        return false;
+    }
+
+    @Override
+    public boolean checkMemberId(String memberId) {
+
+        memberRepository.findMemberById(memberId)
+                .ifPresent(member -> {
+                    throw new MemberSecurityBreachException("아이디가 중복됩니다.");
+                });
+
+        return false;
+    }
+
+    @Override
+    public boolean checkPassword(String memberId, String password) {
+
+        memberRepository.findMemberById(memberId)
+                .ifPresent(member -> {
+                    if (!member.getPwd().equals(password)) {
+                        throw new MemberSecurityBreachException("비밀번호가 일치하지 않습니다.");
+                    }
+                });
+
+        return false;
+    }
+
+    @Override
+    public boolean checkBadWord(String word){
+        return badWordFiltering.change(word,badWordSeparator).contains("*");
+    }
 
     private void checkMemberisSignedOff(String memberId) {
         memberRepository.findMemberById(memberId)

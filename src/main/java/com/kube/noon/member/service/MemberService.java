@@ -9,33 +9,40 @@ import java.util.Optional;
 
 public interface MemberService {
 
-    public void addMember(AddMemberDto memberDto);//JPA
+    void addMember(AddMemberDto memberDto);//JPA
 
-    public void addMemberRelationship(MemberRelationshipDto memberRelationshipDto);
+    void addMemberRelationship(MemberRelationshipDto memberRelationshipDto);
 
-    public Optional<Member> findMemberById(String memberId);//JPA
+    Optional<Member> findMemberById(String memberId);//JPA
 
     //레포지토리에서 없음
-    public Optional<MemberProfileDto> findMemberProfileById(String memberId);
+    Optional<MemberProfileDto> findMemberProfileById(String memberId);
 
-    public Optional<Member> findMemberByNickname(String nickname);//JPA
+    Optional<Member> findMemberByNickname(String nickname);//JPA
 
-    public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto searchDto);//JPA
+    List<Member> findMemberListByCriteria(MemberSearchCriteriaDto searchDto);//JPA
 
-    public List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteriaDto);
+    List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteriaDto);
 
-    public Optional<MemberRelationship> findMemberRelationship(String fromId, String toId);
+    Optional<MemberRelationship> findMemberRelationship(String fromId, String toId);
 
-    public void updateMember(UpdateMemberDto updateMemberDto);
+    void updateMember(UpdateMemberDto updateMemberDto);
 
-    public void updatePassword(String memberId, String newPassword);
+    void updatePassword(String memberId, String newPassword);
 
-    public void updatePhoneNumber(String memberId,String newPassword);
+    void updatePhoneNumber(String memberId,String newPassword);
 
-    public void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl);
+    void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl);
 
-    public void deleteMemberRelationship(MemberRelationshipDto dto);
+    void deleteMemberRelationship(MemberRelationshipDto dto);
 
-    public void deleteMember(String memberId);
+    void deleteMember(String memberId);
 
+    boolean checkNickname(String nickname);
+
+    boolean checkMemberId(String memberId);
+
+    boolean checkPassword(String email, String password);
+
+    boolean checkBadWord(String word);
 }
