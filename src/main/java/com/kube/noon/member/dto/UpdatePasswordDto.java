@@ -5,20 +5,13 @@ import lombok.*;
 @ToString
 @EqualsAndHashCode
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
-@Builder
-@AllArgsConstructor
-public class AddMemberDto {
+public class UpdatePasswordDto {
 
     private String memberId;
 
-    private String nickname;
-
     private String pwd;
-
-    private String phoneNumber;
-
-    private Boolean socialSignUp;
 
 }
