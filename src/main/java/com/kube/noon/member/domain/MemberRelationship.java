@@ -4,6 +4,7 @@ package com.kube.noon.member.domain;
 import com.kube.noon.member.enums.RelationshipType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -21,6 +22,7 @@ import lombok.NoArgsConstructor;
 @Data // Lombok 어노테이션으로 getter, setter, toString, equals, hashCode 자동 생성
 @NoArgsConstructor // 기본 생성자 생성
 @AllArgsConstructor // 모든 필드를 포함하는 생성자 생성
+@Builder
 public class MemberRelationship {
 
     private static final String ANSI_RESET = "\u001B[0m";
@@ -36,7 +38,7 @@ public class MemberRelationship {
     private RelationshipType relationshipType;
 
     @Column(name = "activated", nullable = false)
-    private boolean activated = true;
+    private Boolean activated = true;
 
     @ManyToOne
     @JoinColumn(name = "from_id", referencedColumnName = "member_id")

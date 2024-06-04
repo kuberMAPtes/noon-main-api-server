@@ -22,9 +22,11 @@ public class UpdateMemberDto {
 
 //    private String pwd;
 
+//    private String phoneNumber;
+
     private LocalDateTime unlockTime;
 
-    private String profilePhotoUrl;
+//    private String profilePhotoUrl;
 
     private String profileIntro;
 

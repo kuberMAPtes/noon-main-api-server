@@ -1,14 +1,13 @@
 package com.kube.noon.member.service;
 
 import com.kube.noon.common.PublicRange;
+import com.kube.noon.member.binder.MemberBinder;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
-import com.kube.noon.member.dto.AddMemberDto;
-import com.kube.noon.member.dto.AddMemberRelationshipDto;
-import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
-import com.kube.noon.member.dto.MemberSearchCriteriaDto;
+import com.kube.noon.member.dto.*;
 import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.enums.Role;
+import com.kube.noon.member.repository.MemberRepository;
 import jakarta.transaction.Transactional;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,6 +36,8 @@ public class TestMemberService {
 
     @Autowired
     private MemberService memberService;
+    @Autowired
+    private MemberRepository memberRepository;
 
     @Test
     @DisplayName("회원 추가 테스트")
@@ -49,17 +51,19 @@ public class TestMemberService {
                 .build());
         log.info("회원 추가 테스트");
         assertThat(memberService.findMemberById("member_1230")).isNotNull();
+        memberRepository.deleteMember("member_1230");
     }
 
     @Test
     @DisplayName("회원 관계 추가 테스트")
     void addMemberRelationship() {
-        memberService.addMemberRelationship(AddMemberRelationshipDto.builder()
+        memberService.addMemberRelationship(MemberRelationshipDto.builder()
                 .fromId("member_1")
-                .toId("member_2")
+                .toId("member_10")
                 .relationshipType(RelationshipType.FOLLOW)
                 .build());
         log.info("회원 관계 추가 테스트");
+        memberRepository.deleteMemberRelationship("member_1","member_10");
     }
 
     @Test
@@ -72,7 +76,7 @@ public class TestMemberService {
     @Test
     @DisplayName("회원 프로필  찾기 테스트")
     void findMemberProfileById() {
-        log.info("회원 프로필 찾기 테스트");
+        log.info("회원 프로필 찾기 테스트!@#!@");
         assertThat(memberService.findMemberProfileById("member_1")).isNotNull();
     }
 
@@ -80,6 +84,7 @@ public class TestMemberService {
     @DisplayName("회원 닉네임으로 찾기 테스트")
     void findMemberByNickname() {
         log.info("회원 닉네임으로 찾기 테스트");
+        System.out.println("@#$!@#$" + memberService.findMemberByNickname("nickname_1"));
         assertThat(memberService.findMemberByNickname("nickname_1")).isNotNull();
     }
 
@@ -99,9 +104,134 @@ public class TestMemberService {
                         .signedOff(false)
                         .build()
         )).isNotNull();
+    }
 
+    @Test
+    @DisplayName("회원 관계 리스트 찾기 테스트")
+    void findMemberRelationshipListByCriteria(){
+        MemberRelationshipSearchCriteriaDto mrsc= MemberRelationshipSearchCriteriaDto
+                .builder()
+                .memberId("member_1")
+                .following(true)
+                .follower(true)
+                .blocking(true)
+                .blocker(true)
+                .build();
+        log.info("회원 관계 리스트 찾기 테스트");
+        log.info(memberService.findMemberRelationshipListByCriteria(mrsc).toString());
+    }
+
+    @Test
+    @DisplayName("회원 업데이트 테스트")
+    void updateMember() {
+        //유저 받아서 속성 바꾸고 업데이트 해봐 업데이트 하고 바뀌었는지 체크
+        AtomicReference<UpdateMemberDto> dto2 = new AtomicReference<>();
+
+        memberService.findMemberById("member_1").map(
+                member -> {
+                    member.setNickname("바뀐 닉네임");
+                    member.setDajungScore(100);
+                    member.setProfileIntro("바뀐 프로필 소개");
+                    dto2.set(MemberBinder.INSTANCE.toDto(member, UpdateMemberDto.class));
+
+                    return MemberBinder.INSTANCE.toDto(member, UpdateMemberDto.class);
+                }
+        ).ifPresent(dto -> memberService.updateMember(dto));
+
+        assertThat(memberService.findMemberById("member_1").orElseThrow().getNickname()).isEqualTo("바뀐 닉네임");
+        memberService.updateMember(dto2.get());
+    }
+    @Test
+    @DisplayName("비밀번호 업데이트 테스트")
+    void updatePassword(){
+
+        AtomicReference<UpdatePasswordDto> dto2 = new AtomicReference<>();
+
+        memberService.findMemberById("member_1").map(
+                member -> {
+                    member.setPwd("1234");
+                    dto2.set(MemberBinder.INSTANCE.toDto(member, UpdatePasswordDto.class));
+                    return MemberBinder.INSTANCE.toDto(member, UpdatePasswordDto.class);
+                }
+        ).ifPresent(dto -> memberService.updatePassword(dto.getMemberId(),dto.getPwd()));
+
+        assertThat(memberService.findMemberById("member_1").orElseThrow().getPwd()).isEqualTo("1234");
+
+
+
+        memberService.updateMember(MemberBinder.INSTANCE.toDto(MemberBinder.INSTANCE.toMember(dto2.get()), UpdateMemberDto.class));
 
     }
+
+    @Test
+    @DisplayName("전화번호 업데이트 테스트")
+    void updatePhoneNumber(){
+        AtomicReference<UpdatePhoneNumberDto> dto2 = new AtomicReference<>();
+
+        memberService.findMemberById("member_1").map(
+                member -> {
+                    member.setPhoneNumber("010-1234-5678");
+                    dto2.set(MemberBinder.INSTANCE.toDto(member, UpdatePhoneNumberDto.class));
+                    return MemberBinder.INSTANCE.toDto(member, UpdatePhoneNumberDto.class);
+                }
+        ).ifPresent(dto -> memberService.updatePhoneNumber(dto.getMemberId(),dto.getPhoneNumber()));
+
+        assertThat(memberService.findMemberById("member_1").orElseThrow().getPhoneNumber()).isEqualTo("010-1234-5678");
+        memberService.updateMember(MemberBinder.INSTANCE.toDto(MemberBinder.INSTANCE.toMember(dto2.get()), UpdateMemberDto.class));
+    }
+
+    @Test
+    @DisplayName("프로필 사진 업데이트 테스트")
+    void updateMemberProfilePhoto(){
+
+        AtomicReference<UpdateMemberProfilePhotoUrlDto> dto2 = new AtomicReference<>();
+
+        memberService.findMemberById("member_1").map(
+                member -> {
+                    member.setProfilePhotoUrl("https://www.naver.com");
+                    dto2.set(MemberBinder.INSTANCE.toDto(member, UpdateMemberProfilePhotoUrlDto.class));
+                    return MemberBinder.INSTANCE.toDto(member, UpdateMemberProfilePhotoUrlDto.class);
+                }
+        ).ifPresent(dto -> memberService.updateMemberProfilePhoto(dto.getMemberId(),dto.getProfilePhotoUrl()));
+
+        assertThat(memberService.findMemberById("member_1").orElseThrow().getProfilePhotoUrl()).isEqualTo("https://www.naver.com");
+        memberService.updateMember(MemberBinder.INSTANCE.toDto(MemberBinder.INSTANCE.toMember(dto2.get()), UpdateMemberDto.class));
+    }
+
+    @Test
+    @DisplayName("회원 관계 삭제 테스트")
+    void deleteMemberRelationship(){
+        memberService.deleteMemberRelationship(MemberRelationshipDto.builder()
+                .fromId("member_1")
+                .toId("member_2")
+                .relationshipType(RelationshipType.FOLLOW)
+                .build());
+
+        MemberRelationship ms = memberService.findMemberRelationship("member_1","member_2")
+                .orElseThrow();
+        assertThat(ms.getActivated()).isFalse();
+        memberRepository.updateMemberRelationship(ms);
+        log.info("회원 관계 삭제 테스트");
+    }
+
+    @Test
+    @DisplayName("회원 삭제 테스트")
+    void deleteMember(){
+
+        memberService.deleteMember("member_1");
+        assertThat(memberService.findMemberById("member_1").orElseThrow().getSignedOff()).isTrue();
+
+
+        Member member = memberService.findMemberById("member_1").orElseThrow();
+        memberRepository.updateMember(member);
+    }
+
+    @Test
+    @DisplayName("회원 탈퇴 여부 확인 테스트")
+    void checkMemberisSignedOff(){}
+
+
+
 
     private @NotNull Member getMember() {
         String dateString = "0001-01-01 01:01:01";

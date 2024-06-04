@@ -6,6 +6,7 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Log4j2
 @SpringBootTest
+@ActiveProfiles("winterhana")
 public class TestFeedCommentRepository {
 
     @Autowired
@@ -61,8 +63,8 @@ public class TestFeedCommentRepository {
     }
 
     /**
-     * 하나의 피드의 댓긍을 삭제한다 (= 노출 중지한다.)
-     * feed_id = 10000, commenter_id = 10000을 기준으로 한다.
+     * 하나의 피드의 댓글을 삭제한다 (= 노출 중지한다.)
+     * feed_id = 10000, comment_id = 10000을 기준으로 한다.
      */
     @Transactional
     @Test
@@ -71,5 +73,18 @@ public class TestFeedCommentRepository {
         feedComment.setActivated(false);
 
         assertThat(feedCommentRepository.save(feedComment).isActivated()).isEqualTo(false);
+    }
+
+    /**
+     * 하나의 피드의 댓글을 수정한다
+     * feed_id = 10000, comment_id = 10000을 기준으로 한다.
+     */
+    @Transactional
+    @Test
+    public void updateFeedCommentTest() {
+        FeedComment feedComment = feedCommentRepository.findByCommentId(10000);
+        feedComment.setCommentText("수정된 내용입니다.");
+
+        assertThat(feedCommentRepository.save(feedComment).getCommentText()).isEqualTo("수정된 내용입니다.");
     }
 }

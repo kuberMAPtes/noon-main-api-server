@@ -24,9 +24,11 @@ public class MemberProfileDto {
 
     private String profileIntro;
 
-    private int dajungScore;
+    private Integer dajungScore;
 
-    private boolean signedOff;
+    private Boolean signedOff;
+
+    private List<FeedDto> feedDtoList;
 
     private List<FeedDto> feedDtoList;
 

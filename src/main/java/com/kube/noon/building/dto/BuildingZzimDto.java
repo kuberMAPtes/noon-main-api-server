@@ -17,8 +17,8 @@ import lombok.*;
 @NoArgsConstructor
 public class BuildingZzimDto {
     private int buildingId;
-    private String memberId; //Join 대상이므로 Member 서브시스템 pull 후 타입을 Member로 수정할 예정
-    private String subscriptionProviderId; //Join 대상이므로 Member 서브시스템 pull 후 타입을 Member로 수정할 예정
+    private String memberId;
+    private String subscriptionProviderId;
     private ZzimType zzimType;
     private boolean activated;
 

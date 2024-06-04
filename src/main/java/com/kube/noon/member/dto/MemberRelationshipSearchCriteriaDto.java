@@ -13,14 +13,15 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class MemberRelationshipSearchCriteriaDto {
 
     @NonNull
     private String memberId;
 
-    private boolean following;
-    private boolean follower;
-    private boolean blocking;
-    private boolean blocker;
+    private Boolean following;
+    private Boolean follower;
+    private Boolean blocking;
+    private Boolean blocker;
 
 }
