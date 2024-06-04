@@ -1,0 +1,6 @@
+###
+### Create a new chatroom
+GET http://localhost:8080/chatroom/addChatroom?chatroomID=123&chatroomName=TestChat%20Room&chatroomType=Public&chatroomAddTime=2024-06-01T12:00:00&chatroomMembers=user1,user2&chatroomLiveliness=active&chatroomColor=blue&chatroomMembersCount=2&chatroomAdderId=user1
+
+### Get all chatroom
+GET http://localhost:8080/chatroom/getChatrooms
