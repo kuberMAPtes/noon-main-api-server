@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -40,5 +41,13 @@ public class NotificationServiceImpl implements NotificationService {
         Notification notification = this.notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("그런 알림 ID 없습니다: " + notificationId));// TODO: 구체적인 예외
         return NotificationDto.from(notification);
+    }
+
+    @Override
+    public List<NotificationDto> getNotificationList(String receiverId) {
+        return this.notificationRepository.findNotificationsByReceiverId(receiverId)
+                .stream()
+                .map(NotificationDto::from)
+                .toList();
     }
 }
