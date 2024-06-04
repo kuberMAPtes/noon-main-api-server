@@ -83,16 +83,25 @@ public class TestMemberService {
         assertThat(memberService.findMemberByNickname("nickname_1")).isNotNull();
     }
 
-//    @Test
-//    @DisplayName("회원 리스트 찾기 테스트")
-//    void findMemberListByCriteria() {
-//        log.info("회원 리스트 찾기 테스트");
-//        assertThat(memberService.findMemberListByCriteria(
-//                MemberSearchCriteriaDto
-//                .builder()
-//                        .nickname("nickname")
-//                        .)).isNotNull();
-//    }
+    @Test
+    @DisplayName("회원 리스트 찾기 테스트")
+    void findMemberListByCriteria() {
+        log.info("회원 리스트 찾기 테스트"+ memberService.findMemberListByCriteria(
+                MemberSearchCriteriaDto
+                        .builder()
+                        .nickname("nickname")
+                        .signedOff(false)
+                        .build()));
+        assertThat(memberService.findMemberListByCriteria(
+                MemberSearchCriteriaDto
+                .builder()
+                        .nickname("nickname")
+                        .signedOff(false)
+                        .build()
+        )).isNotNull();
+
+
+    }
 
     private @NotNull Member getMember() {
         String dateString = "0001-01-01 01:01:01";

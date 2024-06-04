@@ -24,19 +24,19 @@ public class MemberJpaRepositoryQueryImpl implements MemberJpaRepositoryQuery {
         BooleanBuilder builder = new BooleanBuilder();
 
         if (criteria.getMemberId() != null) {
-            builder.or(member.memberId.containsIgnoreCase(criteria.getMemberId()));
+            builder.and(member.memberId.containsIgnoreCase(criteria.getMemberId()));
         }
         if (criteria.getNickname() != null) {
-            builder.or(member.nickname.containsIgnoreCase(criteria.getNickname()));
+            builder.and(member.nickname.containsIgnoreCase(criteria.getNickname()));
         }
         if (criteria.getStartTime() != null && criteria.getEndTime() != null) {
-            builder.or(member.unlockTime.between(criteria.getStartTime(), criteria.getEndTime()));
+            builder.and(member.unlockTime.between(criteria.getStartTime(), criteria.getEndTime()));
         }
         if (criteria.getPhoneNumber() != null) {
-            builder.or(member.phoneNumber.containsIgnoreCase(criteria.getPhoneNumber()));
+            builder.and(member.phoneNumber.containsIgnoreCase(criteria.getPhoneNumber()));
         }
         if (criteria.getSignedOff() != null) {
-            builder.or(member.signedOff.eq(criteria.getSignedOff()));
+            builder.and(member.signedOff.eq(criteria.getSignedOff()));
         }
 
         return queryFactory.selectFrom(member)

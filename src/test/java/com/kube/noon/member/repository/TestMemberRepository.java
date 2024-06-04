@@ -143,7 +143,7 @@ public class TestMemberRepository {
         assertThat(memberRepository.findMemberById("member_99999").get().getAllFeedPublicRange()).isNotNull();
         assertThat(memberRepository.findMemberById("member_99999").get().getBuildingSubscriptionPublicRange()).isNotNull();
         assertThat(memberRepository.findMemberById("member_99999").get().getMemberProfilePublicRange()).isNotNull();
-        assertThat(memberRepository.findMemberById("member_99999").get().isReceivingAllNotificationAllowed()).isTrue();
+        assertThat(memberRepository.findMemberById("member_99999").get().getReceivingAllNotificationAllowed()).isTrue();
     }
 
     @Test
