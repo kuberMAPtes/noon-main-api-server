@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
@@ -36,7 +38,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void addMember(AddMemberDto memberDto) {
         try {
-
+            log.info("회원 추가 중 : DTO {}", memberDto);
             if (memberDto.getSocialSignUp()) {
                 memberDto.setPwd("social_sign_up");
             }
@@ -44,6 +46,7 @@ public class MemberServiceImpl implements MemberService {
             Member member = MemberBinder.INSTANCE.toMember(memberDto);
 
             memberRepository.addMember(member);
+            log.info("회원 추가 성공 : DTO {}", memberDto);
         } catch (DataAccessException e) {
             throw new MemberUpdateException(String.format("회원 추가 실패 : %s", memberDto), e);
         }
@@ -52,6 +55,7 @@ public class MemberServiceImpl implements MemberService {
     @Override//팔로우 or 차단
     public void addMemberRelationship(MemberRelationshipDto dto) {
         try {
+            log.info("회원 관계 추가 중 : DTO {}", dto);
             checkMemberisSignedOff(dto.getFromId());
             memberRepository
                     .findMemberById(dto.getFromId())
@@ -76,6 +80,7 @@ public class MemberServiceImpl implements MemberService {
             MemberRelationship memberRelationship = MemberBinder.INSTANCE.toMemberRelationship(dto);
             memberRepository.addMemberRelationship(memberRelationship);
 
+            log.info("회원 관계 추가 성공 : DTO {}", memberRelationship);
         } catch (DataAccessException e) {
             throw new MemberRelationshipUpdateException(String.format("회원 관계 추가 실패 : %s", dto), e);
         }
@@ -85,6 +90,9 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Optional<Member> findMemberById(String memberId) {
         try {
+
+
+            log.info("회원 찾는 중 ID: {}", memberId);
             return Optional.ofNullable(memberRepository.findMemberById(memberId)
                     .orElseThrow(() -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", memberId))));
         } catch (DataAccessException e) {

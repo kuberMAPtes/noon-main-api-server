@@ -29,7 +29,7 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     @Override
     public void addMember(Member member) {
-        log.info("회원 추가 중 : {}", member);
+
 
         member.setMemberRole(Role.MEMBER);
         member.setDajungScore(0);
@@ -40,12 +40,12 @@ public class MemberRepositoryImpl implements MemberRepository {
         member.setReceivingAllNotificationAllowed(true);
 
         memberJpaRepository.save(member);
-        log.info("회원 추가 성공 : {}", member);
+
     }
 
     @Override
     public void addMemberRelationship(MemberRelationship memberRelationship) {
-        log.info("회원 관계 추가 중 : {}", memberRelationship);
+
 
         //찾아지면 에러
         memberRelationshipJpaRepository.findByFromMember_MemberIdAndToMember_MemberId(
@@ -56,18 +56,13 @@ public class MemberRepositoryImpl implements MemberRepository {
         memberRelationship.setActivated(true);
 
         memberRelationshipJpaRepository.save(memberRelationship);
-        log.info("회원 관계 추가 성공 : {}", memberRelationship);
+
     }
 
     @Override
     public Optional<Member> findMemberById(String memberId) {
-        log.info("회원 찾는 중 ID: {}", memberId);
-        Optional<Member> op = memberJpaRepository.findMemberByMemberId(memberId);
-        op.ifPresentOrElse(
-                member -> log.info("ID로 회원 찾기 성공 : {}", member.getNickname()),
-                () -> log.info("회원 찾기 실패 : 해당 ID의 회원이 없음")
-        );
-        return op;
+
+        return memberJpaRepository.findMemberByMemberId(memberId);
     }
 
     @Override
