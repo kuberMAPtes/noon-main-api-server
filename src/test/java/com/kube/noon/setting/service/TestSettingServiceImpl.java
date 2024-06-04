@@ -10,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,7 +27,7 @@ class TestSettingServiceImpl {
 
     @BeforeEach
     void beforeEach() {
-
+        this.memberService.addMember(new AddMemberDto("sample-id", "nickname", "1q2w3e4r", "01012341234", false));
     }
 
     @Test
@@ -42,9 +41,7 @@ class TestSettingServiceImpl {
     }
 
     @Test
-    @Commit
     void updateSetting_plus_findSetting() {
-        this.memberService.addMember(new AddMemberDto("sample-id", "nickname", "1q2w3e4r", "01012341234", false));
         this.settingService.updateSetting(
                 "sample-id",
                 Setting.builder()
