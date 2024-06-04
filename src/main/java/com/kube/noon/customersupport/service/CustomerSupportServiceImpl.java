@@ -17,6 +17,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.hibernate.query.sqm.tree.SqmNode.log;
@@ -33,6 +34,9 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
 
     private final ReportRepository reportRepository;
     private final MemberService memberService;
+
+
+
 
     /**
      * 신고 목록을 조회
@@ -101,12 +105,12 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
 
 
         //피신고자 계정 잠금 일수 연장
-        Member reportee = memberService.findMemberById(reportProcessingDto.getReporteeId());
+        Optional<Member> reportee = memberService.findMemberById(reportProcessingDto.getReporteeId());
         log.info("피신고자 정보={}", reportee.toString());
 
         UpdateMemberDto updateMemberDto = new UpdateMemberDto();
-        BeanUtils.copyProperties(reportee, updateMemberDto);
-        updateMemberDto.setUnlockTime(reportee.getUnlockTime().plusDays(UnlockDuration.valueOf(unlockDuration).getDays()));
+        BeanUtils.copyProperties(reportee.orElseThrow(), updateMemberDto);
+        updateMemberDto.setUnlockTime(reportee.orElseThrow().getUnlockTime().plusDays(UnlockDuration.valueOf(unlockDuration).getDays()));
 
         memberService.updateMember(updateMemberDto);
 
