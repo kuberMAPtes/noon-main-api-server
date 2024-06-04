@@ -1,10 +1,7 @@
 package com.kube.noon.building.service;
 
-import com.kube.noon.building.domain.Building;
 import com.kube.noon.building.dto.BuildingDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
-import com.kube.noon.common.zzim.Zzim;
-
 import java.util.List;
 
 public interface BuildingProfileService {
