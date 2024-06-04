@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
@@ -36,7 +38,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void addMember(AddMemberDto memberDto) {
         try {
-
+            log.info("회원 추가 중 : DTO {}", memberDto);
             if (memberDto.getSocialSignUp()) {
                 memberDto.setPwd("social_sign_up");
             }
@@ -44,6 +46,7 @@ public class MemberServiceImpl implements MemberService {
             Member member = MemberBinder.INSTANCE.toMember(memberDto);
 
             memberRepository.addMember(member);
+            log.info("회원 추가 성공 : DTO {}", memberDto);
         } catch (DataAccessException e) {
             throw new MemberUpdateException(String.format("회원 추가 실패 : %s", memberDto), e);
         }
@@ -52,6 +55,7 @@ public class MemberServiceImpl implements MemberService {
     @Override//팔로우 or 차단
     public void addMemberRelationship(MemberRelationshipDto dto) {
         try {
+            log.info("회원 관계 추가 중 : DTO {}", dto);
             checkMemberisSignedOff(dto.getFromId());
             memberRepository
                     .findMemberById(dto.getFromId())
@@ -72,10 +76,9 @@ public class MemberServiceImpl implements MemberService {
                             throw new MemberSecurityBreachException("회원 관계 추가 실패 : " + dto);
                         }
                     });
-
             MemberRelationship memberRelationship = MemberBinder.INSTANCE.toMemberRelationship(dto);
             memberRepository.addMemberRelationship(memberRelationship);
-
+            log.info("회원 관계 추가 성공 : DTO {}", memberRelationship);
         } catch (DataAccessException e) {
             throw new MemberRelationshipUpdateException(String.format("회원 관계 추가 실패 : %s", dto), e);
         }
@@ -85,8 +88,12 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Optional<Member> findMemberById(String memberId) {
         try {
-            return Optional.ofNullable(memberRepository.findMemberById(memberId)
-                    .orElseThrow(() -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", memberId))));
+            log.info("회원 찾는 중 ID: {}", memberId);
+            Optional<Member> om = memberRepository.findMemberById(memberId);
+                    om.ifPresentOrElse(
+                            (member)->log.info("회원 찾기 성공 "),
+                            () -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", memberId)));
+            return  om;
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
             throw e;
@@ -97,20 +104,18 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Optional<MemberProfileDto> findMemberProfileById(String memberId) {
         try {
-
-
+            log.info("회원 프로필 찾는 중 ID: {}", memberId);
             Member member = memberRepository.findMemberById(memberId)
                     .orElseThrow(() -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", memberId)));
-
-
             List<FeedDto> feedDtoList = new ArrayList<FeedDto>();
 //            feedDtoList = feedService.findFeedListByMemberId(memberId);
 
-            MemberProfileDto om = MemberBinder.INSTANCE.toDto(member, MemberProfileDto.class);
+            MemberProfileDto memberProfileDto = MemberBinder.INSTANCE.toDto(member, MemberProfileDto.class);
 
 //            om.setFeedDtoList(feedDtoList);
 
-            return Optional.ofNullable(om);
+            log.info("회원 프로필 찾기 성공 : {}", memberProfileDto);
+            return Optional.ofNullable(memberProfileDto);
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
             throw e;
@@ -120,8 +125,11 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Optional<Member> findMemberByNickname(String nickname) {
         try {
+            log.info("회원 찾는 중 닉네임: {}", nickname);
             Optional<Member> op = memberRepository.findMemberByNickname(nickname);
-            checkMemberisSignedOff(op.orElseThrow().getMemberId());
+            String memberId=op.orElseThrow().getMemberId();
+            checkMemberisSignedOff(memberId);
+            log.info("회원 찾기 성공 : {}", memberId);
             return op;
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
@@ -166,6 +174,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void updateMember(UpdateMemberDto updateMemberDto) {
         try {
+            log.info("회원 업데이트 중");
             checkMemberisSignedOff(updateMemberDto.getMemberId());
             memberRepository.updateMember(MemberBinder.INSTANCE.toMember(updateMemberDto));
         } catch (DataAccessException e) {
@@ -176,6 +185,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void updatePassword(String memberId, String newPassword) {
         try {
+            log.info("회원 비밀번호 업데이트 중");
             checkMemberisSignedOff(memberId);
             memberRepository.updatePassword(memberId, newPassword);
         } catch (DataAccessException e) {
@@ -187,6 +197,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void updatePhoneNumber(String memberId, String newPassword) {
         try {
+            log.info("회원 전화번호 업데이트 중 :  {}", memberId);
             checkMemberisSignedOff(memberId);
             memberRepository.updatePhoneNumber(memberId, newPassword);
         } catch (DataAccessException e) {
@@ -197,6 +208,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl) {
         try {
+            log.info("회원 프로필 사진 업데이트 중 : {}", memberId);
             checkMemberisSignedOff(memberId);
             memberRepository.updateMemberProfilePhoto(memberId, newProfilePhotoUrl);
         } catch (DataAccessException e) {
