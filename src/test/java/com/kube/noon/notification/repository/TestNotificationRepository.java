@@ -1,5 +1,7 @@
 package com.kube.noon.notification.repository;
 
+import com.kube.noon.member.domain.Member;
+import com.kube.noon.member.repository.MemberRepository;
 import com.kube.noon.notification.domain.Notification;
 import com.kube.noon.notification.domain.NotificationType;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.jdbc.support.JdbcUtils;
-import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
@@ -35,6 +36,9 @@ public class TestNotificationRepository {
 
     @Autowired
     NotificationRepository notificationRepository;
+
+    @Autowired
+    MemberRepository memberRepository;
 
     @BeforeEach
     void init() {
@@ -82,11 +86,25 @@ public class TestNotificationRepository {
         }
     }
 
-    @DisplayName("Notification 저장")
+    @DisplayName("Notification 저장 - memberId로")
     @Test
-    void save() {
+    void save_memberId() {
+        Member sampleReceiver = this.memberRepository.findMemberById("sample-receiver").get();
         Notification testCase =
-                new Notification("sample-receiver", "sample-text", NotificationType.COMMENT);
+                new Notification(sampleReceiver, "sample-text", NotificationType.COMMENT);
+        assertThatNoException().isThrownBy(() -> this.notificationRepository.save(testCase));
+
+        Integer notificationId = testCase.getNotificationId();
+
+        assertThat(notificationId).isNotNull();
+    }
+
+    @DisplayName("Notification 저장 - Member 객체 참조")
+    @Test
+    void save_member() {
+        Optional<Member> member = this.memberRepository.findMemberById("sample-receiver");
+        Notification testCase =
+                new Notification(member.get(), "sample-text", NotificationType.COMMENT);
         assertThatNoException().isThrownBy(() -> this.notificationRepository.save(testCase));
 
         Integer notificationId = testCase.getNotificationId();
@@ -97,9 +115,10 @@ public class TestNotificationRepository {
     @DisplayName("Notification 저장 - notificationId 값 세팅")
     @Test
     void save_setNotificationId() {
+        Member sampleReceiver = this.memberRepository.findMemberById("sample-receiver").get();
         Notification testCase = new Notification();
         testCase.setNotificationId(1);
-        testCase.setReceiverId("sample-receiver");
+        testCase.setReceiver(sampleReceiver);
         testCase.setNotificationText("sample-text");
         testCase.setNotificationType(NotificationType.COMMENT);
         this.notificationRepository.save(testCase);
@@ -122,8 +141,9 @@ public class TestNotificationRepository {
     @DisplayName("Notification 조회")
     @Test
     void findById() {
+        Member sampleReceiver = this.memberRepository.findMemberById("sample-receiver").get();
         Notification testCase =
-                new Notification("sample-receiver", "sample-text", NotificationType.COMMENT);
+                new Notification(sampleReceiver, "sample-text", NotificationType.COMMENT);
 
         this.notificationRepository.save(testCase);
 
@@ -138,7 +158,7 @@ public class TestNotificationRepository {
         log.info("findNotification={}", findNotification);
 
         assertThat(findNotification.getNotificationId()).isEqualTo(testCase.getNotificationId());
-        assertThat(findNotification.getReceiverId()).isEqualTo(testCase.getReceiverId());
+        assertThat(findNotification.getReceiver().getMemberId()).isEqualTo(testCase.getReceiver().getMemberId());
         assertThat(findNotification.getNotificationText()).isEqualTo(testCase.getNotificationText());
         assertThat(findNotification.getNotificationType()).isEqualTo(testCase.getNotificationType());
     }
@@ -146,8 +166,9 @@ public class TestNotificationRepository {
     @DisplayName("Notification 조회 - 없는 레코드 조회")
     @Test
     void findById_notExistRecord() {
+        Member sampleReceiver = this.memberRepository.findMemberById("sample-receiver").get();
         Notification testCase =
-                new Notification("sample-receiver", "sample-text", NotificationType.COMMENT);
+                new Notification(sampleReceiver, "sample-text", NotificationType.COMMENT);
 
         this.notificationRepository.save(testCase);
 
