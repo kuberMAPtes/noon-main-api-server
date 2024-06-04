@@ -9,6 +9,7 @@ import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
 import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.enums.Role;
+import com.kube.noon.member.repository.MemberRepository;
 import jakarta.transaction.Transactional;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ public class TestMemberService {
 
     @Autowired
     private MemberService memberService;
+    private MemberRepository memberRepository;
 
     @Test
     @DisplayName("회원 추가 테스트")
@@ -49,6 +51,7 @@ public class TestMemberService {
                 .build());
         log.info("회원 추가 테스트");
         assertThat(memberService.findMemberByMemberId("member_1230")).isNotNull();
+        memberRepository.deleteMember("member_1230");
     }
 
     @Test

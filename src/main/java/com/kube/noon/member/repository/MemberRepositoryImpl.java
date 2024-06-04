@@ -228,6 +228,12 @@ public class MemberRepositoryImpl implements MemberRepository {
         memberRelationshipJpaRepository.deleteByFromMember_MemberIdAndToMember_MemberId(fromId, toId);
         log.info("회원 관계 삭제 성공");
     }
+    @Override
+    public void deleteMember(String memberId) {
+        log.info("회원 삭제 중 : {}", memberId);
+        memberJpaRepository.deleteById(memberId);
+        log.info("회원 삭제 성공 : {}", memberId);
+    }
 
 //    @Override
 //    public void deleteMemberRelationship(String fromId, String toId, RelationshipType relationshipType) {

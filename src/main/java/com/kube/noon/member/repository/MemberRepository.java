@@ -40,5 +40,7 @@ public interface MemberRepository {
     void updateMemberRelationship(MemberRelationship memberRelationship);
 
     void deleteMemberRelationship(String fromId, String toId);
+
+    void deleteMember(String memberId);
 }
 
