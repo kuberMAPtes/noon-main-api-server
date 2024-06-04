@@ -1,7 +1,10 @@
 package com.kube.noon.member.dto;
 
 import com.kube.noon.common.PublicRange;
+import com.kube.noon.feed.dto.FeedDto;
 import lombok.*;
+
+import java.util.List;
 
 @ToString
 @EqualsAndHashCode
@@ -24,6 +27,8 @@ public class MemberProfileDto {
     private int dajungScore;
 
     private boolean signedOff;
+
+    private List<FeedDto> feedDtoList;
 
     private PublicRange buildingSubscriptionPublicRange;
 

@@ -5,16 +5,17 @@ import com.kube.noon.member.enums.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
-@ToString
 @Table(name = "members")
 public class Member {
+
+    private static final String ANSI_RESET = "\u001B[0m";
+    private static final String ANSI_RED = "\u001B[31m";
 
     @Id
     @Column(name = "member_id", length = 20)
@@ -62,4 +63,34 @@ public class Member {
 
     @Column(name = "receiving_all_notification_allowed", nullable = false, columnDefinition = "BOOLEAN default FALSE")
     private Boolean receivingAllNotificationAllowed;
+
+    public String toString() {
+        return ANSI_RED
+                +"Member(memberId=" + this.getMemberId()
+                + ", memberRole=" + this.getMemberRole()
+                + ", nickname=" + this.getNickname()
+                + ", pwd=" + this.getPwd()
+                + ", phoneNumber="
+                + this.getPhoneNumber()
+                + ", unlockTime="
+                + this.getUnlockTime()
+                + ", profilePhotoUrl="
+                + this.getProfilePhotoUrl()
+                + ", profileIntro="
+                + this.getProfileIntro()
+                + ", dajungScore="
+                + this.getDajungScore()
+                + ", signedOff="
+                + this.getSignedOff()
+                + ", buildingSubscriptionPublicRange="
+                + this.getBuildingSubscriptionPublicRange()
+                + ", allFeedPublicRange="
+                + this.getAllFeedPublicRange()
+                + ", memberProfilePublicRange="
+                + this.getMemberProfilePublicRange()
+                + ", receivingAllNotificationAllowed="
+                + this.getReceivingAllNotificationAllowed()
+                + ")"
+                +ANSI_RESET;
+    }
 }

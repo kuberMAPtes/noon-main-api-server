@@ -23,6 +23,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor // 모든 필드를 포함하는 생성자 생성
 public class MemberRelationship {
 
+    private static final String ANSI_RESET = "\u001B[0m";
+    private static final String ANSI_YELLOW = "\u001B[33m";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_relationship_id")
@@ -42,6 +45,22 @@ public class MemberRelationship {
     @ManyToOne
     @JoinColumn(name = "to_id", referencedColumnName = "member_id")
     private Member toMember;
+
+    public String toString(){
+        return ANSI_YELLOW
+                +"MemberRelationship{"
+                + "memberRelationshipId="
+                + memberRelationshipId
+                + ", relationshipType="
+                + relationshipType + ", activated="
+                + activated
+                + ", fromMember="
+                + fromMember
+                + ", toMember="
+                + toMember
+                + '}'
+                + ANSI_RESET;
+    }
 
 
 }
