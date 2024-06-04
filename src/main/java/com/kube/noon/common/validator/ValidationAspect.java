@@ -16,6 +16,11 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 검증을 위한 Aspect
+ *
+ * @author PGD
+ */
 @Slf4j
 @Aspect
 public class ValidationAspect {
