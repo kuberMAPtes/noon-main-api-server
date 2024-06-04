@@ -19,5 +19,5 @@ public interface NotificationService {
      * @param notificationId 알림의 ID
      * @return notificationId로 식별되는 알림 데이터 DTO 객체
      */
-    public NotificationDto getNotification(String notificationId);
+    public NotificationDto getNotification(int notificationId);
 }
