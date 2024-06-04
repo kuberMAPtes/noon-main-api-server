@@ -62,7 +62,7 @@ public class TestFeedAttachmentRepository {
     }
 
     /**
-     * 피드에 첨부파일을 하나 삭제한다.
+     * 피드에 첨부파일을 하나 삭제한다. - activated = false
      * feed_id = 10000, attachment_id = 10000을 기준으로 한다.
      */
     @Transactional
