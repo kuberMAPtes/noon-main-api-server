@@ -13,6 +13,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class MemberRelationshipSearchCriteriaDto {
 
     @NonNull
