@@ -1,18 +1,13 @@
 package com.kube.noon.building.service;
-import com.kube.noon.building.domain.Building;
 import com.kube.noon.building.dto.BuildingDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
-import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
-import com.kube.noon.common.zzim.Zzim;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @SpringBootTest

@@ -17,22 +17,28 @@ public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelations
 
     private final JPAQueryFactory queryFactory;
 
+
+    /**
+     * 다 선택하면 다 나오고, 하나 선택하면 하나만 나옴
+     * @param criteria
+     * @return
+     */
     @Override
     public List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria) {
         QMemberRelationship ms = QMemberRelationship.memberRelationship;
 
         BooleanBuilder builder = new BooleanBuilder();
 
-        if (criteria.isFollowing()) {
+        if (criteria.getFollowing()!=null) {
             builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
         }
-        if (criteria.isFollower()) {
+        if (criteria.getFollower()!=null) {
             builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
         }
-        if (criteria.isBlocking()) {
+        if (criteria.getBlocking()!=null) {
             builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
         }
-        if (criteria.isBlocker()) {
+        if (criteria.getBlocker()!=null) {
             builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
         }
 
