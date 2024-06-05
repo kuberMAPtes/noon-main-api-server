@@ -1,6 +1,8 @@
 package com.kube.noon.building.service;
 import com.kube.noon.building.dto.BuildingDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
+import com.kube.noon.building.repository.BuildingSummaryRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -58,6 +60,13 @@ public class TestBuildingService {
             log.info("빌딩도로명주소={}", buildingDto.getRoadAddr());
 
         }
+
+    }
+    @DisplayName("건물아이디로 건물 피드 요약 보기")
+    @Test
+    void getFeedAISummary(){
+
+        log.info("빌딩피드 요약내용={}", buildingProfileService.getFeedAISummary(10099));
 
     }
 }
