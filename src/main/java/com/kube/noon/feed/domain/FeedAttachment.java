@@ -40,6 +40,6 @@ public class FeedAttachment {
 
     @Override
     public String toString() {
-        return "attachmentId : " + attachmentId + " fileUrl : " + fileUrl + " activated : " + activated;
+        return "attachmentId : " + attachmentId + " / fileUrl : " + fileUrl + " / activated : " + activated + " / FileType : " + fileType;
     }
 }

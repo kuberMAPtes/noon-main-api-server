@@ -9,12 +9,8 @@ import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -22,7 +18,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FeedServiceImpl implements FeedService {
 
-    @Autowired
     private final FeedRepository feedRepository;
 
     @Override

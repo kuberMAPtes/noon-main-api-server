@@ -75,4 +75,19 @@ public class TestFeedAttachmentRepository {
         assertThat(feedAttachmentRepository.save(feedAttachment)).isNotNull();
         log.info(feedAttachment);
     }
+
+    /**
+     * 첨부파일의 종류별로 목록을 가져온다.
+     * 이 테스트에서는 FileType.PHOTO 를 기준으로 가져온다.
+     */
+    @Transactional
+    @Test
+    public void getFeedAttachmentByFileType() {
+        List<FeedAttachment> attachments = feedAttachmentRepository.findByFileType(FileType.PHOTO);
+
+        assertThat(attachments.size()).isGreaterThan(0);
+        for (FeedAttachment attachment : attachments) {
+            log.info(attachment);
+        }
+    }
 }
