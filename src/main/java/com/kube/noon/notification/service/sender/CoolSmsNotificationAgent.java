@@ -59,7 +59,9 @@ public class CoolSmsNotificationAgent implements NotificationTransmissionAgent {
         String formattedDate = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toString().split("\\[")[0];
         try {
             String signature = getSignature(salt, formattedDate);
-            String authorizationHeader = "HMAC-SHA256 apiKey=NCSCGKUZVUJS1TBN, date="
+            String authorizationHeader = "HMAC-SHA256 apiKey="
+                    + this.accessKey
+                    + ", date="
                     + formattedDate
                     + ", salt="
                     + salt
