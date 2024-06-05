@@ -4,9 +4,9 @@ import com.kube.noon.building.service.BuildingWikiService;
 import com.kube.noon.building.service.buildingwiki.BuildingWikiEmptyServiceImpl;
 import com.kube.noon.common.logging.TraceLoggingAspect;
 import com.kube.noon.common.validator.ValidationAspect;
-import com.kube.noon.notification.service.sender.CoolSmsNotificationAgent;
-import com.kube.noon.notification.service.sender.NotificationEmptyAgent;
-import com.kube.noon.notification.service.sender.NotificationTransmissionAgent;
+import com.kube.noon.common.messagesender.NotificationCoolSmsMessageSender;
+import com.kube.noon.common.messagesender.NotificationEmptyMessageSender;
+import com.kube.noon.common.messagesender.NotificationMessageSender;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
@@ -40,19 +40,9 @@ public class BeanConfig {
         return new ValidationAspect(applicationContext);
     }
 
-    @Value("${cool-sms.access-key}") String coolSmsAccessKey;
-    @Value("${cool-sms.secret-key}") String coolSmsSecretKey;
-    @Value("${cool-sms.from-phone-number}") String fromPhoneNumber;
-
     @Bean
-    @Profile("prod")
-    public NotificationTransmissionAgent transmissionAgentForProd() {
-        return new CoolSmsNotificationAgent(coolSmsAccessKey, coolSmsSecretKey, fromPhoneNumber);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(NotificationTransmissionAgent.class)
-    public NotificationTransmissionAgent transmissionAgentForDev() {
-        return new NotificationEmptyAgent();
+    @ConditionalOnMissingBean(NotificationMessageSender.class)
+    public NotificationMessageSender transmissionAgentForDev() {
+        return new NotificationEmptyMessageSender();
     }
 }

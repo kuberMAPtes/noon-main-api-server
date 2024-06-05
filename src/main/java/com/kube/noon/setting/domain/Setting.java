@@ -8,6 +8,7 @@ import lombok.*;
  *
  * @author PGD
  */
+@Deprecated
 @Getter
 @Setter
 @NoArgsConstructor

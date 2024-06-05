@@ -5,7 +5,7 @@ import com.kube.noon.member.service.MemberService;
 import com.kube.noon.notification.domain.Notification;
 import com.kube.noon.notification.dto.NotificationDto;
 import com.kube.noon.notification.repository.NotificationRepository;
-import com.kube.noon.notification.service.sender.NotificationTransmissionAgent;
+import com.kube.noon.common.messagesender.NotificationMessageSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 public class NotificationServiceImpl implements NotificationService {
-    private final NotificationTransmissionAgent transmissionAgent;
+    private final NotificationMessageSender transmissionAgent;
     private final NotificationRepository notificationRepository;
     private final MemberService memberService;
 
