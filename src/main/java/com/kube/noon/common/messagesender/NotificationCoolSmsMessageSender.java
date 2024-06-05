@@ -6,8 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Mac;
@@ -20,6 +23,8 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Slf4j
+@Component
+@Profile("prod")
 public class NotificationCoolSmsMessageSender implements NotificationMessageSender {
     private static final String URL = "https://api.coolsms.co.kr/messages/v4/send-many/detail";
     private static final String KOREA_COUNTRY_CODE = "82";
@@ -29,7 +34,9 @@ public class NotificationCoolSmsMessageSender implements NotificationMessageSend
     private final String fromPhoneNumber;
     private final RestTemplate restTemplate;
 
-    public NotificationCoolSmsMessageSender(String accessKey, String secretKey, String fromPhoneNumber) {
+    public NotificationCoolSmsMessageSender(@Value("${cool-sms.access-key}") String accessKey,
+                                            @Value("${cool-sms.secret-key}") String secretKey,
+                                            @Value("${cool-sms.from-phone-number}") String fromPhoneNumber) {
         this.accessKey = accessKey;
         this.secretKey = secretKey;
         this.fromPhoneNumber = fromPhoneNumber;

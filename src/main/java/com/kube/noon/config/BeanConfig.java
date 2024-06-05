@@ -40,16 +40,6 @@ public class BeanConfig {
         return new ValidationAspect(applicationContext);
     }
 
-    @Value("${cool-sms.access-key}") String coolSmsAccessKey;
-    @Value("${cool-sms.secret-key}") String coolSmsSecretKey;
-    @Value("${cool-sms.from-phone-number}") String fromPhoneNumber;
-
-    @Bean
-    @Profile("prod")
-    public NotificationMessageSender transmissionAgentForProd() {
-        return new NotificationCoolSmsMessageSender(coolSmsAccessKey, coolSmsSecretKey, fromPhoneNumber);
-    }
-
     @Bean
     @ConditionalOnMissingBean(NotificationMessageSender.class)
     public NotificationMessageSender transmissionAgentForDev() {
