@@ -1,4 +1,4 @@
-package com.kube.noon.notification.service.sender;
+package com.kube.noon.common.messagesender;
 
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.notification.domain.NotificationType;
@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -21,29 +20,16 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Slf4j
-public class CoolSmsNotificationAgent implements NotificationTransmissionAgent {
+public class NotificationCoolSmsMessageSender implements NotificationMessageSender {
     private static final String URL = "https://api.coolsms.co.kr/messages/v4/send-many/detail";
     private static final String KOREA_COUNTRY_CODE = "82";
 
-    private final NotificationTransmissionAgent other;
     private final String accessKey;
     private final String secretKey;
     private final String fromPhoneNumber;
     private final RestTemplate restTemplate;
 
-    public CoolSmsNotificationAgent(String accessKey, String secretKey, String fromPhoneNumber) {
-        this.other = null;
-        this.accessKey = accessKey;
-        this.secretKey = secretKey;
-        this.fromPhoneNumber = fromPhoneNumber;
-        this.restTemplate = new RestTemplate();
-    }
-
-    public CoolSmsNotificationAgent(NotificationTransmissionAgent other,
-                                    String accessKey,
-                                    String secretKey,
-                                    String fromPhoneNumber) {
-        this.other = other;
+    public NotificationCoolSmsMessageSender(String accessKey, String secretKey, String fromPhoneNumber) {
         this.accessKey = accessKey;
         this.secretKey = secretKey;
         this.fromPhoneNumber = fromPhoneNumber;
@@ -52,9 +38,22 @@ public class CoolSmsNotificationAgent implements NotificationTransmissionAgent {
 
     @Override
     public void send(Member receiver, String text, NotificationType notificationType) {
-        if (this.other != null) {
-            this.other.send(receiver, text, notificationType);
+        send(receiver, generateText(text, notificationType));
+    }
+
+    private String generateText(String text, NotificationType notificationType) {
+        String header;
+        switch (notificationType) {
+            case COMMENT -> header = "[댓글 알림]";
+            case REPORT -> header = "[신고 알림]";
+            case LIKE -> header = "[좋아요 알림]";
+            default -> header = "";
         }
+        return header + "\n" + text;
+    }
+
+    @Override
+    public void send(Member receiver, String text) {
         String salt = UUID.randomUUID().toString().replaceAll("-", "");
         String formattedDate = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toString().split("\\[")[0];
         try {
@@ -68,7 +67,7 @@ public class CoolSmsNotificationAgent implements NotificationTransmissionAgent {
                     + ", signature="
                     + signature;
             System.out.println(authorizationHeader);
-            sendRequest(authorizationHeader, receiver.getPhoneNumber(), text, notificationType);
+            sendRequest(authorizationHeader, receiver.getPhoneNumber(), text);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         } catch (InvalidKeyException e) {
@@ -87,13 +86,12 @@ public class CoolSmsNotificationAgent implements NotificationTransmissionAgent {
 
     private void sendRequest(String authHeader,
                              String receiverPhoneNumber,
-                             String text,
-                             NotificationType notificationType) {
+                             String text) {
         JSONArray messages = new JSONArray();
         JSONObject message = new JSONObject();
         message.put("to", receiverPhoneNumber.replaceAll("-", ""));
         message.put("from", this.fromPhoneNumber);
-        message.put("text", generateText(text, notificationType));
+        message.put("text", text);
         message.put("type", "SMS");
         message.put("country", KOREA_COUNTRY_CODE);
         messages.put(message);
@@ -109,16 +107,5 @@ public class CoolSmsNotificationAgent implements NotificationTransmissionAgent {
 
         ResponseEntity<String> responseEntity = this.restTemplate.exchange(requestEntity, String.class);
         log.trace(responseEntity.getBody());
-    }
-
-    private String generateText(String text, NotificationType notificationType) {
-        String header;
-        switch (notificationType) {
-            case COMMENT -> header = "[댓글 알림]";
-            case REPORT -> header = "[신고 알림]";
-            case LIKE -> header = "[좋아요 알림]";
-            default -> header = "";
-        }
-        return header + "\n" + text;
     }
 }
