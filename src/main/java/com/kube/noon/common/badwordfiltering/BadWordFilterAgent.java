@@ -8,16 +8,16 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 @Component
-public class BadWordFiltering extends HashSet<String> implements BadWords, ReadURL, ReadFile {
+public class BadWordFilterAgent extends HashSet<String> implements BadWords, ReadURL, ReadFile {
     private String substituteValue = "*";
 
     //대체 문자 지정
     //기본값 : *
-    public BadWordFiltering() {
+    public BadWordFilterAgent() {
         addAll(List.of(koreaWord1));
     }
 
-    public BadWordFiltering(String substituteValue) {
+    public BadWordFilterAgent(String substituteValue) {
         this.substituteValue = substituteValue;
     }
 

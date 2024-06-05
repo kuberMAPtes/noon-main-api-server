@@ -1,5 +1,6 @@
 package com.kube.noon.notification.domain;
 
+import com.kube.noon.member.domain.Member;
 import com.kube.noon.notification.converter.NotificationTypeConverter;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,10 +21,6 @@ public class Notification {
     @Column(name = "notification_id")
     private Integer notificationId;
 
-    // TODO: receiverId -> receiver
-    @Column(name = "receiver_id", nullable = false)
-    private String receiverId;
-
     @Column(name = "notification_text", nullable = false)
     private String notificationText;
 
@@ -31,8 +28,12 @@ public class Notification {
     @Convert(converter = NotificationTypeConverter.class)
     private NotificationType notificationType;
 
-    public Notification(String receiverId, String notificationText, NotificationType notificationType) {
-        this.receiverId = receiverId;
+    @JoinColumn(name = "receiver_id", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Member receiver;
+
+    public Notification(Member receiver, String notificationText, NotificationType notificationType) {
+        this.receiver = receiver;
         this.notificationText = notificationText;
         this.notificationType = notificationType;
     }

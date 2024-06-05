@@ -20,6 +20,8 @@ public interface MemberService {
 
     Optional<Member> findMemberByNickname(String nickname);//JPA
 
+    Optional<Member> findMemberByPhoneNumber(String phoneNumber);
+
     List<Member> findMemberListByCriteria(MemberSearchCriteriaDto searchDto);//JPA
 
     List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteriaDto);
@@ -43,6 +45,8 @@ public interface MemberService {
     boolean checkMemberId(String memberId);
 
     boolean checkPassword(String email, String password);
+
+    boolean checkPhoneNumber(String phoneNumber);
 
     boolean checkBadWord(String word);
 }

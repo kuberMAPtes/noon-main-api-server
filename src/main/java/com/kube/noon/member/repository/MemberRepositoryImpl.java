@@ -65,6 +65,11 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
+    public Optional<Member> findMemberByPhoneNumber(String phoneNumber) {
+        return memberJpaRepository.findMemberByPhoneNumber(phoneNumber);
+    }
+
+    @Override
     public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria) {
         List<Member> lm = memberJpaRepository.findMemberListByCriteria(criteria);
         if (lm.isEmpty()) {

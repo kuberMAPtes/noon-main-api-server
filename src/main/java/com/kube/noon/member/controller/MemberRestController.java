@@ -4,12 +4,16 @@ import com.kube.noon.member.dto.AddMemberDto;
 import com.kube.noon.member.dto.LoginRequestDto;
 import com.kube.noon.member.enums.LoginFlag;
 import com.kube.noon.member.service.MemberService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 @RestController
@@ -36,19 +40,19 @@ public class MemberRestController {
     // Method
 
     @PostMapping("/sendAuthentificationNumber")
-    public ResponseEntity<?> sendAuthentificationNumber(@RequestParam String email) {
+    public ResponseEntity<?> sendAuthentificationNumber(@RequestParam String phoneNumber) {
         try {
-//            memberService.sendAuthenticationNumber(email);
-            return ResponseEntity.ok("Authentication number sent to " + email);
+//            memberService.sendAuthenticationNumber(phoneNumber);
+            return ResponseEntity.ok("Authentication number sent to " + phoneNumber);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send authentication number");
         }
     }
 
     @PostMapping("/confirmAuthentificationNumber")
-    public ResponseEntity<?> confirmAuthentificationNumber(@RequestParam String email, @RequestParam String authNumber) {
+    public ResponseEntity<?> confirmAuthentificationNumber(@RequestParam String phoneNumber, @RequestParam String authNumber) {
 
-//        boolean isConfirmed = memberService.confirmAuthenticationNumber(email, authNumber);
+//        boolean isConfirmed = memberService.confirmAuthenticationNumber(phoneNumber, authNumber);
         if (true) {
             return ResponseEntity.ok("Authentication confirmed");
         } else {
@@ -56,25 +60,37 @@ public class MemberRestController {
         }
     }
 
+    // 체크 : 완료
     @PostMapping("/addMember")
-    public ResponseEntity<?> addMember(@RequestBody AddMemberDto dto) {
+    public ResponseEntity<?> addMember(@Valid @RequestBody AddMemberDto dto, BindingResult bindingResult) {
         try {
+            if (bindingResult.hasErrors()){
+                Map<String,String> errors = new HashMap<>();
+                bindingResult.getFieldErrors().forEach(fieldError->{
+                    errors.put(fieldError.getField(),fieldError.getDefaultMessage());
+                });
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+            }
+
+            memberService.findMemberById(dto.getMemberId()).ifPresent(member -> {
+                throw new RuntimeException("이미 존재하는 회원입니다.");
+            });
+
+            memberService.findMemberByNickname(dto.getNickname()).ifPresent(member -> {
+                throw new RuntimeException("이미 존재하는 닉네임입니다.");
+            });
+
+            memberService.findMemberByPhoneNumber(dto.getPhoneNumber()).ifPresent(member -> {
+                throw new RuntimeException("이미 존재하는 전화번호입니다.");
+            });
+
             memberService.addMember(dto);
-            return ResponseEntity.ok("Member added successfully");
+            return ResponseEntity.ok("회원가입 성공");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Member already exists");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("회원이 이미 존재합니다.");
         }
     }
-
-    @GetMapping("/checkNickname")
-    public ResponseEntity<?> checkNickname(@RequestParam String nickname) {
-        boolean isOk = memberService.checkNickname(nickname);
-
-        checkBadWord(nickname);
-
-        return ResponseEntity.ok(isOk ? "Nickname is duplicated" : "Nickname is available");
-    }
-
+    //체크 : 완료
     @GetMapping("/checkMemberId")
     public ResponseEntity<?> checkMemberId(@RequestParam String memberId) {
         boolean isOk = memberService.checkMemberId(memberId);
@@ -83,7 +99,27 @@ public class MemberRestController {
 
         return ResponseEntity.ok(isOk ? "Member ID is duplicated" : "Member ID is available");
     }
+    //체크 : 완료
+    @GetMapping("/checkNickname")
+    public ResponseEntity<?> checkNickname(@RequestParam String nickname) {
+        boolean isOk = memberService.checkNickname(nickname);
 
+        checkBadWord(nickname);
+
+        return ResponseEntity.ok(isOk ? "Nickname is duplicated" : "Nickname is available");
+    }
+    //체크 : 완료
+    @GetMapping("/checkPhoneNumber")
+    public ResponseEntity<?> checkPhoneNumber(@RequestParam String phoneNumber) {
+        boolean isOk = memberService.checkPhoneNumber(phoneNumber);
+
+        checkBadWord(phoneNumber);
+
+        return ResponseEntity.ok(isOk ? "Phone number is duplicated" : "Phone number is available");
+    }
+
+
+    //체크 : 완료
     @GetMapping("/checkPassword")
     public ResponseEntity<?> checkPassword(@RequestParam String memberId, @RequestParam String password) {
         boolean isOk = memberService.checkPassword(memberId, password);
@@ -91,9 +127,9 @@ public class MemberRestController {
         checkBadWord(password);
 
         if (isOk) {
-            return ResponseEntity.ok("Password is correct");
+            return ResponseEntity.ok("패스워드 사용 가능");
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("부적합한 패스워드");
         }
     }
 

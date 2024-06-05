@@ -5,21 +5,26 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
+/**
+ * 로그인 성공,실패 시 호출되는 함수
+ */
 @Service
-public class LoginAttemptService {
+public class LoginAttemptCheckerAgent {
 
     private static final int MAX_ATTEMPTS = 5;
 
     private final StringRedisTemplate redisTemplate;
 
     @Autowired
-    public LoginAttemptService(StringRedisTemplate redisTemplate) {
+    public LoginAttemptCheckerAgent(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
     public void loginSucceeded(String key) {
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
+
         ops.getOperations().delete(key);
+
     }
 
     public void loginFailed(String key) {

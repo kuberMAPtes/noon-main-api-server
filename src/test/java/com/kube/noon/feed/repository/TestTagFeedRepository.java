@@ -9,6 +9,7 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Log4j2
 @SpringBootTest
+@ActiveProfiles("winterhana")
 public class TestTagFeedRepository {
 
     @Autowired
@@ -78,7 +80,7 @@ public class TestTagFeedRepository {
     @Transactional
     @Test
     public void deleteTagTest() {
-        String tagText = "맛있다_6";
+        String tagText = "따듯함";
 
         // 1. 태그 텍스트에 대한 번호를 가져온다.
         Tag tag = tagRepository.findByTagText(tagText);

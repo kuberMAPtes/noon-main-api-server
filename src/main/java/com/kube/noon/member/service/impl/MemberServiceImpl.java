@@ -1,6 +1,6 @@
 package com.kube.noon.member.service.impl;
 
-import com.kube.noon.common.badwordfiltering.BadWordFiltering;
+import com.kube.noon.common.badwordfiltering.BadWordFilterAgent;
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.member.binder.MemberBinder;
@@ -34,7 +34,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final FeedService feedService;
-    private final BadWordFiltering badWordFiltering;
+    private final BadWordFilterAgent badWordFilterAgent;
     private final String[] badWordSeparator = {
             "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_", "=", "+",
             "`", "~", "[", "]", "{", "}", ";", ":", "\'", "\",", "\\", ".", "/", "<", ">", "?"
@@ -45,9 +45,6 @@ public class MemberServiceImpl implements MemberService {
     public void addMember(AddMemberDto memberDto) {
         try {
             log.info("회원 추가 중 : DTO {}", memberDto);
-
-            memberDto.getMemberId();
-
 
             if (memberDto.getSocialSignUp()) {
                 memberDto.setPwd("social_sign_up");
@@ -148,6 +145,22 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    public Optional<Member> findMemberByPhoneNumber(String phoneNumber) {
+        try {
+            log.info("회원 찾는 중 전화번호: {}", phoneNumber);
+            Optional<Member> op = memberRepository.findMemberByPhoneNumber(phoneNumber);
+            String memberId = op.orElseThrow().getMemberId();
+            checkMemberisSignedOff(memberId);
+            log.info("회원 찾기 성공 : {} ", memberId);
+            return op;
+        }
+        catch (DataAccessException e) {
+            log.error("DB 접근 관련 문제 발생", e);
+            throw e;
+        }
+    }
+
+    @Override
     public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteriaDto) {
         try {
             checkMemberisSignedOff(criteriaDto.getMemberId());
@@ -225,7 +238,6 @@ public class MemberServiceImpl implements MemberService {
             throw new MemberUpdateException(String.format("회원 프로필 사진 업데이트 실패 : %s", memberId), e);
         }
     }
-
     /**
      * 차단해제할거면 dto의 타입에 차단 넣는다.
      *
@@ -252,7 +264,6 @@ public class MemberServiceImpl implements MemberService {
                 .build());
         log.info("회원 삭제 성공 : {}", memberId);
     }
-
     @Override
     public boolean checkNickname(String nickname) {
 
@@ -263,7 +274,6 @@ public class MemberServiceImpl implements MemberService {
 
         return false;
     }
-
     @Override
     public boolean checkMemberId(String memberId) {
 
@@ -274,7 +284,6 @@ public class MemberServiceImpl implements MemberService {
 
         return false;
     }
-
     @Override
     public boolean checkPassword(String memberId, String password) {
 
@@ -289,10 +298,16 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public boolean checkBadWord(String word){
-        return badWordFiltering.change(word,badWordSeparator).contains("*");
+    public boolean checkPhoneNumber(String phoneNumber) {
+
+//        memberRepository.find
+        return false;
     }
 
+    @Override
+    public boolean checkBadWord(String word){
+        return badWordFilterAgent.change(word,badWordSeparator).contains("*");
+    }
     private void checkMemberisSignedOff(String memberId) {
         memberRepository.findMemberById(memberId)
                 .ifPresent(member -> {
