@@ -12,4 +12,7 @@ public interface BuildingProfileService {
     List<BuildingDto> getUserBuildingSubscriptionList(String memberId);
     BuildingDto getBuildingProfile(int buildingId);
     List<BuildingDto> getBuildingSubscriptionListByMemberId(String memberId);
+
+    String getFeedAISummary(int buildingId);
+
 }
