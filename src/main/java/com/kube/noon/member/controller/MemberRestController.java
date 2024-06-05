@@ -40,8 +40,8 @@ public class MemberRestController {
     }
 
     // Common
-    private ResponseEntity<?> checkBadWord(String word){
-        if(memberService.checkBadWord(word)){
+    private ResponseEntity<?> checkBadWord(String word) {
+        if (memberService.checkBadWord(word)) {
             String bodyString = "비속어는 사용할 수 없습니다.";
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(bodyString);
         }
@@ -80,6 +80,7 @@ public class MemberRestController {
 
         return ResponseEntity.ok(isOk ? "Member ID is duplicated" : "Member ID is available");
     }
+
     //체크 : 완료
     @GetMapping("/checkNickname")
     public ResponseEntity<?> checkNickname(@RequestParam String nickname) {
@@ -89,6 +90,7 @@ public class MemberRestController {
 
         return ResponseEntity.ok(isOk ? "Nickname is duplicated" : "Nickname is available");
     }
+
     //체크 : 완료
     @GetMapping("/checkPhoneNumber")
     public ResponseEntity<?> checkPhoneNumber(@RequestParam String phoneNumber) {
@@ -133,21 +135,21 @@ public class MemberRestController {
                 () -> {
                     isCorrect.set(LoginFlag.INCORRECT_ID);
                 });
-        if(isCorrect.get().equals(LoginFlag.SUCCESS)) {
+        if (isCorrect.get().equals(LoginFlag.SUCCESS)) {
 
-            String jwt ="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0IiwiaWF0IjoxNjI5MzQwNjYwLCJleHAiOjE2MjkzNDA2NjB9.1";
+            String jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0IiwiaWF0IjoxNjI5MzQwNjYwLCJleHAiOjE2MjkzNDA2NjB9.1";
             loginAttemptCheckerAgent.loginSucceeded(id);
 
             return ResponseEntity.status(HttpStatus.OK).body(jwt);
-        }else if(isCorrect.get().equals(LoginFlag.INCORRECT_ID)) {
+        } else if (isCorrect.get().equals(LoginFlag.INCORRECT_ID)) {
 
             loginAttemptCheckerAgent.loginFailed(id);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("존재하지 않는 아이디입니다.");
 
-        }else if(isCorrect.get().equals(LoginFlag.INCORRECT_PASSWORD)) {
+        } else if (isCorrect.get().equals(LoginFlag.INCORRECT_PASSWORD)) {
             loginAttemptCheckerAgent.loginFailed(id);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 틀림");
-        }else{
+        } else {
             loginAttemptCheckerAgent.loginFailed(id);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
         }
@@ -168,14 +170,15 @@ public class MemberRestController {
     public ResponseEntity<?> logout(@RequestParam String memberId) {
         return null;
     }
+
     // 체크 : 완료
     @PostMapping("/addMember")
     public ResponseEntity<?> addMember(@Valid @RequestBody AddMemberDto dto, BindingResult bindingResult) {
         try {
-            if (bindingResult.hasErrors()){
-                Map<String,String> errors = new HashMap<>();
-                bindingResult.getFieldErrors().forEach(fieldError->{
-                    errors.put(fieldError.getField(),fieldError.getDefaultMessage());
+            if (bindingResult.hasErrors()) {
+                Map<String, String> errors = new HashMap<>();
+                bindingResult.getFieldErrors().forEach(fieldError -> {
+                    errors.put(fieldError.getField(), fieldError.getDefaultMessage());
                 });
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
             }
@@ -214,18 +217,18 @@ public class MemberRestController {
         memberProfileDto.setMemberId("test");
         memberProfileDto.setProfilePhotoUrl("test");
         memberProfileDto.setNickname("얍얍얍얍");
-        redisTemplate.opsForValue().set("abc",memberProfileDto);
+        redisTemplate.opsForValue().set("abc", memberProfileDto);
 
         MemberProfileDto message = (MemberProfileDto) redisTemplate.opsForValue().get("abc");
 
         System.out.println(message.getProfilePhotoUrl());
         System.out.println(message);
 
-        Map<String,Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
 
-        map.put("message",message);
+        map.put("message", message);
 
-        map.put("message2",memberService.findMemberById("member_1"));
+        map.put("message2", memberService.findMemberById("member_1"));
 
         return ResponseEntity.ok(map);
     }
@@ -269,11 +272,6 @@ public class MemberRestController {
     public ResponseEntity<?> deleteMemberRelationship(@RequestParam String memberId) {
         return null;
     }
-
-
-
-
-
 
 
 }

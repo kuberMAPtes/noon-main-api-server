@@ -97,10 +97,10 @@ public class MemberServiceImpl implements MemberService {
         try {
             log.info("회원 찾는 중 ID: {}", memberId);
             Optional<Member> om = memberRepository.findMemberById(memberId);
-                    om.ifPresentOrElse(
-                            (member)->log.info("회원 찾기 성공 "),
-                            () -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", memberId)));
-            return  om;
+            om.ifPresentOrElse(
+                    (member) -> log.info("회원 찾기 성공 "),
+                    () -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", memberId)));
+            return om;
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
             throw e;
@@ -134,7 +134,7 @@ public class MemberServiceImpl implements MemberService {
         try {
             log.info("회원 찾는 중 닉네임: {}", nickname);
             Optional<Member> op = memberRepository.findMemberByNickname(nickname);
-            String memberId=op.orElseThrow().getMemberId();
+            String memberId = op.orElseThrow().getMemberId();
             checkMemberisSignedOff(memberId);
             log.info("회원 찾기 성공 : {}", memberId);
             return op;
@@ -153,8 +153,7 @@ public class MemberServiceImpl implements MemberService {
             checkMemberisSignedOff(memberId);
             log.info("회원 찾기 성공 : {} ", memberId);
             return op;
-        }
-        catch (DataAccessException e) {
+        } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
             throw e;
         }
@@ -238,6 +237,7 @@ public class MemberServiceImpl implements MemberService {
             throw new MemberUpdateException(String.format("회원 프로필 사진 업데이트 실패 : %s", memberId), e);
         }
     }
+
     /**
      * 차단해제할거면 dto의 타입에 차단 넣는다.
      *
@@ -264,6 +264,7 @@ public class MemberServiceImpl implements MemberService {
                 .build());
         log.info("회원 삭제 성공 : {}", memberId);
     }
+
     @Override
     public boolean checkNickname(String nickname) {
 
@@ -274,6 +275,7 @@ public class MemberServiceImpl implements MemberService {
 
         return false;
     }
+
     @Override
     public boolean checkMemberId(String memberId) {
 
@@ -284,6 +286,7 @@ public class MemberServiceImpl implements MemberService {
 
         return false;
     }
+
     @Override
     public boolean checkPassword(String memberId, String password) {
 
@@ -309,9 +312,14 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public boolean checkBadWord(String word){
-        return badWordFilterAgent.change(word,badWordSeparator).contains("*");
+    public boolean checkBadWord(String word) {
+        return badWordFilterAgent.change(
+                        word.replace("*", "")
+                        , badWordSeparator
+                )
+                .contains("*");
     }
+
     private void checkMemberisSignedOff(String memberId) {
         memberRepository.findMemberById(memberId)
                 .ifPresent(member -> {

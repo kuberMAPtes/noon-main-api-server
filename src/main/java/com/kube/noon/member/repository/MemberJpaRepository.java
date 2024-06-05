@@ -14,5 +14,4 @@ public interface MemberJpaRepository extends JpaRepository<Member, String>, Memb
     Optional<Member> findMemberByPhoneNumber(String phoneNumber);
 
 
-
 }
