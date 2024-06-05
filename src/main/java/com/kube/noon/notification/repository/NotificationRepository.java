@@ -13,5 +13,5 @@ public interface NotificationRepository
         extends JpaRepository<Notification, Integer> {
 
     @Query("SELECT nf FROM Notification nf WHERE nf.receiver.memberId = :receiverId")
-    List<Notification> findNotificationsByReceiverId(String receiverId);
+    List<Notification> findNotificationListByReceiverId(String receiverId);
 }
