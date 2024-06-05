@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -182,6 +183,8 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     @Override
     public String getFeedAISummary(int buildingId) {
 
+        System.out.println("Call getFeedAISummary...");
+
         List<Feed> getFeedListByBuildingId = feedRepository.findByBuildingAndActivatedTrue(Building.builder().buildingId(buildingId).build());
 
         String title = "";
@@ -202,6 +205,14 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
         }///end of for
 
-        return buildingSummaryRepository.findFeedAISummary(title, feedText);
+        // 해당 빌딩의 요약 받아오기
+        String feedAiSummary = buildingSummaryRepository.findFeedAISummary(title, feedText);
+
+        // 해당 빌딩의 요약 업데이트
+        Building building = buildingProfileRepository.findBuildingProfileByBuildingId(buildingId);
+        building.setFeedAiSummary(feedAiSummary);
+        buildingProfileRepository.save(building);
+
+        return feedAiSummary;
     }
 }
