@@ -32,6 +32,8 @@ class TestBuildingWikiRestTemplateServiceImpl {
     @DisplayName("직접 위키 페이지 확인해 보면서 테스트")
     @Test
     void addPage() {
-        wikiService.addPage("Sample-pageasdf");
+        // 직접 눈으로 확인하는 테스트이므로 필요할 때 주석 풀어서 확인
+        // 그리고 서버 상태에 따라 안 될 수도 있다.
+        // wikiService.addPage("Sample-pageasdf");
     }
 }
