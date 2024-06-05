@@ -246,13 +246,20 @@ public class TestFeedRepository {
         Member member = new Member();
         member.setMemberId("member_1");
 
-        Feed mainFeed = feedRepository.findByWriterAndMainActivatedTrue(member); // 1.
-        mainFeed.setMainActivated(false); // 2.
-        feedRepository.save(mainFeed);
+        // 메인 피드가 다중으로 설정되어 있을 수 있기 때문에 List로 받음
+        List<Feed> mainFeeds = feedRepository.findByWriterAndMainActivatedTrue(member); // 1.
+
+        assertThat(mainFeeds.size()).isGreaterThan(0);
+
+        mainFeeds.stream().forEach(s -> {
+            s.setMainActivated(false);
+            feedRepository.save(s);
+        }); // 2
 
         Feed setMainFeed = feedRepository.findByFeedId(10006); // 3.
         setMainFeed.setMainActivated(true); // 4.
         feedRepository.save(setMainFeed);
+
 
         assertThat(feedRepository.findByFeedId(10006).isMainActivated()).isEqualTo(true);
     }

@@ -46,7 +46,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
      * @param writer 대상 회원을 받는다.
      * @return Feed 회원의 메인 피드를 가져온다.
      */
-    Feed findByWriterAndMainActivatedTrue(Member writer);
+    List<Feed> findByWriterAndMainActivatedTrue(Member writer);
 
     /**
      * 회원이 좋아요를 누른 피드 목록을 가져온다. 단, 활성화가 된 피드만 가져온다.
