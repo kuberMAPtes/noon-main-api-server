@@ -3,7 +3,9 @@ package com.kube.noon.feed.repository;
 import com.kube.noon.building.domain.Building;
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.common.PublicRange;
+import com.kube.noon.common.zzim.Zzim;
 import com.kube.noon.common.zzim.ZzimRepository;
+import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.member.domain.Member;
 import jakarta.persistence.EntityManager;
@@ -25,13 +27,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * 1. 피드 전체 가져오기
- * 2. 피드 일부 가져오기 : Pageable
- * 3. 피드 작성 수정, 삭제
- * 4. 피드 상세 보기
- * 5. 각종 피드 목록 가져오기
- */
 @Log4j2
 @SpringBootTest
 @ActiveProfiles("winterhana")
@@ -39,6 +34,9 @@ public class TestFeedRepository {
 
     @Autowired
     private FeedRepository feedRepository;
+
+    @Autowired
+    private ZzimRepository zzimRepository;
 
     /**
      * 피드의 전체 목록을 가져온다.
@@ -261,15 +259,124 @@ public class TestFeedRepository {
 
     /**
      * 피드의 좋아요를 추가하거나 삭제한다.
-     * feed_id = 10001에서 member_id = 'member_1'이 좋아요를 추가 및 삭제한다.
+     * building_id = 10002, feed_id = 10001에서 member_id = 'member_1'이 좋아요를 추가 및 삭제한다.
      */
     @Transactional
     @Test
     public void addAndDeleteFeedLikeTest() {
-        Member member = new Member();
-        member.setMemberId("member_1");
+        String memberId = "member_1";
         int feedId = 10001;
-        
-        // 미완
+        int buildingId = 10002;
+
+        // 1. 추가
+        // 1) 좋아요 데이터가 있는지 확인한다.
+        Zzim zzimLike = zzimRepository.findByFeedIdAndMemberIdAndZzimType(feedId, memberId, ZzimType.LIKE);
+        Zzim resultZzim;
+
+        if(zzimLike == null) { // 2) 없다면, 하나 추가한다.
+            Zzim newZzimLike = Zzim.builder()
+                    .memberId(memberId)
+                    .feedId(feedId)
+                    .zzimType(ZzimType.LIKE)
+                    .buildingId(10001)
+                    .subscriptionProviderId(null)
+                    .activated(true)
+                    .build();
+            resultZzim = zzimRepository.save(newZzimLike);
+        } else { // 3) 있다면. activated = true로 설정한다.
+            zzimLike.setActivated(true);
+            resultZzim = zzimRepository.save(zzimLike);
+        }
+
+        assertThat(resultZzim.isActivated()).isEqualTo(true);
+        assertThat(resultZzim.getZzimType()).isEqualTo(ZzimType.LIKE);
+        log.info(resultZzim.toString());
+
+        // 2. 삭제
+        Zzim deleteZzim = zzimRepository.findByFeedIdAndMemberIdAndZzimType(feedId, memberId, ZzimType.LIKE);
+        deleteZzim.setActivated(false);
+        resultZzim = zzimRepository.save(deleteZzim);
+
+        assertThat(resultZzim.isActivated()).isEqualTo(false);
+        log.info(resultZzim.toString());
+    }
+
+    /**
+     * 피드의 북마크를 추가하거나 삭제한다.
+     * building_id = 10002, feed_id = 10001에서 member_id = 'member_1'이 북마크를 추가 및 삭제한다.
+     */
+    @Transactional
+    @Test
+    public void addAndDeleteFeedBookmarkTest() {
+        String memberId = "member_1";
+        int feedId = 10001;
+        int buildingId = 10002;
+
+        // 1. 추가
+        // 1) 좋아요 데이터가 있는지 확인한다.
+        Zzim zzimBookmark = zzimRepository.findByFeedIdAndMemberIdAndZzimType(feedId, memberId, ZzimType.BOOKMARK);
+        Zzim resultZzim;
+
+        if(zzimBookmark == null) { // 2) 없다면, 하나 추가한다.
+            Zzim newZzimBookmark = Zzim.builder()
+                    .memberId(memberId)
+                    .feedId(feedId)
+                    .zzimType(ZzimType.BOOKMARK)
+                    .buildingId(10001)
+                    .subscriptionProviderId(null)
+                    .activated(true)
+                    .build();
+            resultZzim = zzimRepository.save(newZzimBookmark);
+        } else { // 3) 있다면. activated = true로 설정한다.
+            zzimBookmark.setActivated(true);
+            resultZzim = zzimRepository.save(zzimBookmark);
+        }
+
+        assertThat(resultZzim.isActivated()).isEqualTo(true);
+        assertThat(resultZzim.getZzimType()).isEqualTo(ZzimType.BOOKMARK);
+        log.info(resultZzim.toString());
+
+        // 2. 삭제
+        Zzim deleteZzim = zzimRepository.findByFeedIdAndMemberIdAndZzimType(feedId, memberId, ZzimType.BOOKMARK);
+        deleteZzim.setActivated(false);
+        resultZzim = zzimRepository.save(deleteZzim);
+
+        assertThat(resultZzim.isActivated()).isEqualTo(false);
+        log.info(resultZzim.toString());
+    }
+
+    /**
+     * 피드 내의 좋아요를 누른 회원의 목록을 가져온다.
+     * feed_id = 10000을 기준으로 한다.
+     */
+    @Transactional
+    @Test
+    public void getFeedListByLinkInFeedTest() {
+        List<Member> feedLikeMemberList = feedRepository.getFeedLikeList(Feed.builder().feedId(10000).build());
+
+        assertThat(feedLikeMemberList.size()).isGreaterThan(0);
+        for(Member member : feedLikeMemberList) {
+            log.info(member.toString());
+        }
+    }
+
+    /**
+     * 피드를 제목이나 내용으로 검색한다.
+     * keyword = Title_1로 한다.
+     */
+    @Transactional
+    @Test
+    public void searchFeedListTest() {
+        String keyword = "Title_1";
+
+        List<Feed> searchFeedTextList = feedRepository.findByFeedTextContainingIgnoreCase(keyword);
+        List<Feed> searchFeedTitleList = feedRepository.findByTitleContainingIgnoreCase(keyword);
+
+        searchFeedTextList.addAll(searchFeedTitleList);
+
+        assertThat(searchFeedTextList.size()).isGreaterThan(0);
+        for(Feed feed : searchFeedTextList) {
+            log.info(feed.toString());
+        }
     }
 }
