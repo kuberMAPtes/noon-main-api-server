@@ -2,11 +2,14 @@ package com.kube.noon.member.controller;
 
 import com.kube.noon.member.dto.AddMemberDto;
 import com.kube.noon.member.dto.LoginRequestDto;
+import com.kube.noon.member.dto.MemberProfileDto;
 import com.kube.noon.member.enums.LoginFlag;
+import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -23,6 +26,13 @@ public class MemberRestController {
     @Autowired
     @Qualifier("memberServiceImpl")
     private MemberService memberService;
+
+    @Autowired
+    @Qualifier("loginAttemptCheckerAgent")
+    private LoginAttemptCheckerAgent loginAttemptCheckerAgent;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     // Constructor
     public MemberRestController() {
@@ -42,6 +52,7 @@ public class MemberRestController {
     @PostMapping("/sendAuthentificationNumber")
     public ResponseEntity<?> sendAuthentificationNumber(@RequestParam String phoneNumber) {
         try {
+
 //            memberService.sendAuthenticationNumber(phoneNumber);
             return ResponseEntity.ok("Authentication number sent to " + phoneNumber);
         } catch (Exception e) {
@@ -60,36 +71,6 @@ public class MemberRestController {
         }
     }
 
-    // 체크 : 완료
-    @PostMapping("/addMember")
-    public ResponseEntity<?> addMember(@Valid @RequestBody AddMemberDto dto, BindingResult bindingResult) {
-        try {
-            if (bindingResult.hasErrors()){
-                Map<String,String> errors = new HashMap<>();
-                bindingResult.getFieldErrors().forEach(fieldError->{
-                    errors.put(fieldError.getField(),fieldError.getDefaultMessage());
-                });
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
-            }
-
-            memberService.findMemberById(dto.getMemberId()).ifPresent(member -> {
-                throw new RuntimeException("이미 존재하는 회원입니다.");
-            });
-
-            memberService.findMemberByNickname(dto.getNickname()).ifPresent(member -> {
-                throw new RuntimeException("이미 존재하는 닉네임입니다.");
-            });
-
-            memberService.findMemberByPhoneNumber(dto.getPhoneNumber()).ifPresent(member -> {
-                throw new RuntimeException("이미 존재하는 전화번호입니다.");
-            });
-
-            memberService.addMember(dto);
-            return ResponseEntity.ok("회원가입 성공");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("회원이 이미 존재합니다.");
-        }
-    }
     //체크 : 완료
     @GetMapping("/checkMemberId")
     public ResponseEntity<?> checkMemberId(@RequestParam String memberId) {
@@ -155,16 +136,142 @@ public class MemberRestController {
         if(isCorrect.get().equals(LoginFlag.SUCCESS)) {
 
             String jwt ="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0IiwiaWF0IjoxNjI5MzQwNjYwLCJleHAiOjE2MjkzNDA2NjB9.1";
+            loginAttemptCheckerAgent.loginSucceeded(id);
 
             return ResponseEntity.status(HttpStatus.OK).body(jwt);
         }else if(isCorrect.get().equals(LoginFlag.INCORRECT_ID)) {
+
+            loginAttemptCheckerAgent.loginFailed(id);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("존재하지 않는 아이디입니다.");
+
         }else if(isCorrect.get().equals(LoginFlag.INCORRECT_PASSWORD)) {
+            loginAttemptCheckerAgent.loginFailed(id);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 틀림");
         }else{
+            loginAttemptCheckerAgent.loginFailed(id);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
         }
     }
+
+    public ResponseEntity<?> kakaoLogin(@RequestParam String memberId, @RequestParam String password) {
+        return null;
+    }
+
+    public ResponseEntity<?> naverLogin(@RequestParam String memberId, @RequestParam String password) {
+        return null;
+    }
+
+    public ResponseEntity<?> googleLogin(@RequestParam String memberId, @RequestParam String password) {
+        return null;
+    }
+
+    public ResponseEntity<?> logout(@RequestParam String memberId) {
+        return null;
+    }
+    // 체크 : 완료
+    @PostMapping("/addMember")
+    public ResponseEntity<?> addMember(@Valid @RequestBody AddMemberDto dto, BindingResult bindingResult) {
+        try {
+            if (bindingResult.hasErrors()){
+                Map<String,String> errors = new HashMap<>();
+                bindingResult.getFieldErrors().forEach(fieldError->{
+                    errors.put(fieldError.getField(),fieldError.getDefaultMessage());
+                });
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+            }
+
+            memberService.findMemberById(dto.getMemberId()).ifPresent(member -> {
+                throw new RuntimeException("이미 존재하는 회원입니다.");
+            });
+
+            memberService.findMemberByNickname(dto.getNickname()).ifPresent(member -> {
+                throw new RuntimeException("이미 존재하는 닉네임입니다.");
+            });
+
+            memberService.findMemberByPhoneNumber(dto.getPhoneNumber()).ifPresent(member -> {
+                throw new RuntimeException("이미 존재하는 전화번호입니다.");
+            });
+
+            memberService.addMember(dto);
+            return ResponseEntity.ok("회원가입 성공");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("회원이 이미 존재합니다.");
+        }
+    }
+
+    public ResponseEntity<?> updatePassword(@RequestParam String memberId, @RequestParam String newPassword) {
+        return null;
+    }
+
+    public ResponseEntity<?> updatePhoneNumber(@RequestParam String memberId, @RequestParam String newPassword) {
+        return null;
+    }
+
+    @GetMapping("/updateProfilePhoto")
+    public ResponseEntity<?> updateProfilePhoto() {
+
+        MemberProfileDto memberProfileDto = new MemberProfileDto();
+        memberProfileDto.setMemberId("test");
+        memberProfileDto.setProfilePhotoUrl("test");
+        memberProfileDto.setNickname("얍얍얍얍");
+        redisTemplate.opsForValue().set("abc",memberProfileDto);
+
+        MemberProfileDto message = (MemberProfileDto) redisTemplate.opsForValue().get("abc");
+
+        System.out.println(message.getProfilePhotoUrl());
+        System.out.println(message);
+
+        Map<String,Object> map = new HashMap<>();
+
+        map.put("message",message);
+
+        map.put("message2",memberService.findMemberById("member_1"));
+
+        return ResponseEntity.ok(map);
+    }
+
+    public ResponseEntity<?> updateProfileIntro(@RequestParam String memberId, @RequestParam String newProfileIntro) {
+        return null;
+    }
+
+    public ResponseEntity<?> updateDajungScore(@RequestParam String memberId, @RequestParam int newDajungScore) {
+        return null;
+    }
+
+    public ResponseEntity<?> getMember(@RequestParam String memberId) {
+        return null;
+    }
+
+    public ResponseEntity<?> getMemberProfile(@RequestParam String memberId) {
+        return null;
+    }
+
+    public ResponseEntity<?> ListMember(@RequestParam String memberId) {
+        return null;
+    }
+
+    public ResponseEntity<?> updateMember(@RequestParam String memberId) {
+        return null;
+    }
+
+    public ResponseEntity<?> deleteMember(@RequestParam String memberId) {
+        return null;
+    }
+
+    public ResponseEntity<?> addMemberRelationship(@RequestParam String memberId) {
+        return null;
+    }
+
+    public ResponseEntity<?> getMemberRelationshipList(@RequestParam String memberId) {
+        return null;
+    }
+
+    public ResponseEntity<?> deleteMemberRelationship(@RequestParam String memberId) {
+        return null;
+    }
+
+
+
 
 
 

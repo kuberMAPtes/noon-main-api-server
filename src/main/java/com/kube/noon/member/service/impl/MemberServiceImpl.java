@@ -300,7 +300,11 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public boolean checkPhoneNumber(String phoneNumber) {
 
-//        memberRepository.find
+        memberRepository.findMemberByPhoneNumber(phoneNumber)
+                .ifPresent(member -> {
+                    throw new MemberSecurityBreachException("전화번호가 중복됩니다.");
+                });
+
         return false;
     }
 
