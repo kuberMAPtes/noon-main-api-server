@@ -19,7 +19,7 @@ import java.net.URI;
 
 /**
  * RestTemplate 기반 BuildingWikiService 구현체
- * 동기식 통신이 이루어지기 때문에 상당히 느리다.
+ * 내부에서 새로운 스레드를 생성해서 요청을 보내기 때문에 비동기식으로 사용할 수 있다.
  *
  * @author PGD
  */
@@ -41,26 +41,28 @@ public class BuildingWikiRestTemplateServiceImpl implements BuildingWikiService 
             throw new IllegalStateException(this.getClass() + ".buildingWikiUrl is null");
         }
 
-        if (isExist(title)) {
-            log.info("Building Wiki Page of title({}) already exists", title);
-            return;
-        }
+        new Thread(() -> {
+            if (isExist(title)) {
+                log.info("Building Wiki Page of title({}) already exists", title);
+                return;
+            }
 
-        log.info("Create Wiki Page of title: {}", title);
-        URI uri = UriComponentsBuilder.fromUri(URI.create(this.buildingWikiUrl))
-                .path("/wiki/api.php")
-                .queryParam("action", "edit")
-                .queryParam("title", title)
-                .queryParam("text", "")
-                .queryParam("format", "json")
-                .build().toUri();
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("token", "+\\");
-        RequestEntity<MultiValueMap<String, String>> requestEntity =
-                RequestEntity.post(uri)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(body);
-        this.restTemplate.exchange(requestEntity, String.class);
+            log.info("Create Wiki Page of title: {}", title);
+            URI uri = UriComponentsBuilder.fromUri(URI.create(this.buildingWikiUrl))
+                    .path("/wiki/api.php")
+                    .queryParam("action", "edit")
+                    .queryParam("title", title)
+                    .queryParam("text", "")
+                    .queryParam("format", "json")
+                    .build().toUri();
+            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+            body.add("token", "+\\");
+            RequestEntity<MultiValueMap<String, String>> requestEntity =
+                    RequestEntity.post(uri)
+                            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                            .body(body);
+            this.restTemplate.exchange(requestEntity, String.class);
+        }).start();
     }
 
     private boolean isExist(String title) {

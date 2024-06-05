@@ -34,4 +34,8 @@ public class Zzim {
 
     @Column(name = "activated")
     private boolean activated;
+
+    public void setActivated(boolean activated) {
+        this.activated = activated;
+    }
 }
