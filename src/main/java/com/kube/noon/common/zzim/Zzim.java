@@ -25,7 +25,7 @@ public class Zzim {
     @Column(name = "building_id", nullable = false)
     private int buildingId;
 
-    @Column(name = "subscription_provider_id", nullable = false, length = 20)
+    @Column(name = "subscription_provider_id", length = 20)
     private String subscriptionProviderId;
 
     @Enumerated(EnumType.STRING)
