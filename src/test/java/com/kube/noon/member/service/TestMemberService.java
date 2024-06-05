@@ -232,6 +232,7 @@ public class TestMemberService {
 
 
 
+
     private @NotNull Member getMember() {
         String dateString = "0001-01-01 01:01:01";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

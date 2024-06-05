@@ -5,6 +5,7 @@ import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
+import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.exception.MemberNotFoundException;
 import lombok.RequiredArgsConstructor;
