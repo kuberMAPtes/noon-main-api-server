@@ -36,7 +36,7 @@ public class TestTagFeedRepository {
      */
     @Transactional
     @Test
-    public void getFeedTagsTest() {
+    public void getFeedTagListTest() {
         List<Tag> getTagByFeedId = tagRepository.getTagByFeedId(Feed.builder().feedId(10000).build());
 
         // test 1) 존재 여부 확인

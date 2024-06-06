@@ -9,6 +9,7 @@ import com.kube.noon.feed.domain.FeedComment;
 import com.kube.noon.feed.dto.FeedAttachmentDto;
 import com.kube.noon.feed.dto.FeedCommentDto;
 import com.kube.noon.feed.dto.FeedLIkeMemberDto;
+import com.kube.noon.feed.dto.TagDto;
 import com.kube.noon.feed.repository.FeedAttachmentRepository;
 import com.kube.noon.feed.repository.FeedCommentRepository;
 import com.kube.noon.feed.service.impl.FeedServiceImpl;
@@ -250,5 +251,48 @@ public class TestFeedSubServiceImpl {
 
         FeedComment feedComment = feedCommentRepository.findByCommentId(commentId);
         assertThat(feedComment.getCommentText()).isEqualTo(feedCommentDto.getCommentText());
+    }
+    
+    // -------------- 4. 피드의 태그 관련 테스트 --------------
+    @Transactional
+    @Test
+    public void getFeedTagListTest() {
+        List<TagDto> tagDtoList = feedSubServiceImpl.getFeedTagList(10000);
+
+        assertThat(tagDtoList).isNotNull();
+        assertThat(tagDtoList).isNotEmpty();
+        assertThat(tagDtoList.size()).isGreaterThan(0);
+        for (TagDto tagDto : tagDtoList) {
+            log.info(tagDto);
+        }
+    }
+
+    @Transactional
+    @Test
+    public void addFeedTagTest() {
+        int feedId = feedSubServiceImpl.addFeedTag(10000, "흠흐밍");
+
+        List<TagDto> tagDtoList = feedSubServiceImpl.getFeedTagList(feedId);
+
+        assertThat(tagDtoList).isNotNull();
+        assertThat(tagDtoList).isNotEmpty();
+        assertThat(tagDtoList.size()).isGreaterThan(0);
+
+        boolean isAddTag = false;
+        for (TagDto tagDto : tagDtoList) {
+            if(tagDto.getTagText().equals("흠흐밍")) {
+                isAddTag = true;
+            }
+        }
+
+        assertThat(isAddTag).isTrue();
+    }
+
+    @Transactional
+    @Test
+    public void deleteFeedTagTest() {
+        int result = feedSubServiceImpl.deleteFeedTag(10000, "행복");
+
+        assertThat(result).isEqualTo(1);
     }
 }

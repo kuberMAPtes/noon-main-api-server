@@ -4,6 +4,7 @@ import com.kube.noon.common.FileType;
 import com.kube.noon.feed.dto.FeedAttachmentDto;
 import com.kube.noon.feed.dto.FeedCommentDto;
 import com.kube.noon.feed.dto.FeedLIkeMemberDto;
+import com.kube.noon.feed.dto.TagDto;
 import com.kube.noon.member.dto.MemberProfileDto;
 import org.springframework.stereotype.Service;
 
@@ -41,4 +42,11 @@ public interface FeedSubService {
     int deleteFeedComment(int commentId);
 
     int updateFeedCommnet(FeedCommentDto feedCommentDto);
+
+    // Tag, TagFeed : 피드의 태그 관련
+    List<TagDto> getFeedTagList(int feedId);
+
+    int addFeedTag(int feedId, String tagText);
+
+    int deleteFeedTag(int feedId, String tagText);
 }

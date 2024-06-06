@@ -4,12 +4,11 @@ import com.kube.noon.common.FileType;
 import com.kube.noon.common.zzim.Zzim;
 import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
-import com.kube.noon.feed.domain.Feed;
-import com.kube.noon.feed.domain.FeedAttachment;
-import com.kube.noon.feed.domain.FeedComment;
+import com.kube.noon.feed.domain.*;
 import com.kube.noon.feed.dto.FeedAttachmentDto;
 import com.kube.noon.feed.dto.FeedCommentDto;
 import com.kube.noon.feed.dto.FeedLIkeMemberDto;
+import com.kube.noon.feed.dto.TagDto;
 import com.kube.noon.feed.repository.*;
 import com.kube.noon.feed.service.FeedSubService;
 import com.kube.noon.member.domain.Member;
@@ -192,5 +191,45 @@ public class FeedSubServiceImpl implements FeedSubService {
         } else {
             return -1;
         }
+    }
+
+    @Override
+    public List<TagDto> getFeedTagList(int feedId) {
+        List<Tag> getTagByFeedId = tagRepository.getTagByFeedId(Feed.builder().feedId(feedId).build());
+
+        return TagDto.toDtoList(getTagByFeedId);
+    }
+
+    @Override
+    public int addFeedTag(int feedId, String tagText) {
+
+        // 1. 삽입 전 tag 테이블에 존재하는지 탐색
+        Tag tag = tagRepository.findByTagText(tagText);
+
+        // 1-1. 만약 테이블에 없다면 삽입하기
+        if(tag == null) {
+            tag = Tag.builder().tagText(tagText).build();
+            tagRepository.save(tag);
+        }
+
+        // 2. tag_feed 테이블에 추가하기
+        Feed feed = Feed.builder().feedId(feedId).build();
+        TagFeed tagFeed = TagFeed.builder().feed(feed).tag(tag).build();
+
+        return tagFeedRepository.save(tagFeed).getFeed().getFeedId();
+    }
+
+    @Override
+    public int deleteFeedTag(int feedId, String tagText) {
+        // 1. 태그 텍스트에 대한 번호를 가져온다.
+        Tag tag = tagRepository.findByTagText(tagText);
+
+        // 1-1. 만약 없으면 종료
+        if(tag == null) {
+            return -1;
+        }
+
+        // 2. 태그를 지운다.
+        return tagFeedRepository.deleteByTagAndFeed(tag, Feed.builder().feedId(feedId).build());
     }
 }
