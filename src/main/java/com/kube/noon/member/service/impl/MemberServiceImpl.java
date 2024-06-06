@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.Optional;
 /**
  * 파라미터는 식별에 반드시 필요한 데이터만 받는다
  */
+@Validated
 @Slf4j
 @Service
 @RequiredArgsConstructor

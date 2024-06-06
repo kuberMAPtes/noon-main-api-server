@@ -13,7 +13,7 @@ class TestSValidationAspect {
 
 
     @Autowired
-    SsampleServiceImpl ssampleServiceImpl;
+    SsampleService ssampleServiceImpl;
 
     @Test
     void func1() {

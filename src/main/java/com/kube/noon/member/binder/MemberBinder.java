@@ -10,9 +10,9 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 @Mapper
-public interface MemberConverter<T> {
+public interface MemberBinder {
 
-    MemberConverter<T> INSTANCE = Mappers.getMapper(MemberConverter.class);
+    MemberBinder INSTANCE = Mappers.getMapper(MemberBinder.class);
 
     @Mapping(target = "memberRole", ignore = true)
     @Mapping(target = "unlockTime", ignore = true)

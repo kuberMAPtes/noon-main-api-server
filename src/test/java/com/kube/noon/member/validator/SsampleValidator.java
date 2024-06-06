@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.regex.Pattern;
 
 @Slf4j
-@Validator(targetClass = SsampleServiceImpl.class)
+@Validator(targetClass = SsampleService.class)
 public class SsampleValidator implements RuleValidator<MemberRepository> {
 
     private static final Pattern PHONE_NUMBER_PATTERN = Pattern.compile("^01(?:0|1|[6-9])-(?:\\d{3}|\\d{4})-\\d{4}$");

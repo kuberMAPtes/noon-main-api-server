@@ -6,6 +6,7 @@ import com.kube.noon.member.dto.MemberProfileDto;
 import com.kube.noon.member.enums.LoginFlag;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
+import com.kube.noon.member.validator.SampleService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -198,16 +199,21 @@ public class MemberRestController {
 //        }
     }
 
-    public ResponseEntity<?> updatePassword(@RequestParam String memberId, @RequestParam String newPassword) {
+    @PostMapping("/updatePassword")
+    public ResponseEntity<?> updatePassword() {
 
-
+        System.out.println("샘플서비스실행");
+        SampleService sampleService = new SampleService();
+        sampleService.func1();
+        System.out.println("샘플서비스실행완료");
 //        memberService.updatePassword(memberId, newPassword);
 
         return null;
     }
 
     public ResponseEntity<?> updatePhoneNumber(@RequestParam String memberId, @RequestParam String newPassword) {
-        return null;
+        memberService.updatePhoneNumber(memberId, newPassword);
+        return ResponseEntity.ok("전화번호 변경 성공");
     }
 
     @GetMapping("/updateProfilePhoto")
@@ -234,6 +240,17 @@ public class MemberRestController {
     }
 
     public ResponseEntity<?> updateProfileIntro(@RequestParam String memberId, @RequestParam String newProfileIntro) {
+
+//        memberService.updateMember(
+//                memberService.findMemberById(memberId).map(
+//                        (member)->{
+//                            member.setProfileIntro(newProfileIntro);
+//
+//                            return MemberBinder.INSTANCE.toDto(member, MemberProfileDto.class);
+//                        }).orElseGet(()->{
+//                            return null;
+//                        })
+//        );
         return null;
     }
 

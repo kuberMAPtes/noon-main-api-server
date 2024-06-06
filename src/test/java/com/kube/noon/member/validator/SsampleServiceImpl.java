@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class SsampleServiceImpl {
+public class SsampleServiceImpl implements SsampleService{
 
 
     public void func1() {
