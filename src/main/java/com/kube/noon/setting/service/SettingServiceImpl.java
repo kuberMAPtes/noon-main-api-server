@@ -7,12 +7,14 @@ import com.kube.noon.setting.dto.SettingDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
 
 @Slf4j
 @Service
+@Primary
 @RequiredArgsConstructor
 public class SettingServiceImpl implements SettingService {
     private final MemberService memberService;
