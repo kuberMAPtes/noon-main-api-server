@@ -10,42 +10,42 @@ import java.util.Map;
  * @author PGD
  */
 public class IllegalServiceCallException extends IllegalArgumentException {
-    private final Map<String, Object> problems;
+    private final Problems problems;
 
     public IllegalServiceCallException() {
-        this.problems = new HashMap<>();
+        this.problems = new Problems();
     }
 
     public IllegalServiceCallException(String message) {
         super(message);
-        this.problems = new HashMap<>();
+        this.problems = new Problems();
     }
 
     public IllegalServiceCallException(String message, Throwable cause) {
         super(message, cause);
-        this.problems = new HashMap<>();
+        this.problems = new Problems();
     }
 
     public IllegalServiceCallException(Throwable cause) {
         super(cause);
-        this.problems = new HashMap<>();
+        this.problems = new Problems();
     }
 
-    public IllegalServiceCallException(Map<String, Object> problems) {
+    public IllegalServiceCallException(Problems problems) {
         this.problems = problems;
     }
 
-    public IllegalServiceCallException(String message, Map<String, Object> problems) {
+    public IllegalServiceCallException(String message, Problems problems) {
         super(message);
         this.problems = problems;
     }
 
-    public IllegalServiceCallException(String message, Throwable cause, Map<String, Object> problems) {
+    public IllegalServiceCallException(String message, Throwable cause, Problems problems) {
         super(message, cause);
         this.problems = problems;
     }
 
-    public IllegalServiceCallException(Throwable cause, Map<String, Object> problems) {
+    public IllegalServiceCallException(Throwable cause, Problems problems) {
         super(cause);
         this.problems = problems;
     }

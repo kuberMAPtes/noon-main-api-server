@@ -76,12 +76,17 @@ public class ValidationAspect {
                     : validationMethod.invoke(beanAndMethod.getBean(), jp.getArgs());
             if (returnValue == null) {
                 return jp.proceed(jp.getArgs());
-            }
-            Boolean availableToProceed = (Boolean)returnValue;
-            if (availableToProceed) {
+            } else if (returnValue instanceof Problems problems) {
+                log.info("Problems exist");
+                checkProblems(problems);
                 return jp.proceed(jp.getArgs());
             } else {
-                return null; // TODO: What to do?
+                Boolean availableToProceed = (Boolean)returnValue;
+                if (availableToProceed) {
+                    return jp.proceed(jp.getArgs());
+                } else {
+                    return null; // TODO: What to do?
+                }
             }
         } catch (ClassCastException e) {
             return jp.proceed(jp.getArgs());
@@ -93,5 +98,19 @@ public class ValidationAspect {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void checkProblems(Problems problems) throws InvocationTargetException {
+        if (isAnyProblem(problems)) {
+            throw new InvocationTargetException(
+                    new IllegalServiceCallException("Problem in validation in " + this.getClass(), problems)
+            );
+        }
+    }
+
+    private boolean isAnyProblem(Problems problems) {
+        // "~이 아니다"라는 논리기 때문에 다소 가독성이 떨어짐
+        // 그래서 따로 메소드로 빼 놓음으로써 의미를 주었다.
+        return !problems.isEmpty();
     }
 }
