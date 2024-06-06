@@ -10,9 +10,9 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 @Mapper
-public interface MemberBinder {
+public interface MemberConverter<T> {
 
-    MemberBinder INSTANCE = Mappers.getMapper(MemberBinder.class);
+    MemberConverter<T> INSTANCE = Mappers.getMapper(MemberConverter.class);
 
     @Mapping(target = "memberRole", ignore = true)
     @Mapping(target = "unlockTime", ignore = true)
@@ -96,7 +96,7 @@ public interface MemberBinder {
             return memberProfileDtoToMember((MemberProfileDto) dto);
         } else if (dto instanceof UpdateMemberDto) {
             return updateMemberDtoToMember((UpdateMemberDto) dto);
-        } else if (dto instanceof  UpdatePasswordDto) {
+        } else if (dto instanceof UpdatePasswordDto) {
             return updatePasswordDtoToMember((UpdatePasswordDto) dto);
         } else if (dto instanceof UpdatePhoneNumberDto) {
             return updatePhoneNumberDtoToMember((UpdatePhoneNumberDto) dto);
