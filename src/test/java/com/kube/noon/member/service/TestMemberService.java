@@ -2,7 +2,6 @@ package com.kube.noon.member.service;
 
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.binder.MemberBinder;
-import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.*;
 import com.kube.noon.member.enums.RelationshipType;
@@ -45,7 +44,7 @@ public class TestMemberService {
         memberService.addMember(AddMemberDto.builder()
                         .memberId("member_1230")
                 .nickname("test4586123")
-                .pwd(null)
+                .pwd("hello")
                 .phoneNumber("010-1234-5678")
                 .socialSignUp(true)
                 .build());
@@ -222,7 +221,7 @@ public class TestMemberService {
         assertThat(memberService.findMemberById("member_1").orElseThrow().getSignedOff()).isTrue();
 
 
-        Member member = memberService.findMemberById("member_1").orElseThrow();
+        com.kube.noon.member.domain.Member member = memberService.findMemberById("member_1").orElseThrow();
         memberRepository.updateMember(member);
     }
 
@@ -233,11 +232,11 @@ public class TestMemberService {
 
 
 
-    private @NotNull Member getMember() {
+    private @NotNull com.kube.noon.member.domain.Member getMember() {
         String dateString = "0001-01-01 01:01:01";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime dateTime = LocalDateTime.parse(dateString, formatter);
-        Member newMember = new Member();
+        com.kube.noon.member.domain.Member newMember = new com.kube.noon.member.domain.Member();
         newMember.setMemberId("member_99999");
         newMember.setMemberRole(Role.MEMBER);
         newMember.setNickname("newMember");

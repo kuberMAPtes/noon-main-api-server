@@ -7,6 +7,7 @@ import com.kube.noon.member.enums.LoginFlag;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -19,8 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Slf4j
 @RestController
-@RequestMapping("/member/*")
+@RequestMapping("/member")
 public class MemberRestController {
 
     @Autowired
@@ -174,35 +176,33 @@ public class MemberRestController {
     // 체크 : 완료
     @PostMapping("/addMember")
     public ResponseEntity<?> addMember(@Valid @RequestBody AddMemberDto dto, BindingResult bindingResult) {
-        try {
+//        try {
+            System.out.println("왜 로그가 안찍혀");
             if (bindingResult.hasErrors()) {
+                System.out.println("여기는 머야");
                 Map<String, String> errors = new HashMap<>();
                 bindingResult.getFieldErrors().forEach(fieldError -> {
                     errors.put(fieldError.getField(), fieldError.getDefaultMessage());
                 });
+                System.out.println(errors);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
             }
 
-            memberService.findMemberById(dto.getMemberId()).ifPresent(member -> {
-                throw new RuntimeException("이미 존재하는 회원입니다.");
-            });
-
-            memberService.findMemberByNickname(dto.getNickname()).ifPresent(member -> {
-                throw new RuntimeException("이미 존재하는 닉네임입니다.");
-            });
-
-            memberService.findMemberByPhoneNumber(dto.getPhoneNumber()).ifPresent(member -> {
-                throw new RuntimeException("이미 존재하는 전화번호입니다.");
-            });
-
+            System.out.println("왜 로그가 안찍혀");
             memberService.addMember(dto);
+
             return ResponseEntity.ok("회원가입 성공");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("회원이 이미 존재합니다.");
-        }
+//        }
+//        catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.CONFLICT).body("회원이 이미 존재합니다.");
+//        }
     }
 
     public ResponseEntity<?> updatePassword(@RequestParam String memberId, @RequestParam String newPassword) {
+
+
+//        memberService.updatePassword(memberId, newPassword);
+
         return null;
     }
 

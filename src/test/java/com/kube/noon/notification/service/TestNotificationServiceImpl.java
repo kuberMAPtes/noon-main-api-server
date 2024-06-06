@@ -1,7 +1,6 @@
 package com.kube.noon.notification.service;
 
 import com.kube.noon.common.PublicRange;
-import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.repository.MemberRepository;
 import com.kube.noon.notification.domain.NotificationType;
@@ -101,8 +100,8 @@ class TestNotificationServiceImpl {
         assertThat(notificationList).isEmpty();
     }
 
-    private Member getAndAddSampleReceiver() {
-        Member newMember = new Member(
+    private com.kube.noon.member.domain.Member getAndAddSampleReceiver() {
+        com.kube.noon.member.domain.Member newMember = new com.kube.noon.member.domain.Member(
                 "sample-receiver",
                 Role.MEMBER,
                 "sample-nickname",
