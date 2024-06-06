@@ -1,10 +1,13 @@
 package com.kube.noon.feed.service;
 
 import com.kube.noon.common.FileType;
+import com.kube.noon.common.zzim.Zzim;
+import com.kube.noon.common.zzim.ZzimRepository;
+import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.FeedAttachment;
 import com.kube.noon.feed.dto.FeedAttachmentDto;
+import com.kube.noon.feed.dto.FeedLIkeMemberDto;
 import com.kube.noon.feed.repository.FeedAttachmentRepository;
-import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.feed.service.impl.FeedServiceImpl;
 import com.kube.noon.feed.service.impl.FeedSubServiceImpl;
 import lombok.extern.log4j.Log4j2;
@@ -15,6 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,11 +28,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TestFeedSubServiceImpl {
     @Autowired
     private FeedServiceImpl feedServiceImpl;
-
     @Autowired
     private FeedSubServiceImpl feedSubServiceImpl;
     @Autowired
     private FeedAttachmentRepository feedAttachmentRepository;
+    @Autowired
+    private ZzimRepository zzimRepository;
 
     // -------------- 1. 피드 첨부 파일 관련 테스트 --------------
     /**
@@ -98,6 +103,86 @@ public class TestFeedSubServiceImpl {
 
         for (FeedAttachmentDto feedAttachmentDto : feedAttachmentDtoList) {
             log.info(feedAttachmentDto);
+        }
+    }
+
+    // -------------- 2. 피드의 좋아요, 북마크 관련 테스트 --------------
+    @Transactional
+    @Test
+    public void addFeedLikeTest() {
+        int feedId = 10000;
+        String memberId = "member_10";
+
+        int zzimId = feedSubServiceImpl.addFeedLike(feedId, memberId);
+
+        Optional<Zzim> zzim = zzimRepository.findById(zzimId);
+
+        log.info(zzim.orElseGet(null).getZzimId());
+        assertThat(zzim.orElseGet(null).getFeedId()).isEqualTo(feedId);
+        assertThat(zzim.orElseGet(null).getMemberId()).isEqualTo(memberId);
+        assertThat(zzim.orElseGet(null).getZzimType()).isEqualTo(ZzimType.LIKE);
+    }
+
+    @Transactional
+    @Test
+    public void deleteFeedLikeTest() {
+        int feedId = 10000;
+        String memberId = "member_1";
+
+        int zzimId = feedSubServiceImpl.deleteFeedLike(feedId, memberId);
+
+        Optional<Zzim> zzim = zzimRepository.findById(zzimId);
+
+        log.info(zzim.orElseGet(null).getZzimId());
+        assertThat(zzim.orElseGet(null).getFeedId()).isEqualTo(feedId);
+        assertThat(zzim.orElseGet(null).getMemberId()).isEqualTo(memberId);
+        assertThat(zzim.orElseGet(null).getZzimType()).isEqualTo(ZzimType.LIKE);
+        assertThat(zzim.orElseGet(null).isActivated()).isFalse();
+    }
+
+    @Transactional
+    @Test
+    public void addFeedBookmarkTest() {
+        int feedId = 10000;
+        String memberId = "member_10";
+
+        int zzimId = feedSubServiceImpl.addFeedBookmark(feedId, memberId);
+
+        Optional<Zzim> zzim = zzimRepository.findById(zzimId);
+
+        log.info(zzim.orElseGet(null).getZzimId());
+        assertThat(zzim.orElseGet(null).getFeedId()).isEqualTo(feedId);
+        assertThat(zzim.orElseGet(null).getMemberId()).isEqualTo(memberId);
+        assertThat(zzim.orElseGet(null).getZzimType()).isEqualTo(ZzimType.BOOKMARK);
+    }
+
+    @Transactional
+    @Test
+    public void deleteFeedBookmakrTest() {
+        int feedId = 10000;
+        String memberId = "member_1";
+
+        int zzimId = feedSubServiceImpl.deleteFeedBookmark(feedId, memberId);
+
+        Optional<Zzim> zzim = zzimRepository.findById(zzimId);
+
+        log.info(zzim.orElseGet(null).getZzimId());
+        assertThat(zzim.orElseGet(null).getFeedId()).isEqualTo(feedId);
+        assertThat(zzim.orElseGet(null).getMemberId()).isEqualTo(memberId);
+        assertThat(zzim.orElseGet(null).getZzimType()).isEqualTo(ZzimType.LIKE);
+        assertThat(zzim.orElseGet(null).isActivated()).isFalse();
+    }
+
+    @Transactional
+    @Test
+    public void getFeedLikeListTest() {
+        List<FeedLIkeMemberDto> feedLIkeMemberList = feedSubServiceImpl.getFeedLikeList(10000);
+
+        assertThat(feedLIkeMemberList).isNotNull();
+        assertThat(feedLIkeMemberList).isNotEmpty();
+        assertThat(feedLIkeMemberList.size()).isGreaterThan(0);
+        for (FeedLIkeMemberDto feedLIkeMemberDto : feedLIkeMemberList) {
+            log.info(feedLIkeMemberDto);
         }
     }
 }
