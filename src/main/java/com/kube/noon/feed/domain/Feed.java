@@ -73,6 +73,9 @@ public class Feed {
     @JoinColumn(name = "writer_id", nullable = false)
     private Member writer;
 
+    @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FeedAttachment> attachments;
+
     @Override
     public String toString() {
         return "MemberId : " + writer.getMemberId()

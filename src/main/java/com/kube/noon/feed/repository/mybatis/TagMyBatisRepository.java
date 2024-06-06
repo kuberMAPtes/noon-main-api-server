@@ -12,5 +12,6 @@ public interface TagMyBatisRepository {
      * @param feedId
      * @return
      */
+    @Deprecated
     List<TagDto> getTagByFeedId(int feedId);
 }

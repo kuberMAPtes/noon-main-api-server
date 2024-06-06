@@ -1,6 +1,5 @@
 package com.kube.noon.feed.repository;
 
-import com.kube.noon.feed.dto.TagDto;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.domain.Tag;
 import com.kube.noon.feed.domain.TagFeed;
