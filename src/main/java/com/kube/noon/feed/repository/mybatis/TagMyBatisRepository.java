@@ -7,5 +7,11 @@ import java.util.List;
 
 @Mapper
 public interface TagMyBatisRepository {
+    /**
+     * (deprecated)
+     * @param feedId
+     * @return
+     */
+    @Deprecated
     List<TagDto> getTagByFeedId(int feedId);
 }

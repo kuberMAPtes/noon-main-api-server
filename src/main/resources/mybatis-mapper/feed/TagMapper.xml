@@ -14,5 +14,19 @@
                  INNER JOIN tag t ON f.tag_id = t.tag_id
         WHERE feed_id = 10000;
     </select>
+<!--    전에 쓰던 로직 개선하여 사용할 예정입니다. -->
+<!--    <select id = "getFeedCountByTagName"  resultMap = "productCountByTagMap">-->
+<!--        SELECT result.tag_name, COUNT(*) count FROM-->
+<!--            ( SELECT p.prod_name, t.tag_name FROM product p-->
+<!--            INNER JOIN product_tag pt ON pt.prod_no = p.prod_no-->
+<!--            INNER JOIN tag t ON t.tag_no = pt.tag_no ) result-->
+<!--        GROUP BY result.tag_name-->
+<!--    </select>-->
 
+<!--    <select id = "getProductCountByTransaction" resultMap = "productCountByTransactionMap">-->
+<!--        SELECT p.prod_name, result.count FROM product p-->
+<!--            INNER JOIN-->
+<!--            ( SELECT prod_no, COUNT(*) count FROM transaction_list GROUP BY prod_no ) result-->
+<!--            ON result.prod_no = p.prod_no-->
+<!--    </select>-->
 </mapper>
