@@ -6,7 +6,7 @@ import com.kube.noon.customersupport.dto.notice.NoticeDto;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.member.domain.Member;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,7 +16,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Log4j2
+@Slf4j
 @SpringBootTest
 
 public class TestCustomerSupportRepository {
