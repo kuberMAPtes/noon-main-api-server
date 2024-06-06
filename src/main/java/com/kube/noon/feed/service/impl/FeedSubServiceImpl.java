@@ -6,7 +6,9 @@ import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.domain.FeedAttachment;
+import com.kube.noon.feed.domain.FeedComment;
 import com.kube.noon.feed.dto.FeedAttachmentDto;
+import com.kube.noon.feed.dto.FeedCommentDto;
 import com.kube.noon.feed.dto.FeedLIkeMemberDto;
 import com.kube.noon.feed.repository.*;
 import com.kube.noon.feed.service.FeedSubService;
@@ -152,5 +154,43 @@ public class FeedSubServiceImpl implements FeedSubService {
         List<Member> feedLikeMemberList = feedRepository.getFeedLikeList(Feed.builder().feedId(feedId).build());
 
         return FeedLIkeMemberDto.toDtoList(feedLikeMemberList);
+    }
+
+    @Override
+    public List<FeedCommentDto> getFeedCommentList(int feedId) {
+        List<FeedComment> feedCommentList = feedCommentRepository.findByFeed(Feed.builder().feedId(feedId).build());
+
+        return FeedCommentDto.toDtoList(feedCommentList);
+    }
+
+    @Override
+    public int addFeedComment(FeedCommentDto feedCommentDto) {
+        FeedComment addFeedComment = FeedCommentDto.toEntity(feedCommentDto);
+
+        return feedCommentRepository.save(addFeedComment).getCommentId();
+    }
+
+    @Override
+    public int deleteFeedComment(int commentId) {
+        FeedComment deleteFeedComment = feedCommentRepository.findByCommentId(commentId);
+
+        if(deleteFeedComment != null) {
+            deleteFeedComment.setActivated(false);
+            return feedCommentRepository.save(deleteFeedComment).getCommentId();
+        } else {
+            return -1;
+        }
+    }
+
+    @Override
+    public int updateFeedCommnet(FeedCommentDto feedCommentDto) {
+        FeedComment updateFeedComment = feedCommentRepository.findByCommentId(feedCommentDto.getCommentId());
+
+        if(updateFeedComment != null) {
+            updateFeedComment.setCommentText(feedCommentDto.getCommentText());
+            return feedCommentRepository.save(updateFeedComment).getCommentId();
+        } else {
+            return -1;
+        }
     }
 }

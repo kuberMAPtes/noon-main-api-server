@@ -5,9 +5,12 @@ import com.kube.noon.common.zzim.Zzim;
 import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.FeedAttachment;
+import com.kube.noon.feed.domain.FeedComment;
 import com.kube.noon.feed.dto.FeedAttachmentDto;
+import com.kube.noon.feed.dto.FeedCommentDto;
 import com.kube.noon.feed.dto.FeedLIkeMemberDto;
 import com.kube.noon.feed.repository.FeedAttachmentRepository;
+import com.kube.noon.feed.repository.FeedCommentRepository;
 import com.kube.noon.feed.service.impl.FeedServiceImpl;
 import com.kube.noon.feed.service.impl.FeedSubServiceImpl;
 import lombok.extern.log4j.Log4j2;
@@ -17,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +38,8 @@ public class TestFeedSubServiceImpl {
     private FeedAttachmentRepository feedAttachmentRepository;
     @Autowired
     private ZzimRepository zzimRepository;
+    @Autowired
+    private FeedCommentRepository feedCommentRepository;
 
     // -------------- 1. 피드 첨부 파일 관련 테스트 --------------
     /**
@@ -184,5 +190,65 @@ public class TestFeedSubServiceImpl {
         for (FeedLIkeMemberDto feedLIkeMemberDto : feedLIkeMemberList) {
             log.info(feedLIkeMemberDto);
         }
+    }
+
+    // -------------- 3. 피드의 댓글 관련 테스트 --------------
+    @Transactional
+    @Test
+    public void getFeedCommentListTest() {
+        List<FeedCommentDto> feedCommentDtoList = feedSubServiceImpl.getFeedCommentList(10000);
+
+        assertThat(feedCommentDtoList).isNotNull();
+        assertThat(feedCommentDtoList).isNotEmpty();
+        assertThat(feedCommentDtoList.size()).isGreaterThan(0);
+
+        for (FeedCommentDto feedCommentDto : feedCommentDtoList) {
+            log.info(feedCommentDto);
+        }
+    }
+
+    @Transactional
+    @Test
+    public void addFeedCommentTest() {
+        FeedCommentDto feedCommentDto = FeedCommentDto.builder()
+                .feedId(10000)
+                .memberId("member_1")
+                .commentText("테스트용 댓글입니다.")
+                .writtenTime(LocalDateTime.now())
+                .activated(true)
+                .build();
+        int commentId = feedSubServiceImpl.addFeedComment(feedCommentDto);
+
+        FeedComment feedComment = feedCommentRepository.findByCommentId(commentId);
+
+        log.info(feedComment.getCommentId());
+        assertThat(feedComment.getFeed().getFeedId()).isEqualTo(feedCommentDto.getFeedId());
+        assertThat(feedComment.getMember().getMemberId()).isEqualTo(feedCommentDto.getMemberId());
+        assertThat(feedComment.getCommentText()).isEqualTo(feedCommentDto.getCommentText());
+    }
+
+    @Transactional
+    @Test
+    public void deleteFeedCommentTest() {
+        int commentId = feedSubServiceImpl.deleteFeedComment(10000);
+
+        FeedComment feedComment = feedCommentRepository.findByCommentId(commentId);
+
+        log.info(feedComment.getCommentId());
+        assertThat(feedComment.isActivated()).isFalse();
+    }
+    
+    @Transactional
+    @Test
+    public void updateFeedCommentTest() {
+        FeedCommentDto feedCommentDto = FeedCommentDto.builder()
+                .commentId(10000)
+                .commentText("수정 테스트용 댓글입니다.")
+                .build();
+
+        int commentId = feedSubServiceImpl.updateFeedCommnet(feedCommentDto);
+
+        FeedComment feedComment = feedCommentRepository.findByCommentId(commentId);
+        assertThat(feedComment.getCommentText()).isEqualTo(feedCommentDto.getCommentText());
     }
 }

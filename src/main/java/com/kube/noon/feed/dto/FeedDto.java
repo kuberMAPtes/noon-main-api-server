@@ -76,7 +76,7 @@ public class FeedDto {
                 .build();
     }
 
-    public static List<FeedDto> toDtoList(List<Feed> feeds) {
-        return feeds.stream().map(FeedDto::toDto).collect(Collectors.toList());
+    public static List<FeedDto> toDtoList(List<Feed> feedList) {
+        return feedList.stream().map(FeedDto::toDto).collect(Collectors.toList());
     }
 }
