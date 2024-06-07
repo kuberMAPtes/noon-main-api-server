@@ -6,16 +6,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class ValidationChain<T> {
+public class ValidationChain {
     private final Map<Class<?>, ValidationChainRuleFunction<?>> validationChainMap = new HashMap<>();
 
     @SuppressWarnings("unchecked")
-    public <U extends T> void addRule(Class<U> classToValidate, ValidationChainRuleFunction<U> rule) {
+    public <U> void addRule(Class<U> classToValidate, ValidationChainRuleFunction<U> rule) {
         validationChainMap.put(classToValidate, rule);
     }
 
     @SuppressWarnings("unchecked")
-    public <U extends T> void validate(U instance) {
+    public <U> void validate(U instance) {
         ValidationChainRuleFunction<U> validationChain = (ValidationChainRuleFunction<U>) validationChainMap.get(instance.getClass());
         if (validationChain != null) {
             validationChain.validate(instance);

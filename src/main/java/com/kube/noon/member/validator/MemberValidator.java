@@ -23,11 +23,11 @@ public class MemberValidator {
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9!@#\\$%\\^&\\*_]{8,16}$");
 
 
-    private final ValidationChain<Object> validationChain;
+    private final ValidationChain validationChain;
     MemberRepository memberRepository;
 
     @Autowired
-    public MemberValidator(ValidationChain<Object> validationChain, MemberRepository memberRepository) {
+    public MemberValidator(ValidationChain validationChain, MemberRepository memberRepository) {
         this.validationChain = validationChain;
         this.memberRepository = memberRepository;
     }

@@ -24,11 +24,11 @@ public class SsampleValidator {
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9!@#\\$%\\^&\\*_]{8,16}$");
 
 
-    private final ValidationChain<Object> validationChain;
+    private final ValidationChain validationChain;
     private final MemberRepository memberRepository;
 
     @Autowired
-    public SsampleValidator(ValidationChain<Object> validationChain, MemberRepository memberRepository) {
+    public SsampleValidator(ValidationChain validationChain, MemberRepository memberRepository) {
         this.validationChain = validationChain;
         this.memberRepository = memberRepository;
     }
