@@ -50,7 +50,7 @@ public class IllegalServiceCallException extends IllegalArgumentException {
         this.problems = problems;
     }
 
-    public Map<String, Object> getProblems() {
+    public Problems getProblems() {
         return this.problems;
     }
 }
