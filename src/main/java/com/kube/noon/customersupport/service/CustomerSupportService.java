@@ -14,4 +14,7 @@ public interface CustomerSupportService {
     ReportProcessingDto updateReport(ReportProcessingDto reportProcessingDto, String unlockDuration);
 
     FeedAttachmentDto addBluredImage(FeedAttachmentDto attachmentDto) throws IOException;
+
+    List<FeedAttachmentDto> getFilteredListByAI();
+
 }

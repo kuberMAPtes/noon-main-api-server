@@ -1,9 +1,14 @@
 package com.kube.noon.customersupport.repository;
 
 import com.kube.noon.common.ObjectStorageAWS3S;
+import com.kube.noon.feed.domain.FeedAttachment;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -11,6 +16,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Repository
@@ -20,6 +27,82 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
     ///Field
     @Autowired
     ObjectStorageAWS3S objectStorageAWS3S;
+
+    private static final String GREENEYE_SECRET_KEY_HEADER = "X-GREEN-EYE-SECRET";
+
+    @Value("${greeneye.apigw.invoke.url}")
+    private String apigwUrl;
+
+    @Value("${greeneye.naver.secret-key}")
+    private String secretKey ;
+
+    private static final String HARMFUL_LEVEL_NORMAL = "normal";
+    private static final String HARMFUL_LEVEL_SEXY = "sexy";
+    private static final String HARMFUL_LEVEL_ADULT = "adult";
+    private static final String HARMFUL_LEVEL_PORN = "porn";
+
+
+
+    ///Method
+    /**
+     * AIaaS 활용 유해사진 필터링 (NCloud Green Eye)
+     *
+     * @param feedAttachmentList fileType이 Image인 모든 첨부파일
+     * @return AIaaS에 의해 1차 필터링 된 피드첨부파일 리스트
+     */
+    @Override
+    public List<FeedAttachment> findBadImageListByAI(List<FeedAttachment> feedAttachmentList) {
+        log.info("feedAttachmentList={}", feedAttachmentList);
+
+
+
+        WebClient client = WebClient.create(apigwUrl);
+        List<FeedAttachment> badImageList = new ArrayList<>();
+
+        // Green Eye 유해성 판별은 요청 1회당 1개의 이미지만 가능
+        for(FeedAttachment feedAttachment : feedAttachmentList){
+
+            if(!feedAttachment.isActivated()) continue;
+
+            String requestBody = """
+                {
+                  "version": "V1",
+                  "requestId": "%s",
+                  "timestamp": 0,
+                  "images": [
+                    {
+                      "name": "%s",
+                      "url": "%s"
+                    }
+                  ]
+                }
+                """.formatted(feedAttachment.getAttachmentId(), feedAttachment.getAttachmentId(), feedAttachment.getFileUrl());
+
+            log.info("requestBody={}", requestBody);
+
+
+            // Green Eye Request
+            JSONObject response = new JSONObject(
+                    client.post()
+                            .header(GREENEYE_SECRET_KEY_HEADER, this.secretKey)
+                            .header("Content-Type", "application/json")
+                            .bodyValue(requestBody)
+                            .retrieve()
+                            .bodyToMono(String.class)
+                            .block()
+                    );
+
+            // 유해성 결과 체크, 유해 사진만 모으기
+            if(checkHarmful(response)){
+                badImageList.add(feedAttachment);
+            }
+
+        }
+
+        return badImageList;
+
+    }///end of findFilteredListByAI
+
 
 
 
@@ -41,6 +124,40 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
         }
 
     }///end of addBluredFile
+
+
+
+    /**
+     * Adult나 Porn에 가까운 사진이라는 응답이 왔는지 체크
+     *
+     * @param response GreenEye로부터 받은 응답 Object
+     * @return Adult나 Porn라면 true, Normal이나 Sexy라면 false
+     */
+    public boolean checkHarmful(JSONObject response){
+
+        String HarmfulLevel[] = {HARMFUL_LEVEL_NORMAL,HARMFUL_LEVEL_SEXY,HARMFUL_LEVEL_ADULT,HARMFUL_LEVEL_PORN};
+        JSONArray images = response.getJSONArray("images");
+        JSONObject result = images.getJSONObject(0).getJSONObject("result");
+        double determinedConfidence = images.getJSONObject(0).getDouble("confidence");
+        double confidence=0.0;
+
+        for(String level : HarmfulLevel){
+
+            confidence = result.getJSONObject(level).getDouble("confidence");
+
+            if(determinedConfidence==confidence){
+                if( level.equals(HARMFUL_LEVEL_ADULT) || level.equals(HARMFUL_LEVEL_PORN) ){
+                    log.info("유해 사진. 유해수준={}", level);
+                    log.info("유해성 점수={}", confidence);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+
+    }/// end of checkHarmful
+
 
 
     /**

@@ -1,5 +1,6 @@
 package com.kube.noon.customersupport.service;
 
+import com.kube.noon.common.FileType;
 import com.kube.noon.common.ObjectStorageAWS3S;
 import com.kube.noon.customersupport.domain.Report;
 import com.kube.noon.customersupport.dto.report.ReportDto;
@@ -7,6 +8,7 @@ import com.kube.noon.customersupport.dto.report.ReportProcessingDto;
 import com.kube.noon.customersupport.enums.UnlockDuration;
 import com.kube.noon.customersupport.repository.AttachmentFilteringRepository;
 import com.kube.noon.customersupport.repository.ReportRepository;
+import com.kube.noon.feed.domain.FeedAttachment;
 import com.kube.noon.feed.dto.FeedAttachmentDto;
 import com.kube.noon.feed.repository.FeedAttachmentRepository;
 import com.kube.noon.member.domain.Member;
@@ -152,6 +154,18 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
         feedAttachmentRepository.save(FeedAttachmentDto.toEntity(attachmentDto));
 
         return attachmentDto;
+    }
+
+    @Override
+    public List<FeedAttachmentDto> getFilteredListByAI() {
+
+        List<FeedAttachment> feedAttachmentList = feedAttachmentRepository.findByFileType(FileType.PHOTO);
+
+        List<FeedAttachmentDto> filteredList = attachmentFilteringRepository.findBadImageListByAI(feedAttachmentList).stream()
+                .map(FeedAttachmentDto::toDto)
+                .collect(Collectors.toList());
+
+        return filteredList;
     }
 
 
