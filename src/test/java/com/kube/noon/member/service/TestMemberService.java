@@ -45,7 +45,7 @@ public class TestMemberService {
         memberService.addMember(AddMemberDto.builder()
                         .memberId("member_1230")
                 .nickname("test4586123")
-                .pwd(null)
+                .pwd("hello")
                 .phoneNumber("010-1234-5678")
                 .socialSignUp(true)
                 .build());

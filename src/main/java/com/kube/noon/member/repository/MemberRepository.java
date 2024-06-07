@@ -23,6 +23,8 @@ public interface MemberRepository {
 
     Optional<Member> findMemberByNickname(String nickname);
 
+    Optional<Member> findMemberByPhoneNumber(String phoneNumber);
+
     List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria);
 
     Optional<MemberRelationship> findMemberRelationship(String fromId, String toId);

@@ -5,7 +5,6 @@ import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
-import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.exception.MemberNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +17,7 @@ import java.util.Optional;
 
 /**
  * Repository에서는 받은 데이터는 1차적으로 서비스로부터 검증된 데이터이다.
+ * 그러므로 Validation 체크는 하지 않는다. null체크만 한다.
  */
 @Repository
 @RequiredArgsConstructor
@@ -30,6 +30,7 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     @Override
     public void addMember(Member member) {
+        System.out.println("member : " + member);
         member.setMemberRole(Role.MEMBER);
         member.setDajungScore(0);
         member.setSignedOff(false);
@@ -63,6 +64,11 @@ public class MemberRepositoryImpl implements MemberRepository {
     @Override
     public Optional<Member> findMemberByNickname(String nickname) {
         return memberJpaRepository.findMemberByNickname(nickname);
+    }
+
+    @Override
+    public Optional<Member> findMemberByPhoneNumber(String phoneNumber) {
+        return memberJpaRepository.findMemberByPhoneNumber(phoneNumber);
     }
 
     @Override

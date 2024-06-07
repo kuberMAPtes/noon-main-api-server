@@ -1,9 +1,9 @@
 package com.kube.noon.member.service.impl;
 
+import com.kube.noon.common.badwordfiltering.BadWordFilterAgent;
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.member.binder.MemberBinder;
-import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.*;
 import com.kube.noon.member.exception.MemberNotFoundException;
@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.Optional;
 /**
  * 파라미터는 식별에 반드시 필요한 데이터만 받는다
  */
+@Validated
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -33,18 +35,16 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final FeedService feedService;
+    private final BadWordFilterAgent badWordFilterAgent;
+
 //    private final SettingService settingService;
 
     @Override
     public void addMember(AddMemberDto memberDto) {
         try {
             log.info("회원 추가 중 : DTO {}", memberDto);
-            if (memberDto.getSocialSignUp()) {
-                memberDto.setPwd("social_sign_up");
-            }
-
-            Member member = MemberBinder.INSTANCE.toMember(memberDto);
-
+            com.kube.noon.member.domain.Member member = MemberBinder.INSTANCE.toMember(memberDto);
+            System.out.println("서비스에서 member 검증"+member);
             memberRepository.addMember(member);
             log.info("회원 추가 성공 : DTO {}", memberDto);
         } catch (DataAccessException e) {
@@ -83,39 +83,31 @@ public class MemberServiceImpl implements MemberService {
             throw new MemberRelationshipUpdateException(String.format("회원 관계 추가 실패 : %s", dto), e);
         }
     }
-
-
-    @Override
-    public Optional<Member> findMemberById(String memberId) {
-        try {
-            log.info("회원 찾는 중 ID: {}", memberId);
-            Optional<Member> om = memberRepository.findMemberById(memberId);
-                    om.ifPresentOrElse(
-                            (member)->log.info("회원 찾기 성공 "),
-                            () -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", memberId)));
-            return  om;
-        } catch (DataAccessException e) {
-            log.error("DB 접근 관련 문제 발생", e);
-            throw e;
-        }
+@Override
+public Optional<com.kube.noon.member.domain.Member> findMemberById(String memberId) {
+    try {
+        log.info("회원 찾는 중 ID: {}", memberId);
+        return memberRepository.findMemberById(memberId);
+    } catch (DataAccessException e) {
+        log.error("DB 접근 관련 문제 발생", e);
+        throw e;
     }
-
+}
 
     @Override
     public Optional<MemberProfileDto> findMemberProfileById(String memberId) {
         try {
             log.info("회원 프로필 찾는 중 ID: {}", memberId);
-            Member member = memberRepository.findMemberById(memberId)
-                    .orElseThrow(() -> new MemberNotFoundException(String.format("회원 조회 실패 : %s", memberId)));
-            List<FeedDto> feedDtoList = new ArrayList<FeedDto>();
-//            feedDtoList = feedService.findFeedListByMemberId(memberId);
-
-            MemberProfileDto memberProfileDto = MemberBinder.INSTANCE.toDto(member, MemberProfileDto.class);
-
-//            om.setFeedDtoList(feedDtoList);
-
-            log.info("회원 프로필 찾기 성공 : {}", memberProfileDto);
-            return Optional.ofNullable(memberProfileDto);
+            Optional<com.kube.noon.member.domain.Member> om = memberRepository.findMemberById(memberId);
+            return Optional.ofNullable(om.map(member -> {
+                List<FeedDto> feedDtoList = new ArrayList<>();
+                // feedDtoList = feedService.findFeedListByMemberId(memberId);
+                // memberProfileDto.setFeedDtoList(feedDtoList);
+                return MemberBinder.INSTANCE.toDto(member,MemberProfileDto.class);
+            }).orElseGet(() -> {
+                log.info("회원이 없습니다");
+                return null;
+            }));
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
             throw e;
@@ -123,24 +115,32 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Optional<Member> findMemberByNickname(String nickname) {
+    public Optional<com.kube.noon.member.domain.Member> findMemberByNickname(String nickname) {
         try {
             log.info("회원 찾는 중 닉네임: {}", nickname);
-            Optional<Member> op = memberRepository.findMemberByNickname(nickname);
-            String memberId=op.orElseThrow().getMemberId();
-            checkMemberisSignedOff(memberId);
-            log.info("회원 찾기 성공 : {}", memberId);
-            return op;
+            return memberRepository.findMemberByNickname(nickname);
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
             throw e;
         }
     }
 
+@Override
+public Optional<com.kube.noon.member.domain.Member> findMemberByPhoneNumber(String phoneNumber) {
+    try {
+        log.info("회원 찾는 중 전화번호: {}", phoneNumber);
+        return memberRepository.findMemberByPhoneNumber(phoneNumber);
+    } catch (DataAccessException e) {
+        log.error("DB 접근 관련 문제 발생", e);
+        throw e;
+    }
+}
+
+
     @Override
-    public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteriaDto) {
+    public List<com.kube.noon.member.domain.Member> findMemberListByCriteria(MemberSearchCriteriaDto criteriaDto) {
         try {
-            checkMemberisSignedOff(criteriaDto.getMemberId());
+            log.info("회원 리스트 찾는 중 : {}", criteriaDto);
             return memberRepository.findMemberListByCriteria(criteriaDto);
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
@@ -216,6 +216,22 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
+    @Override
+    public void updateDajungScore(String memberId, int dajungScore) {
+        try{
+            log.info("회원 다정점수 업데이트 중 : {}", memberId);
+            checkMemberisSignedOff(memberId);
+            memberRepository.updateMember(
+                    memberRepository.findMemberById(memberId)
+                            .map(member -> {
+                                member.setDajungScore(dajungScore);
+                                return member;
+                            }).orElseThrow(() -> new MemberNotFoundException("회원이 없습니다.")));
+        } catch (DataAccessException e) {
+            throw new MemberUpdateException(String.format("회원 다정점수 업데이트 실패 : %s", memberId), e);
+        }
+    }
+
     /**
      * 차단해제할거면 dto의 타입에 차단 넣는다.
      *
@@ -235,12 +251,67 @@ public class MemberServiceImpl implements MemberService {
     public void deleteMember(String memberId) {
         log.info("회원 삭제 중 : {}", memberId);
         checkMemberisSignedOff(memberId);
-        memberRepository.updateMember(Member
+        memberRepository.updateMember(com.kube.noon.member.domain.Member
                 .builder()
                 .memberId(memberId)
                 .signedOff(true)
                 .build());
         log.info("회원 삭제 성공 : {}", memberId);
+    }
+
+    @Override
+    public boolean checkNickname(String nickname) {
+
+        memberRepository.findMemberByNickname(nickname)
+                .ifPresent(member -> {
+                    throw new MemberSecurityBreachException("닉네임이 중복됩니다.");
+                });
+
+        return false;
+    }
+
+    @Override
+    public boolean checkMemberId(String memberId) {
+
+        memberRepository.findMemberById(memberId)
+                .ifPresent(member -> {
+                    throw new MemberSecurityBreachException("아이디가 중복됩니다.");
+                });
+
+        return false;
+    }
+
+    @Override
+    public boolean checkPassword(String memberId, String password) {
+
+        memberRepository.findMemberById(memberId)
+                .ifPresent(member -> {
+                    if (!member.getPwd().equals(password)) {
+                        throw new MemberSecurityBreachException("비밀번호가 일치하지 않습니다.");
+                    }
+                });
+
+        return false;
+    }
+
+    @Override
+    public boolean checkPhoneNumber(String phoneNumber) {
+
+        memberRepository.findMemberByPhoneNumber(phoneNumber)
+                .ifPresent(member -> {
+                    throw new MemberSecurityBreachException("전화번호가 중복됩니다.");
+                });
+
+        return false;
+    }
+
+    @Override
+    public boolean checkBadWord(String word) {
+        return badWordFilterAgent.change(
+                        word.replace("*", "")
+                        , badWordFilterAgent.getBadWordSeparator()
+                )
+                .contains("*");
     }
 
     private void checkMemberisSignedOff(String memberId) {

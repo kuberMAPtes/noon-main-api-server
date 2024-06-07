@@ -9,33 +9,46 @@ import java.util.Optional;
 
 public interface MemberService {
 
-    public void addMember(AddMemberDto memberDto);//JPA
+    void addMember(AddMemberDto memberDto);//JPA
 
-    public void addMemberRelationship(MemberRelationshipDto memberRelationshipDto);
+    void addMemberRelationship(MemberRelationshipDto memberRelationshipDto);
 
-    public Optional<Member> findMemberById(String memberId);//JPA
+    Optional<Member> findMemberById(String memberId);//JPA
 
     //레포지토리에서 없음
-    public Optional<MemberProfileDto> findMemberProfileById(String memberId);
+    Optional<MemberProfileDto> findMemberProfileById(String memberId);
 
-    public Optional<Member> findMemberByNickname(String nickname);//JPA
+    Optional<Member> findMemberByNickname(String nickname);//JPA
 
-    public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto searchDto);//JPA
+    Optional<Member> findMemberByPhoneNumber(String phoneNumber);
 
-    public List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteriaDto);
+    List<Member> findMemberListByCriteria(MemberSearchCriteriaDto searchDto);//JPA
 
-    public Optional<MemberRelationship> findMemberRelationship(String fromId, String toId);
+    List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteriaDto);
 
-    public void updateMember(UpdateMemberDto updateMemberDto);
+    Optional<MemberRelationship> findMemberRelationship(String fromId, String toId);
 
-    public void updatePassword(String memberId, String newPassword);
+    void updateMember(UpdateMemberDto updateMemberDto);
 
-    public void updatePhoneNumber(String memberId,String newPassword);
+    void updatePassword(String memberId, String newPassword);
 
-    public void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl);
+    void updatePhoneNumber(String memberId,String newPassword);
 
-    public void deleteMemberRelationship(MemberRelationshipDto dto);
+    void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl);
 
-    public void deleteMember(String memberId);
+    void updateDajungScore(String memberId, int dajungScore);
 
+    void deleteMemberRelationship(MemberRelationshipDto dto);
+
+    void deleteMember(String memberId);
+
+    boolean checkNickname(String nickname);
+
+    boolean checkMemberId(String memberId);
+
+    boolean checkPassword(String email, String password);
+
+    boolean checkPhoneNumber(String phoneNumber);
+
+    boolean checkBadWord(String word);
 }

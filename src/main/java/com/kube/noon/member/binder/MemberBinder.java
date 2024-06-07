@@ -96,7 +96,7 @@ public interface MemberBinder {
             return memberProfileDtoToMember((MemberProfileDto) dto);
         } else if (dto instanceof UpdateMemberDto) {
             return updateMemberDtoToMember((UpdateMemberDto) dto);
-        } else if (dto instanceof  UpdatePasswordDto) {
+        } else if (dto instanceof UpdatePasswordDto) {
             return updatePasswordDtoToMember((UpdatePasswordDto) dto);
         } else if (dto instanceof UpdatePhoneNumberDto) {
             return updatePhoneNumberDtoToMember((UpdatePhoneNumberDto) dto);

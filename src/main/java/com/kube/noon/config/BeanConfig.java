@@ -45,4 +45,5 @@ public class BeanConfig {
     public NotificationMessageSender transmissionAgentForDev() {
         return new NotificationEmptyMessageSender();
     }
+
 }
