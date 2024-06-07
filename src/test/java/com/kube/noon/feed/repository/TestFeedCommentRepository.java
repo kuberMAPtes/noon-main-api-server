@@ -2,6 +2,7 @@ package com.kube.noon.feed.repository;
 
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.domain.FeedComment;
+import com.kube.noon.member.domain.Member;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class TestFeedCommentRepository {
      */
     @Transactional
     @Test
-    public void getFeedComments() {
+    public void getFeedCommentListTest() {
         Feed feed = Feed.builder().feedId(10000).build();
         List<FeedComment> feedComments = feedCommentRepository.findByFeed(feed);
 
@@ -50,7 +51,7 @@ public class TestFeedCommentRepository {
     public void addFeedCommentTest() {
         Feed feed = Feed.builder().feedId(10000).build();
         FeedComment feedComment = FeedComment.builder()
-                .commenterId("member_1")
+                .member(Member.builder().memberId("member_1").build())
                 .commentText("집에 가고 싶다.")
                 .writtenTime(LocalDateTime.now())
                 .activated(true)

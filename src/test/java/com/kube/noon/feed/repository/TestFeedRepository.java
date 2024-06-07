@@ -320,7 +320,7 @@ public class TestFeedRepository {
         int buildingId = 10002;
 
         // 1. 추가
-        // 1) 좋아요 데이터가 있는지 확인한다.
+        // 1) 북마크 데이터가 있는지 확인한다.
         Zzim zzimBookmark = zzimRepository.findByFeedIdAndMemberIdAndZzimType(feedId, memberId, ZzimType.BOOKMARK);
         Zzim resultZzim;
 

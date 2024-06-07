@@ -30,11 +30,11 @@ public class TestFeedAttachmentRepository {
     @Test
     public void getAttachmentTest() {
         Feed feed = Feed.builder().feedId(10000).build();
-        List<FeedAttachment> attachments = feedAttachmentRepository.findByFeed(feed);
+        List<FeedAttachment> feedAttachmentList = feedAttachmentRepository.findByFeedAndActivatedTrue(feed);
 
         // test 1) 개수 확인
-        assertThat(attachments.size()).isGreaterThan(0);
-        log.info(attachments.size());
+        assertThat(feedAttachmentList.size()).isGreaterThan(0);
+        log.info(feedAttachmentList.size());
 
         // test 2) console printing
         // attachments.stream().forEach(System.out::println);

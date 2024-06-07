@@ -20,6 +20,7 @@ public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelations
 
     /**
      * 다 선택하면 다 나오고, 하나 선택하면 하나만 나옴
+     *
      * @param criteria
      * @return
      */
@@ -29,16 +30,16 @@ public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelations
 
         BooleanBuilder builder = new BooleanBuilder();
 
-        if (criteria.getFollowing()!=null) {
+        if (criteria.getFollowing() != null) {
             builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
         }
-        if (criteria.getFollower()!=null) {
+        if (criteria.getFollower() != null) {
             builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
         }
-        if (criteria.getBlocking()!=null) {
+        if (criteria.getBlocking() != null) {
             builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
         }
-        if (criteria.getBlocker()!=null) {
+        if (criteria.getBlocker() != null) {
             builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
         }
 
