@@ -45,12 +45,11 @@ public class MemberRestController {
     }
 
     // Common
-    private ResponseEntity<?> checkBadWord(String word) {
+    private void checkBadWord(String word) {
         if (memberService.checkBadWord(word)) {
             String bodyString = "비속어는 사용할 수 없습니다.";
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(bodyString);
+            ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(bodyString);
         }
-        return null;
     }
     // Method
 
@@ -207,6 +206,8 @@ public class MemberRestController {
         System.out.println("샘플서비스실행");
 //        sampleService.func1();
         System.out.println("샘플서비스실행완료");
+        memberService.findMemberById("member_1");
+
 //        memberService.updatePassword(memberId, newPassword);
 
         return null;

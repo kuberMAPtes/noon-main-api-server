@@ -1,5 +1,6 @@
 package com.kube.noon.member.dto;
 
+import com.kube.noon.member.enums.AddOrUpdate;
 import com.kube.noon.member.enums.RelationshipType;
 import lombok.*;
 
@@ -20,5 +21,7 @@ public class MemberRelationshipDto {
     private RelationshipType relationshipType;
 
     private Boolean activated;
+
+    private AddOrUpdate addOrUpdate;
 
 }
