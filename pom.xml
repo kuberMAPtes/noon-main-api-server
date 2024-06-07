@@ -122,6 +122,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.0.2</version>
+        </dependency>
+        <dependency>
             <groupId>io.github.vaneproject</groupId>
             <artifactId>badwordfiltering</artifactId>
             <version>1.0.0</version>
