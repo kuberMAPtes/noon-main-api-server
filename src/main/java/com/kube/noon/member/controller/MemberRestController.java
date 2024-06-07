@@ -255,10 +255,13 @@ public class MemberRestController {
     }
 
     public ResponseEntity<?> updateDajungScore(@RequestParam String memberId, @RequestParam int newDajungScore) {
-        return null;
+        memberService.updateDajungScore(memberId, newDajungScore);
+        return ResponseEntity.ok("다정점수 변경 성공");
     }
 
     public ResponseEntity<?> getMember(@RequestParam String memberId) {
+
+//        return memberService.findMemberById(memberId).orElse(new GetMemberResponseDto());
         return null;
     }
 

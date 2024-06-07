@@ -6,6 +6,7 @@ import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.member.binder.MemberBinder;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.*;
+import com.kube.noon.member.exception.MemberNotFoundException;
 import com.kube.noon.member.exception.MemberRelationshipUpdateException;
 import com.kube.noon.member.exception.MemberSecurityBreachException;
 import com.kube.noon.member.exception.MemberUpdateException;
@@ -212,6 +213,22 @@ public Optional<com.kube.noon.member.domain.Member> findMemberByPhoneNumber(Stri
             memberRepository.updateMemberProfilePhoto(memberId, newProfilePhotoUrl);
         } catch (DataAccessException e) {
             throw new MemberUpdateException(String.format("회원 프로필 사진 업데이트 실패 : %s", memberId), e);
+        }
+    }
+
+    @Override
+    public void updateDajungScore(String memberId, int dajungScore) {
+        try{
+            log.info("회원 다정점수 업데이트 중 : {}", memberId);
+            checkMemberisSignedOff(memberId);
+            memberRepository.updateMember(
+                    memberRepository.findMemberById(memberId)
+                            .map(member -> {
+                                member.setDajungScore(dajungScore);
+                                return member;
+                            }).orElseThrow(() -> new MemberNotFoundException("회원이 없습니다.")));
+        } catch (DataAccessException e) {
+            throw new MemberUpdateException(String.format("회원 다정점수 업데이트 실패 : %s", memberId), e);
         }
     }
 

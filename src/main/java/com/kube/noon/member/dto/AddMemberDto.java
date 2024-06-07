@@ -11,8 +11,6 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-@Builder
-@AllArgsConstructor
 public class AddMemberDto {
 
     //체크 : 비지니스로직에서 있는지 없는지 검사했었었나? 검사안해도되겠네

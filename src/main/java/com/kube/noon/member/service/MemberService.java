@@ -36,6 +36,8 @@ public interface MemberService {
 
     void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl);
 
+    void updateDajungScore(String memberId, int dajungScore);
+
     void deleteMemberRelationship(MemberRelationshipDto dto);
 
     void deleteMember(String memberId);
