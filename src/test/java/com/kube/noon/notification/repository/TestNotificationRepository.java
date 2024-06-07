@@ -1,5 +1,6 @@
 package com.kube.noon.notification.repository;
 
+import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.repository.MemberRepository;
 import com.kube.noon.notification.domain.Notification;
 import com.kube.noon.notification.domain.NotificationType;
@@ -88,7 +89,7 @@ public class TestNotificationRepository {
     @DisplayName("Notification 저장 - memberId로")
     @Test
     void save_memberId() {
-        com.kube.noon.member.domain.Member sampleReceiver = this.memberRepository.findMemberById("sample-receiver").get();
+        Member sampleReceiver = this.memberRepository.findMemberById("sample-receiver").get();
         Notification testCase =
                 new Notification(sampleReceiver, "sample-text", NotificationType.COMMENT);
         assertThatNoException().isThrownBy(() -> this.notificationRepository.save(testCase));
@@ -101,7 +102,7 @@ public class TestNotificationRepository {
     @DisplayName("Notification 저장 - Member 객체 참조")
     @Test
     void save_member() {
-        Optional<com.kube.noon.member.domain.Member> member = this.memberRepository.findMemberById("sample-receiver");
+        Optional<Member> member = this.memberRepository.findMemberById("sample-receiver");
         Notification testCase =
                 new Notification(member.get(), "sample-text", NotificationType.COMMENT);
         assertThatNoException().isThrownBy(() -> this.notificationRepository.save(testCase));
@@ -114,7 +115,7 @@ public class TestNotificationRepository {
     @DisplayName("Notification 저장 - notificationId 값 세팅")
     @Test
     void save_setNotificationId() {
-        com.kube.noon.member.domain.Member sampleReceiver = this.memberRepository.findMemberById("sample-receiver").get();
+        Member sampleReceiver = this.memberRepository.findMemberById("sample-receiver").get();
         Notification testCase = new Notification();
         testCase.setNotificationId(1);
         testCase.setReceiver(sampleReceiver);
@@ -140,7 +141,7 @@ public class TestNotificationRepository {
     @DisplayName("Notification 조회")
     @Test
     void findById() {
-        com.kube.noon.member.domain.Member sampleReceiver = this.memberRepository.findMemberById("sample-receiver").get();
+        Member sampleReceiver = this.memberRepository.findMemberById("sample-receiver").get();
         Notification testCase =
                 new Notification(sampleReceiver, "sample-text", NotificationType.COMMENT);
 
@@ -165,7 +166,7 @@ public class TestNotificationRepository {
     @DisplayName("Notification 조회 - 없는 레코드 조회")
     @Test
     void findById_notExistRecord() {
-        com.kube.noon.member.domain.Member sampleReceiver = this.memberRepository.findMemberById("sample-receiver").get();
+        Member sampleReceiver = this.memberRepository.findMemberById("sample-receiver").get();
         Notification testCase =
                 new Notification(sampleReceiver, "sample-text", NotificationType.COMMENT);
 

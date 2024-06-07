@@ -1,5 +1,6 @@
 package com.kube.noon.member.repository;
 
+import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
@@ -14,23 +15,23 @@ import java.util.Optional;
  */
 public interface MemberRepository {
 
-    void addMember(com.kube.noon.member.domain.Member member);
+    void addMember(Member member);
 
     void addMemberRelationship(MemberRelationship memberRelationship);
 
-    Optional<com.kube.noon.member.domain.Member> findMemberById(String memberId);
+    Optional<Member> findMemberById(String memberId);
 
-    Optional<com.kube.noon.member.domain.Member> findMemberByNickname(String nickname);
+    Optional<Member> findMemberByNickname(String nickname);
 
-    Optional<com.kube.noon.member.domain.Member> findMemberByPhoneNumber(String phoneNumber);
+    Optional<Member> findMemberByPhoneNumber(String phoneNumber);
 
-    List<com.kube.noon.member.domain.Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria);
+    List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria);
 
     Optional<MemberRelationship> findMemberRelationship(String fromId, String toId);
 
     List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria);
 
-    void updateMember(com.kube.noon.member.domain.Member member);
+    void updateMember(Member member);
 
     void updatePassword(String memberId, String newPassword);
 

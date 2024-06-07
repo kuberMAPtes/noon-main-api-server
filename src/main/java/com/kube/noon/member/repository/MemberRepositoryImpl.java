@@ -1,6 +1,7 @@
 package com.kube.noon.member.repository;
 
 import com.kube.noon.common.PublicRange;
+import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
@@ -28,7 +29,7 @@ public class MemberRepositoryImpl implements MemberRepository {
 //    private final PasswordEncoder passwordEncoder;
 
     @Override
-    public void addMember(com.kube.noon.member.domain.Member member) {
+    public void addMember(Member member) {
         System.out.println("member : " + member);
         member.setMemberRole(Role.MEMBER);
         member.setDajungScore(0);
@@ -56,27 +57,27 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
-    public Optional<com.kube.noon.member.domain.Member> findMemberById(String memberId) {
+    public Optional<Member> findMemberById(String memberId) {
         return memberJpaRepository.findMemberByMemberId(memberId);
     }
 
     @Override
-    public Optional<com.kube.noon.member.domain.Member> findMemberByNickname(String nickname) {
+    public Optional<Member> findMemberByNickname(String nickname) {
         return memberJpaRepository.findMemberByNickname(nickname);
     }
 
     @Override
-    public Optional<com.kube.noon.member.domain.Member> findMemberByPhoneNumber(String phoneNumber) {
+    public Optional<Member> findMemberByPhoneNumber(String phoneNumber) {
         return memberJpaRepository.findMemberByPhoneNumber(phoneNumber);
     }
 
     @Override
-    public List<com.kube.noon.member.domain.Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria) {
-        List<com.kube.noon.member.domain.Member> lm = memberJpaRepository.findMemberListByCriteria(criteria);
+    public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria) {
+        List<Member> lm = memberJpaRepository.findMemberListByCriteria(criteria);
         if (lm.isEmpty()) {
             log.info("조건에 맞는 회원이 없음");
         } else {
-            for (com.kube.noon.member.domain.Member m : lm) {
+            for (Member m : lm) {
                 log.info("memberId : {} 닉네임 :  {}", m.getMemberId(), m.getNickname());
             }
         }
@@ -114,9 +115,9 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
-    public void updateMember(com.kube.noon.member.domain.Member member) {
+    public void updateMember(Member member) {
 //        memberJpaRepository.updateMember(member);
-        com.kube.noon.member.domain.Member newMember = memberJpaRepository.findMemberByMemberId(member.getMemberId())
+        Member newMember = memberJpaRepository.findMemberByMemberId(member.getMemberId())
                 .orElseThrow(() -> new MemberNotFoundException("Member not found"));
 
         if (member.getNickname() != null) {

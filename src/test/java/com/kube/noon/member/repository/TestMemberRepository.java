@@ -2,6 +2,7 @@ package com.kube.noon.member.repository;
 
 
 import com.kube.noon.common.PublicRange;
+import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
@@ -38,13 +39,13 @@ public class TestMemberRepository {
     @Test
     @DisplayName("회원 추가 테스트")
     void addMember() {
-        com.kube.noon.member.domain.Member m = getMember();
+        Member m = getMember();
 //        System.out.println(passwordEncoder.encode("newPassword"));
 //        newMember.setPwd(passwordEncoder.encode("newPassword"));
 
         memberRepository.addMember(m);
 
-        Optional<com.kube.noon.member.domain.Member> foundMember = memberRepository.findMemberById("member_99999");
+        Optional<Member> foundMember = memberRepository.findMemberById("member_99999");
         assertThat(foundMember).isPresent();
         assertThat(foundMember.get().getNickname()).isEqualTo("newMember");
     }
@@ -89,7 +90,7 @@ public class TestMemberRepository {
     @DisplayName("회원ID로 찾기 테스트")
     void findMemberById() {
 
-        Optional<com.kube.noon.member.domain.Member> foundMember = memberRepository.findMemberById("member_1");
+        Optional<Member> foundMember = memberRepository.findMemberById("member_1");
         assertThat(foundMember).isPresent();
         assertThat(foundMember.get().getNickname()).isEqualTo("nickname_1");
 
@@ -98,7 +99,7 @@ public class TestMemberRepository {
     @Test
     @DisplayName("회원 닉네임으로 찾기 테스트")
     void findMemberByNickname() {
-        Optional<com.kube.noon.member.domain.Member> foundMember = memberRepository.findMemberByNickname("nickname_1");
+        Optional<Member> foundMember = memberRepository.findMemberByNickname("nickname_1");
         assertThat(foundMember).isPresent();
         assertThat(foundMember.get().getNickname()).isEqualTo("nickname_1");
     }
@@ -106,7 +107,7 @@ public class TestMemberRepository {
     @Test
     @DisplayName("회원 리스트 조회 테스트")
     void findMemberListByCriteria() {
-        List<com.kube.noon.member.domain.Member> foundMemberList = memberRepository.findMemberListByCriteria(
+        List<Member> foundMemberList = memberRepository.findMemberListByCriteria(
                 getMemberSearchCriteriaDto("member_1", "nickname_1", null, null, null, false));
         System.out.println("리스트조회" + foundMemberList);
         assertThat(foundMemberList.get(0).getNickname()).isEqualTo("nickname_1");
@@ -152,8 +153,8 @@ public class TestMemberRepository {
     void updateMember2(){
         //널을 넣어도 널이 안되어야 함.
         //업데이트한 건 업데이트 되어야함
-        com.kube.noon.member.domain.Member member = memberRepository.findMemberById("member_1").orElseThrow();
-        com.kube.noon.member.domain.Member rollbackMember = member;
+        Member member = memberRepository.findMemberById("member_1").orElseThrow();
+        Member rollbackMember = member;
         member.setMemberProfilePublicRange(PublicRange.PRIVATE);
         member.setAllFeedPublicRange(PublicRange.PRIVATE);
         member.setBuildingSubscriptionPublicRange(PublicRange.PRIVATE);
@@ -173,7 +174,7 @@ public class TestMemberRepository {
     void updatePassword() {
         memberRepository.updatePassword("member_1", "newPassword");
 
-        Optional<com.kube.noon.member.domain.Member> foundMember = memberRepository.findMemberById("member_1");
+        Optional<Member> foundMember = memberRepository.findMemberById("member_1");
         assertThat(foundMember).isPresent();
         assertThat(foundMember.get().getPwd()).isEqualTo("newPassword");
     }
@@ -183,7 +184,7 @@ public class TestMemberRepository {
     void updatePhoneNumber() {
         memberRepository.updatePhoneNumber("member_1", "010-1234-5678");
 
-        Optional<com.kube.noon.member.domain.Member> foundMember = memberRepository.findMemberById("member_1");
+        Optional<Member> foundMember = memberRepository.findMemberById("member_1");
         assertThat(foundMember).isPresent();
         assertThat(foundMember.get().getPhoneNumber()).isEqualTo("010-1234-5678");
     }
@@ -193,7 +194,7 @@ public class TestMemberRepository {
     void updateProfilePhotoUrl() {
         memberRepository.updateMemberProfilePhoto("member_1", "https://newprofile.photo/url");
 
-        Optional<com.kube.noon.member.domain.Member> foundMember = memberRepository.findMemberById("member_1");
+        Optional<Member> foundMember = memberRepository.findMemberById("member_1");
         assertThat(foundMember).isPresent();
         assertThat(foundMember.get().getProfilePhotoUrl()).isEqualTo("https://newprofile.photo/url");
 
@@ -213,21 +214,21 @@ public class TestMemberRepository {
     @Test
     @DisplayName("회원 삭제 테스트")
     void deleteMember() {
-        com.kube.noon.member.domain.Member member = memberRepository.findMemberById("member_1").orElseThrow();
+        Member member = memberRepository.findMemberById("member_1").orElseThrow();
         assertThat(member.getSignedOff()).isFalse();
         member.setSignedOff(true);
         memberRepository.updateMember(member);
-        Optional<com.kube.noon.member.domain.Member> foundMember = memberRepository.findMemberById("member_1");
+        Optional<Member> foundMember = memberRepository.findMemberById("member_1");
         assertThat(foundMember.get().getSignedOff()).isTrue();
-        memberRepository.updateMember(com.kube.noon.member.domain.Member.builder().memberId("member_1").signedOff(false).build());
+        memberRepository.updateMember(Member.builder().memberId("member_1").signedOff(false).build());
     }
 
 
-    private @NotNull com.kube.noon.member.domain.Member getMember() {
+    private @NotNull Member getMember() {
         String dateString = "0001-01-01 01:01:01";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime dateTime = LocalDateTime.parse(dateString, formatter);
-        com.kube.noon.member.domain.Member newMember = new com.kube.noon.member.domain.Member();
+        Member newMember = new Member();
         newMember.setMemberId("member_99999");
         newMember.setMemberRole(Role.MEMBER);
         newMember.setNickname("newMember");

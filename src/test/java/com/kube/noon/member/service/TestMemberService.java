@@ -2,6 +2,7 @@ package com.kube.noon.member.service;
 
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.binder.MemberBinder;
+import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.*;
 import com.kube.noon.member.enums.RelationshipType;
@@ -221,7 +222,7 @@ public class TestMemberService {
         assertThat(memberService.findMemberById("member_1").orElseThrow().getSignedOff()).isTrue();
 
 
-        com.kube.noon.member.domain.Member member = memberService.findMemberById("member_1").orElseThrow();
+        Member member = memberService.findMemberById("member_1").orElseThrow();
         memberRepository.updateMember(member);
     }
 
@@ -232,11 +233,11 @@ public class TestMemberService {
 
 
 
-    private @NotNull com.kube.noon.member.domain.Member getMember() {
+    private @NotNull Member getMember() {
         String dateString = "0001-01-01 01:01:01";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime dateTime = LocalDateTime.parse(dateString, formatter);
-        com.kube.noon.member.domain.Member newMember = new com.kube.noon.member.domain.Member();
+        Member newMember = new Member();
         newMember.setMemberId("member_99999");
         newMember.setMemberRole(Role.MEMBER);
         newMember.setNickname("newMember");
