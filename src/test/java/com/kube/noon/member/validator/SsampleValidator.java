@@ -1,7 +1,6 @@
 package com.kube.noon.member.validator;
 
 import com.kube.noon.common.validator.IllegalServiceCallException;
-import com.kube.noon.common.validator.RuleValidator;
 import com.kube.noon.common.validator.ValidationChain;
 import com.kube.noon.common.validator.Validator;
 import com.kube.noon.member.dto.AddMemberDto;
@@ -10,12 +9,14 @@ import com.kube.noon.member.dto.UpdatePasswordDto;
 import com.kube.noon.member.repository.MemberRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 
 import java.util.regex.Pattern;
 
 @Slf4j
-@Validator(targetClass = SsampleService.class)
-public class SsampleValidator implements RuleValidator<MemberRepository> {
+@Validator(targetClass = SsampleServiceImpl.class)
+public class SsampleValidator {
 
     private static final Pattern PHONE_NUMBER_PATTERN = Pattern.compile("^01(?:0|1|[6-9])-(?:\\d{3}|\\d{4})-\\d{4}$");
     private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9가-힣_ ]{2,20}$");
@@ -23,17 +24,15 @@ public class SsampleValidator implements RuleValidator<MemberRepository> {
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9!@#\\$%\\^&\\*_]{8,16}$");
 
 
-    private final ValidationChain<Object> validationChain;
-    private final MemberRepository memberRepository;
+    private final ValidationChain validationChain;
 
     @Autowired
-    public SsampleValidator(ValidationChain<Object> validationChain, MemberRepository memberRepository) {
+    public SsampleValidator(ValidationChain validationChain, MemberRepository memberRepository) {
         this.validationChain = validationChain;
-        this.memberRepository = memberRepository;
         this.setRule(memberRepository);
     }
 
-    @Override
+    @EventListener(ApplicationReadyEvent.class)
     public void setRule(MemberRepository memberRepository) {
 
         validationChain.addRule(AddMemberDto.class, dto -> {

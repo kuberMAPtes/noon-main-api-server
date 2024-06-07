@@ -6,7 +6,6 @@ import com.kube.noon.member.dto.MemberProfileDto;
 import com.kube.noon.member.enums.LoginFlag;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
-import com.kube.noon.member.validator.SampleService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +28,9 @@ public class MemberRestController {
     @Autowired
     @Qualifier("memberServiceImpl")
     private MemberService memberService;
+
+//    @Autowired
+//    private SampleService sampleService;
 
     @Autowired
     @Qualifier("loginAttemptCheckerAgent")
@@ -203,8 +205,7 @@ public class MemberRestController {
     public ResponseEntity<?> updatePassword() {
 
         System.out.println("샘플서비스실행");
-        SampleService sampleService = new SampleService();
-        sampleService.func1();
+//        sampleService.func1();
         System.out.println("샘플서비스실행완료");
 //        memberService.updatePassword(memberId, newPassword);
 

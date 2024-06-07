@@ -1,20 +1,21 @@
 package com.kube.noon.member.validator;
 
 import com.kube.noon.common.validator.IllegalServiceCallException;
-import com.kube.noon.common.validator.RuleValidator;
 import com.kube.noon.common.validator.ValidationChain;
 import com.kube.noon.common.validator.Validator;
 import com.kube.noon.member.dto.AddMemberDto;
 import com.kube.noon.member.dto.MemberRelationshipDto;
 import com.kube.noon.member.dto.UpdatePasswordDto;
 import com.kube.noon.member.repository.MemberRepository;
-import com.kube.noon.member.service.MemberService;
+import com.kube.noon.member.service.impl.MemberServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 
 import java.util.regex.Pattern;
 
-@Validator(targetClass = MemberService.class)
-public class MemberValidator implements RuleValidator<MemberRepository> {
+@Validator(targetClass = MemberServiceImpl.class)
+public class MemberValidator {
 
     private static final Pattern PHONE_NUMBER_PATTERN = Pattern.compile("^01(?:0|1|[6-9])-(?:\\d{3}|\\d{4})-\\d{4}$");
     private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9가-힣_ ]{2,20}$");
@@ -22,16 +23,18 @@ public class MemberValidator implements RuleValidator<MemberRepository> {
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9!@#\\$%\\^&\\*_]{8,16}$");
 
 
-    private final ValidationChain<Object> validationChain;
-    MemberRepository memberRepository;
+    private final ValidationChain validationChain;
+
+    private final MemberRepository memberRepository;
 
     @Autowired
-    public MemberValidator(ValidationChain<Object> validationChain, MemberRepository memberRepository) {
+    public MemberValidator(ValidationChain validationChain, MemberRepository memberRepository) {
         this.validationChain = validationChain;
+        this.memberRepository = memberRepository;
         this.setRule(memberRepository);
     }
 
-    @Override
+    @EventListener(ApplicationReadyEvent.class)
     public void setRule(MemberRepository memberRepository) {
 
         validationChain.addRule(AddMemberDto.class, dto -> {
@@ -97,16 +100,10 @@ public class MemberValidator implements RuleValidator<MemberRepository> {
 
     }//end of setRule
 
-    public void validate(Object dto) {
-        System.out.println("VALIDATE 실행되었습니다.");
-        validationChain.validate(dto);
-    }
-
-
     public void addMember(AddMemberDto memberDto) {
 
         System.out.println("밸리데이터 실행");
-        validate(memberDto);
+        validationChain.validate(memberDto);
 
     }
 
