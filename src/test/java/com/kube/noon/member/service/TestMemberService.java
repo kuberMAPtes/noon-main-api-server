@@ -1,7 +1,7 @@
 package com.kube.noon.member.service;
 
 import com.kube.noon.common.PublicRange;
-import com.kube.noon.member.binder.MemberBinder;
+import com.kube.noon.member.binder.DeprecatedBinding;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.*;
@@ -132,9 +132,9 @@ public class TestMemberService {
                     member.setNickname("바뀐 닉네임");
                     member.setDajungScore(100);
                     member.setProfileIntro("바뀐 프로필 소개");
-                    dto2.set(MemberBinder.INSTANCE.toDto(member, UpdateMemberDto.class));
+                    dto2.set(DeprecatedBinding.INSTANCE.toDto(member, UpdateMemberDto.class));
 
-                    return MemberBinder.INSTANCE.toDto(member, UpdateMemberDto.class);
+                    return DeprecatedBinding.INSTANCE.toDto(member, UpdateMemberDto.class);
                 }
         ).ifPresent(dto -> memberService.updateMember(dto));
 
@@ -150,8 +150,8 @@ public class TestMemberService {
         memberService.findMemberById("member_1").map(
                 member -> {
                     member.setPwd("1234");
-                    dto2.set(MemberBinder.INSTANCE.toDto(member, UpdatePasswordDto.class));
-                    return MemberBinder.INSTANCE.toDto(member, UpdatePasswordDto.class);
+                    dto2.set(DeprecatedBinding.INSTANCE.toDto(member, UpdatePasswordDto.class));
+                    return DeprecatedBinding.INSTANCE.toDto(member, UpdatePasswordDto.class);
                 }
         ).ifPresent(dto -> memberService.updatePassword(dto.getMemberId(),dto.getPwd()));
 
@@ -159,7 +159,7 @@ public class TestMemberService {
 
 
 
-        memberService.updateMember(MemberBinder.INSTANCE.toDto(MemberBinder.INSTANCE.toMember(dto2.get()), UpdateMemberDto.class));
+        memberService.updateMember(DeprecatedBinding.INSTANCE.toDto(DeprecatedBinding.INSTANCE.toMember(dto2.get()), UpdateMemberDto.class));
 
     }
 
@@ -171,13 +171,13 @@ public class TestMemberService {
         memberService.findMemberById("member_1").map(
                 member -> {
                     member.setPhoneNumber("010-1234-5678");
-                    dto2.set(MemberBinder.INSTANCE.toDto(member, UpdatePhoneNumberDto.class));
-                    return MemberBinder.INSTANCE.toDto(member, UpdatePhoneNumberDto.class);
+                    dto2.set(DeprecatedBinding.INSTANCE.toDto(member, UpdatePhoneNumberDto.class));
+                    return DeprecatedBinding.INSTANCE.toDto(member, UpdatePhoneNumberDto.class);
                 }
         ).ifPresent(dto -> memberService.updatePhoneNumber(dto.getMemberId(),dto.getPhoneNumber()));
 
         assertThat(memberService.findMemberById("member_1").orElseThrow().getPhoneNumber()).isEqualTo("010-1234-5678");
-        memberService.updateMember(MemberBinder.INSTANCE.toDto(MemberBinder.INSTANCE.toMember(dto2.get()), UpdateMemberDto.class));
+        memberService.updateMember(DeprecatedBinding.INSTANCE.toDto(DeprecatedBinding.INSTANCE.toMember(dto2.get()), UpdateMemberDto.class));
     }
 
     @Test
@@ -189,13 +189,13 @@ public class TestMemberService {
         memberService.findMemberById("member_1").map(
                 member -> {
                     member.setProfilePhotoUrl("https://www.naver.com");
-                    dto2.set(MemberBinder.INSTANCE.toDto(member, UpdateMemberProfilePhotoUrlDto.class));
-                    return MemberBinder.INSTANCE.toDto(member, UpdateMemberProfilePhotoUrlDto.class);
+                    dto2.set(DeprecatedBinding.INSTANCE.toDto(member, UpdateMemberProfilePhotoUrlDto.class));
+                    return DeprecatedBinding.INSTANCE.toDto(member, UpdateMemberProfilePhotoUrlDto.class);
                 }
         ).ifPresent(dto -> memberService.updateMemberProfilePhoto(dto.getMemberId(),dto.getProfilePhotoUrl()));
 
         assertThat(memberService.findMemberById("member_1").orElseThrow().getProfilePhotoUrl()).isEqualTo("https://www.naver.com");
-        memberService.updateMember(MemberBinder.INSTANCE.toDto(MemberBinder.INSTANCE.toMember(dto2.get()), UpdateMemberDto.class));
+        memberService.updateMember(DeprecatedBinding.INSTANCE.toDto(DeprecatedBinding.INSTANCE.toMember(dto2.get()), UpdateMemberDto.class));
     }
 
     @Test
