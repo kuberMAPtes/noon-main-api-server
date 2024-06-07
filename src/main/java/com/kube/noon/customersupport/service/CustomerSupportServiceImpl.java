@@ -1,26 +1,27 @@
 package com.kube.noon.customersupport.service;
 
-import com.kube.noon.building.dto.BuildingDto;
+import com.kube.noon.common.ObjectStorageAWS3S;
 import com.kube.noon.customersupport.domain.Report;
 import com.kube.noon.customersupport.dto.report.ReportDto;
 import com.kube.noon.customersupport.dto.report.ReportProcessingDto;
 import com.kube.noon.customersupport.enums.UnlockDuration;
+import com.kube.noon.customersupport.repository.AttachmentFilteringRepository;
 import com.kube.noon.customersupport.repository.ReportRepository;
+import com.kube.noon.feed.dto.FeedAttachmentDto;
+import com.kube.noon.feed.repository.FeedAttachmentRepository;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.UpdateMemberDto;
 import com.kube.noon.member.service.MemberService;
-import com.kube.noon.member.service.impl.MemberServiceImpl;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static org.hibernate.query.sqm.tree.SqmNode.log;
 
 /**
  * 신고, 공지사항, 유해사진필터링 서비스를 제공하는 구현체이다.
@@ -29,13 +30,30 @@ import static org.hibernate.query.sqm.tree.SqmNode.log;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class CustomerSupportServiceImpl implements CustomerSupportService{
 
+
+    ///Field
     private final ReportRepository reportRepository;
     private final MemberService memberService;
+    private final AttachmentFilteringRepository attachmentFilteringRepository;
+    private final FeedAttachmentRepository feedAttachmentRepository;
+    private final String bucketName;
+    private final ObjectStorageAWS3S objectStorageAWS3S;
 
 
+    public CustomerSupportServiceImpl(
+            ReportRepository reportRepository,
+            MemberService memberService, AttachmentFilteringRepository attachmentFilteringRepository, FeedAttachmentRepository feedAttachmentRepository,
+            @Value("${bucket.name}") String bucketName,
+            ObjectStorageAWS3S objectStorageAWS3S) {
+        this.reportRepository = reportRepository;
+        this.memberService = memberService;
+        this.attachmentFilteringRepository = attachmentFilteringRepository;
+        this.feedAttachmentRepository = feedAttachmentRepository;
+        this.bucketName = bucketName;
+        this.objectStorageAWS3S = objectStorageAWS3S;
+    }
 
 
     /**
@@ -117,4 +135,24 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
         return ReportProcessingDto.fromEntity(reportRepository.findReportByReportId(reportProcessingDto.getReportId()));
         
     }
+
+    /**
+     *  블러파일 생성, Object Storage업로드, FeedAttachment의 blurredFileUrl저장을 한다.
+     *
+     * @param attachmentDto 블러 파일을 생성하려는 첨부파일 Dto
+     * @return Object Storage에 업로드된 블러 파일의 url이 저장된 첨부파일 Dto
+     */
+    @Override
+    public FeedAttachmentDto addBluredImage(FeedAttachmentDto attachmentDto) throws IOException {
+
+        // 블러 파일 생성 및 Object Storage 저장, 저장 url 요청
+        String blurredFileUrl = attachmentFilteringRepository.addBluredFile(attachmentDto.getFileUrl());
+
+        attachmentDto.setBlurredFileUrl(blurredFileUrl);
+        feedAttachmentRepository.save(FeedAttachmentDto.toEntity(attachmentDto));
+
+        return attachmentDto;
+    }
+
+
 }

@@ -1,8 +1,12 @@
 package com.kube.noon.customersupport.service;
+import com.kube.noon.common.FileType;
 import com.kube.noon.customersupport.domain.Report;
 import com.kube.noon.customersupport.dto.report.ReportDto;
 import com.kube.noon.customersupport.dto.report.ReportProcessingDto;
 import com.kube.noon.customersupport.enums.UnlockDuration;
+import com.kube.noon.feed.domain.Feed;
+import com.kube.noon.feed.domain.FeedAttachment;
+import com.kube.noon.feed.dto.FeedAttachmentDto;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.UpdateMemberDto;
 import com.kube.noon.member.repository.MemberJpaRepository;
@@ -15,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import lombok.extern.slf4j.Slf4j;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +41,7 @@ public class TestCustomerSupportService {
 
 
     @Test
-    void testGetReportList(){
+    void getReportList(){
 
         List<ReportDto> reportDtoList = customerSupportService.getReportList();
         log.info(reportDtoList.toString());
@@ -44,7 +50,7 @@ public class TestCustomerSupportService {
 
 
     @Test
-    void testGetReportByReportId(){
+    void getReportByReportId(){
 
         ReportDto reportDto = customerSupportService.getReportByReportId(10000);
 
@@ -54,7 +60,7 @@ public class TestCustomerSupportService {
     }
 
     @Test
-    void testAddReport(){
+    void addReport(){
 
         ReportDto reportDto = ReportDto.builder()
                 .reporterId("member_757")
@@ -79,7 +85,7 @@ public class TestCustomerSupportService {
      *
      */
     @Test
-    void testUpdateReport() {
+    void updateReport() {
 
         ReportDto reportDto = customerSupportService.getReportByReportId(10002);
         log.info(reportDto.toString());
@@ -91,5 +97,28 @@ public class TestCustomerSupportService {
 
         log.info(customerSupportService.updateReport(reportProcessingDto, "SEVEN_DAYS").toString());
 
+    }
+
+
+    @Test
+    void addBluredImage(){
+
+        Feed feed = Feed.builder().feedId(10000).build();
+        FeedAttachment feedAttachment = FeedAttachment.builder()
+                .feed(feed)
+                .fileUrl("https://kr.object.ncloudstorage.com/noon-images/KakaoTalk_20240606_141731630.jpg")
+                .fileType(FileType.PHOTO)
+                .blurredFileUrl(null)
+                .activated(true)
+                .build();
+
+
+        try {
+            customerSupportService.addBluredImage(FeedAttachmentDto.toDto(feedAttachment));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        
     }
 }
