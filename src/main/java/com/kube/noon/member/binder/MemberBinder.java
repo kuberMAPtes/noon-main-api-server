@@ -10,11 +10,11 @@ public enum MemberBinder {
     @Setter
     private MemberConverter service;
 
-    public Member toEntity(Object dto) {
+    public <T> Member toEntity(T dto) {
         return service.toEntity(dto);
     }
 
-    public Object toDto(Member member, Class<?> dtoClass) {
+    public <T> T toDto(Member member, Class<T> dtoClass) {
         return service.toDto(member, dtoClass);
     }
 }
