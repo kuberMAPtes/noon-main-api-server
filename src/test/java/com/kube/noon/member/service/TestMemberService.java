@@ -1,7 +1,6 @@
 package com.kube.noon.member.service;
 
 import com.kube.noon.common.PublicRange;
-import com.kube.noon.member.binder.DeprecatedBinding;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.*;

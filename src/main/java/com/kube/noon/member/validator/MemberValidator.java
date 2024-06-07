@@ -3,7 +3,8 @@ package com.kube.noon.member.validator;
 import com.kube.noon.common.validator.IllegalServiceCallException;
 import com.kube.noon.common.validator.ValidationChain;
 import com.kube.noon.common.validator.Validator;
-import com.kube.noon.member.binder.MemberBinder;
+import com.kube.noon.common.binder.DtoEntityBinder;
+import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.AddMemberDto;
 import com.kube.noon.member.dto.MemberRelationshipDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
@@ -37,7 +38,7 @@ public class MemberValidator {
     private <T> void validate(T dto) {
         System.out.println("VALIDATE 실행되었습니다.");
         checkMemberisSignedOff(
-                MemberBinder.INSTANCE.toEntity(dto).getMemberId()
+                ((Member)DtoEntityBinder.INSTANCE.toEntity(dto)).getMemberId()
         );
         validationChain.validate(dto);
     }

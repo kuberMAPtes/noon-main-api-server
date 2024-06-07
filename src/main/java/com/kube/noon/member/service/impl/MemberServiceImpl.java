@@ -3,7 +3,6 @@ package com.kube.noon.member.service.impl;
 import com.kube.noon.common.badwordfiltering.BadWordFilterAgent;
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.service.FeedService;
-import com.kube.noon.member.binder.DeprecatedBinding;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.*;
 import com.kube.noon.member.exception.MemberNotFoundException;
