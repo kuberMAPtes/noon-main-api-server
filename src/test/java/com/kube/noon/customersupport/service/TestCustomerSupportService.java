@@ -4,6 +4,7 @@ import com.kube.noon.customersupport.domain.Report;
 import com.kube.noon.customersupport.dto.report.ReportDto;
 import com.kube.noon.customersupport.dto.report.ReportProcessingDto;
 import com.kube.noon.customersupport.enums.UnlockDuration;
+import com.kube.noon.customersupport.repository.AttachmentFilteringRepositoryImpl;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.domain.FeedAttachment;
 import com.kube.noon.feed.dto.FeedAttachmentDto;
@@ -36,7 +37,6 @@ public class TestCustomerSupportService {
 
     @Autowired
     private MemberService memberService;
-
 
 
 
@@ -120,5 +120,11 @@ public class TestCustomerSupportService {
         }
 
         
+    }
+
+    @Test
+    void getFilteredListByAI(){
+        List<FeedAttachmentDto> filteredList = customerSupportService.getFilteredListByAI();
+        log.info("유해성 1차 필터링된 첨부파일={}",filteredList);
     }
 }
