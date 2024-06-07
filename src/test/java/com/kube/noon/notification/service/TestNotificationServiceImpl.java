@@ -84,16 +84,7 @@ class TestNotificationServiceImpl {
     void getNotification_zeroSize() {
         getAndAddSampleReceiver();
 
-        NotificationDto notificationDto = new NotificationDto();
-        notificationDto.setReceiverId("sample-receiver");
-        notificationDto.setNotificationType(NotificationType.COMMENT);
-        notificationDto.setNotificationText("sample-text");
-
-        System.out.println(notificationDto);
-
-        this.notificationService.sendNotification(notificationDto);
-
-        List<NotificationDto> notificationList = this.notificationService.getNotificationList("not-exists");
+        List<NotificationDto> notificationList = this.notificationService.getNotificationList("sample-receiver");
 
         log.info("notificationList={}", notificationList);
 
