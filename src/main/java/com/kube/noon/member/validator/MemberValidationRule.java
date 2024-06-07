@@ -109,9 +109,11 @@ public class MemberValidationRule {
             if (OpToMember.isEmpty()) {
                 throw new IllegalServiceCallException("존재하지 않는 대상 회원 아이디입니다.");
             }
-            //내 dto와 db의 도메인이 Boolean빼고는 다 같으면 activated를 True로 바꾸고 update한다.
-            //내 dto와 도메인의 RelationshipType이 다르면 받은 타입으로 update한다.
-            //fromid,toid로 확인된 관계가 없으면 add한다.
+            /**
+             * 내 dto와 db의 도메인이 Boolean빼고는 다 같으면 activated를 True로 바꾸고 update한다.
+             * 내 dto와 도메인의 RelationshipType이 다르면 받은 타입으로 update한다.
+             * fromid,toid로 확인된 관계가 없으면 add한다.
+             */
             OpMemberRelationship.ifPresentOrElse(mr->{
 
                 dto.setAddOrUpdate(AddOrUpdate.UPDATE);

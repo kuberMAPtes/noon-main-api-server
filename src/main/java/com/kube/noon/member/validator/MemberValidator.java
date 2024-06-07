@@ -3,9 +3,11 @@ package com.kube.noon.member.validator;
 import com.kube.noon.common.validator.IllegalServiceCallException;
 import com.kube.noon.common.validator.ValidationChain;
 import com.kube.noon.common.validator.Validator;
+import com.kube.noon.member.binder.MemberBinder;
 import com.kube.noon.member.dto.AddMemberDto;
 import com.kube.noon.member.dto.MemberRelationshipDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
+import com.kube.noon.member.exception.MemberSecurityBreachException;
 import com.kube.noon.member.repository.MemberRepository;
 import com.kube.noon.member.service.impl.MemberServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -32,9 +34,21 @@ public class MemberValidator {
         this.memberRepository = memberRepository;
     }
 
-    public void validate(Object dto) {
+    private <T> void validate(T dto) {
         System.out.println("VALIDATE 실행되었습니다.");
+        checkMemberisSignedOff(
+                MemberBinder.INSTANCE.toEntity(dto).getMemberId()
+        );
         validationChain.validate(dto);
+    }
+
+    private void checkMemberisSignedOff(String memberId) {
+        memberRepository.findMemberById(memberId)
+                .ifPresent(member -> {
+                    if (member.getSignedOff()) {
+                        throw new MemberSecurityBreachException("탈퇴한 회원입니다.");
+                    }
+                });
     }
 
     //완료
