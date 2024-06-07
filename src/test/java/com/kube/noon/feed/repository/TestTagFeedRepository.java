@@ -1,10 +1,9 @@
 package com.kube.noon.feed.repository;
 
-import com.kube.noon.feed.dto.TagDto;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.domain.Tag;
 import com.kube.noon.feed.domain.TagFeed;
-import com.kube.noon.feed.repository.mybatis.TagMyBatisRepository;
+import com.kube.noon.feed.repository.mybatis.FeedMyBatisRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +27,7 @@ public class TestTagFeedRepository {
     private TagRepository tagRepository;
 
     @Autowired
-    private TagMyBatisRepository tagMyBatisRepository;
+    private FeedMyBatisRepository tagMyBatisRepository;
 
     /**
      * 피드와 연관있는 태그를 가져온다.
@@ -37,8 +36,8 @@ public class TestTagFeedRepository {
      */
     @Transactional
     @Test
-    public void getFeedTagsTest() {
-        List<TagDto> getTagByFeedId = tagMyBatisRepository.getTagByFeedId(10000);
+    public void getFeedTagListTest() {
+        List<Tag> getTagByFeedId = tagRepository.getTagByFeedId(Feed.builder().feedId(10000).build());
 
         // test 1) 존재 여부 확인
         assertThat(getTagByFeedId).isNotNull();
@@ -75,23 +74,24 @@ public class TestTagFeedRepository {
 
     /**
      * 태그 하나를 삭제하는 과정을 테스트한다.
-     * feed_id = 10005, tag_id = 맛있다_6 을 기준으로 한다.
+     * tag_text = '행복', feed_id = 10000 을 기준으로 한다.
      */
     @Transactional
     @Test
     public void deleteTagTest() {
-        String tagText = "따듯함";
+        String tagText = "행복";
 
         // 1. 태그 텍스트에 대한 번호를 가져온다.
         Tag tag = tagRepository.findByTagText(tagText);
 
-        // 1-1. 만약 찾아서 없으면 종료
+        // 1-1. 만약 없으면 종료
         if(tag == null) {
             return;
         }
 
         // 2. 피드에 대한 태그를 삭제한다.
         // test 1) 정상 삭제 확인
-        assertThat(tagFeedRepository.deleteByTag(tag)).isEqualTo(1);
+        log.info(tag);
+        assertThat(tagFeedRepository.deleteByTagAndFeed(tag, Feed.builder().feedId(10000).build())).isEqualTo(1);
     }
 }

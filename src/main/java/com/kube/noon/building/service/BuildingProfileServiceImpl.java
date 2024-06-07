@@ -3,14 +3,19 @@ package com.kube.noon.building.service;
 import com.kube.noon.building.domain.Building;
 import com.kube.noon.building.dto.BuildingDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
+import com.kube.noon.building.repository.BuildingSummaryRepository;
 import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
 import com.kube.noon.building.repository.BuildingProfileRepository;
 import com.kube.noon.common.zzim.Zzim;
 import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
+import com.kube.noon.feed.domain.Feed;
+import com.kube.noon.feed.repository.FeedRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -24,26 +29,19 @@ import java.util.stream.Collectors;
  * @author 허예지
  */
 @Service("buildingProfileServiceImpl")
+@RequiredArgsConstructor
 public class BuildingProfileServiceImpl implements BuildingProfileService {
 
 
     ///Field
-    @Autowired
-    @Qualifier("buildingProfileRepository")
-    private BuildingProfileRepository buildingProfileRepository;
+    private final BuildingProfileRepository buildingProfileRepository;
+    private final ZzimRepository zzimRepository;
+    private final BuildingProfileMapper buildingProfileMapper;
+    private final BuildingSummaryRepository buildingSummaryRepository;
+    private final FeedRepository feedRepository;
 
-    @Autowired
-    @Qualifier("zzimRepository")
-    private ZzimRepository zzimRepository;
-
-    @Autowired
-    @Qualifier("buildingProfileMapper")
-    private BuildingProfileMapper buildingProfileMapper;
-
-
-
-
-
+    public static final int SUMMARY_LENGTH_LIMIT = 2000;
+    public static final int SUMMARY_FEED_COUNT_LIMIT  = 10;
 
     ///Method
     /**
@@ -172,5 +170,49 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
         return buildings.stream()
                 .map(BuildingDto::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+
+    /**
+     * buildingId로 조회한 빌딩의 모든 피드를 가져와 3줄로 요약
+     * 임시데이터 피드 10개로 요약. 추후 피드 서비스인 '최신 피드목록 가져오기'로 대체
+     *
+     * @param buildingId 피드 요약을 하려는 빌딩의 아이디
+     * @return
+     */
+    @Override
+    public String getFeedAISummary(int buildingId) {
+
+        System.out.println("Call getFeedAISummary...");
+
+        List<Feed> getFeedListByBuildingId = feedRepository.findByBuildingAndActivatedTrue(Building.builder().buildingId(buildingId).build());
+
+        String title = "";
+        String feedText = "";
+
+        for(Feed feed : getFeedListByBuildingId){
+
+            // CLOVA Summary 요약 글자 제한: 제목+내용 2000자
+            if( (title+feed.getTitle()+feedText+feed.getFeedText()).length() > SUMMARY_LENGTH_LIMIT ){
+
+                title="";
+                feedText = buildingSummaryRepository.findFeedAISummary(title, feedText);
+
+            }else{
+                title += (feed.getTitle()+". ");
+                feedText += (feed.getFeedText()+". ");
+            }
+
+        }///end of for
+
+        // 해당 빌딩의 요약 받아오기
+        String feedAiSummary = buildingSummaryRepository.findFeedAISummary(title, feedText);
+
+        // 해당 빌딩의 요약 업데이트
+        Building building = buildingProfileRepository.findBuildingProfileByBuildingId(buildingId);
+        building.setFeedAiSummary(feedAiSummary);
+        buildingProfileRepository.save(building);
+
+        return feedAiSummary;
     }
 }

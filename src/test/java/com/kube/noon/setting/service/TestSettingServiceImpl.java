@@ -4,7 +4,7 @@ import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.AddMemberDto;
 import com.kube.noon.member.service.MemberService;
-import com.kube.noon.setting.domain.Setting;
+import com.kube.noon.setting.dto.SettingDto;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,21 +37,21 @@ class TestSettingServiceImpl {
         assertThat(findMember.getMemberProfilePublicRange()).isEqualTo(PublicRange.PUBLIC);
         assertThat(findMember.getAllFeedPublicRange()).isEqualTo(PublicRange.PUBLIC);
         assertThat(findMember.getBuildingSubscriptionPublicRange()).isEqualTo(PublicRange.PUBLIC);
-        assertThat(findMember.getReceivingAllNotificationAllowed()).isFalse();
+        assertThat(findMember.getReceivingAllNotificationAllowed()).isTrue();
     }
 
     @Test
     void updateSetting_plus_findSetting() {
         this.settingService.updateSetting(
                 "sample-id",
-                Setting.builder()
+                SettingDto.builder()
                         .allFeedPublicRange(PublicRange.PUBLIC)
                         .buildingSubscriptionPublicRange(PublicRange.PRIVATE)
                         .memberProfilePublicRange(PublicRange.FOLLOWER_ONLY)
                         .receivingAllNotificationAllowed(true)
                         .build());
 
-        Setting findSetting = this.settingService.findSettingOfMember("sample-id");
+        SettingDto findSetting = this.settingService.findSettingOfMember("sample-id");
         log.info("findSetting={}", findSetting);
         assertThat(findSetting.getAllFeedPublicRange()).isEqualTo(PublicRange.PUBLIC);
         assertThat(findSetting.getBuildingSubscriptionPublicRange()).isEqualTo(PublicRange.PRIVATE);

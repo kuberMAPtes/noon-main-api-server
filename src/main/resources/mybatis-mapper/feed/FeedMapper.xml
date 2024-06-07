@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kube.noon.feed.repository.mybatis.FeedMyBatisRepository">
+    <resultMap id = "feedViewCntByBuildingMap" type = "com.kube.noon.feed.dto.FeedViewCntByBuildingDto">
+        <result property = "feedId" column = "feed_id" jdbcType = "NUMERIC"/>
+        <result property = "title" column = "title" jdbcType = "VARCHAR"/>
+        <result property = "viewCnt" column = "view_cnt" jdbcType = "NUMERIC"/>
+    </resultMap>
+
+    <resultMap id = "feedCntByTagMap" type = "com.kube.noon.feed.dto.FeedCntByTagDto">
+        <result property = "tagText" column = "tag_text" jdbcType = "VARCHAR"/>
+        <result property = "count" column = "count" jdbcType = "NUMERIC"/>
+    </resultMap>
+
+    <resultMap id = "feedPopularityMap" type = "com.kube.noon.feed.dto.FeedPopularityDto">
+        <result property = "feedId" column = "feed_id" jdbcType = "NUMERIC"/>
+        <result property = "title" column = "title" jdbcType = "VARCHAR"/>
+        <result property = "buildingId" column = "building_id" jdbcType = "NUMERIC"/>
+        <result property = "popularity" column = "popularity" jdbcType = "NUMERIC"/>
+    </resultMap>
+
+    <select id = "getFeedViewCntByBuilding" parameterType = "int" resultMap = "feedViewCntByBuildingMap">
+        SELECT feed_id, title, view_cnt from feed  WHERE building_id = #{buildingId} ORDER BY view_cnt desc limit 5;
+    </select>
+
+    <select id = "getFeedCntByTag" resultMap = "feedCntByTagMap">
+        SELECT r.tag_text, COUNT(*) as count
+        FROM
+            (SELECT t.tag_text FROM tag t
+            INNER JOIN tag_feed tf ON t.tag_id = tf.tag_id
+            INNER JOIN feed f ON tf.feed_id = f.feed_id) r
+        GROUP BY r.tag_text limit 5;
+    </select>
+
+    <select id = "getFeedPopularity" parameterType="int" resultMap = "feedPopularityMap">
+        SELECT f.feed_id, f.title, f.building_id, f.view_cnt + 3 * COALESCE(like_count, 0) + 5 * COALESCE(bookmark_count, 0) AS popularity
+        FROM feed f
+                 LEFT JOIN (
+            SELECT f.feed_id, COUNT(*) like_count FROM feed f INNER JOIN zzim z ON f.feed_id = z.feed_id WHERE z.zzim_type = 'LIKE' GROUP BY f.feed_id
+        ) likes ON f.feed_id = likes.feed_id
+                 LEFT JOIN (
+            SELECT f.feed_id, COUNT(*) bookmark_count FROM feed f INNER JOIN zzim z ON f.feed_id = z.feed_id WHERE z.zzim_type = 'BOOKMARK' GROUP BY f.feed_id
+        ) bookmarks ON f.feed_id = bookmarks.feed_id
+        WHERE building_id = #{buildingId}
+        ORDER BY popularity DESC;
+    </select>
+</mapper>

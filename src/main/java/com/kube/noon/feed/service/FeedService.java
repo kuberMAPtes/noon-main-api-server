@@ -1,57 +1,54 @@
 package com.kube.noon.feed.service;
 
-import com.kube.noon.building.domain.Building;
 import com.kube.noon.feed.dto.FeedDto;
-import com.kube.noon.feed.domain.Feed;
-import com.kube.noon.member.domain.Member;
+import com.kube.noon.feed.dto.FeedSummaryDto;
+import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.List;
 
+/**
+ * 피드 자체에 대한 기능을 service로 구현하였다.
+ * 추가, 수정, 삭제에 대한 return 값은 대상 테이블의 PK 값이다.
+ * 예시 ) 피드를 수정함 : 그 피드의 feed_id를 return 한다.
+ */
+@Service
 public interface FeedService {
-    public List<Feed> getFeedList() throws IOException;
+    // 회원별 피드 목록을 가져온다,
+    List<FeedSummaryDto> getFeedListByMember(String memberId);
 
-    public default Feed dtoToEntity(FeedDto feedDto) {
-        // 임시로 생성 후 대입
-        Member writer = new Member();
-        writer.setMemberId(feedDto.getWriterId());
+    // 건물별 피드 목록을 가져온다.
+    List<FeedSummaryDto> getFeedListByBuilding(int buildingId);
 
-        Feed feed = Feed.builder()
-                .feedId(feedDto.getFeedId())
-                .title(feedDto.getTitle())
-                .mainActivated(feedDto.isMainActivated())
-                .publicRange(feedDto.getPublicRange())
-                .feedText(feedDto.getFeedText())
-                .viewCnt(feedDto.getViewCnt())
-                .feedCategory(feedDto.getFeedCategory())
-                .modified(feedDto.isModified())
-                .activated(feedDto.isActivated())
-                .comments(feedDto.getComments())
-                .tagFeeds(feedDto.getTagFeeds())
-                .building(Building.builder().buildingId(feedDto.getBuildingId()).build())
-                .writer(writer)
-                .build();
+    // 회원이 좋아요를 누른 피드 목록을 가져온다.
+    List<FeedSummaryDto> getFeedListByMemberLike(String memberId);
 
-        return feed;
-    }
+    // 회원이 북마크를 누른 피드 목록을 가져온다.
+    List<FeedSummaryDto> getFeedListByMemberBookmark(String memberId);
 
-    public default FeedDto entityToDto(Feed feed) {
-        FeedDto feedDto = FeedDto.builder()
-                .feedId(feed.getFeedId())
-                .writerId(feed.getWriter().getMemberId())
-                .buildingId(feed.getBuilding().getBuildingId())
-                .mainActivated(feed.isMainActivated())
-                .publicRange(feed.getPublicRange())
-                .title(feed.getTitle())
-                .feedText(feed.getFeedText())
-                .viewCnt(feed.getViewCnt())
-                .writtenTime(feed.getWrittenTime())
-                .feedCategory(feed.getFeedCategory())
-                .modified(feed.isModified())
-                .activated(feed.isActivated())
-                .comments(feed.getComments())
-                .tagFeeds(feed.getTagFeeds())
-                .build();
-        return feedDto;
-    }
+    // 회원이 건물을 구독한 피드 목록을 가져온다.
+    List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId);
+
+    // 피드를 추가한다.
+    int addFeed(FeedDto feedDto);
+
+    // 피드를 수정한다.
+    int updateFeed(FeedDto feedSummaryDto);
+
+    // 피드를 삭제한다.
+    int deleteFeed(FeedDto feedSummaryDto);
+
+    // 피드 하나를 상세보기한다.
+    FeedDto getFeedById(int feedId);
+
+    // 피드의 공개 범위를 설정한다.
+    int setPublicRage(FeedDto feedDto);
+
+    // 맴버의 메인 피드를 설정한다.
+    int setMainFeed(FeedDto feedDto);
+
+    // 피드의 제목이나 택스트로 검색한다.
+    List<FeedSummaryDto> searchFeedList(String keyword);
+
+    // 피드의 조회수를 1 올린다.
+    int setViewCntUp(int feedId);
 }

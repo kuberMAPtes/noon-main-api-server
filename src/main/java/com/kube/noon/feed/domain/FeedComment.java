@@ -1,5 +1,6 @@
 package com.kube.noon.feed.domain;
 
+import com.kube.noon.member.domain.Member;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.*;
@@ -20,8 +21,8 @@ public class FeedComment {
 //    @Column(name = "feed_id", nullable = false)
 //    private int feedId;
 
-    @Column(name = "commenter_id", nullable = false, length = 20)
-    private String commenterId;
+//    @Column(name = "commenter_id", nullable = false, length = 20)
+//    private String commenterId;
 
     @Column(name = "comment_text", nullable = false, length = 4000)
     private String commentText;
@@ -36,9 +37,9 @@ public class FeedComment {
     @JoinColumn(name = "feed_id", nullable = false)
     private Feed feed;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "member_id" nullable = false)
-//    private Member member;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "commenter_id", nullable = false)
+    private Member member;
 
     public void setActivated(boolean activated) {
         this.activated = activated;
@@ -47,7 +48,7 @@ public class FeedComment {
 
     @Override
     public String toString() {
-        return "commentId : " + commentId + " commenterId : " + commenterId + " commentText : " + commentText + " activated : " + activated;
+        return "commentId : " + commentId + " commenterId : " + member.getMemberId() + " commentText : " + commentText + " activated : " + activated;
     }
 }
 

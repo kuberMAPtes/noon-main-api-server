@@ -30,11 +30,11 @@ public class TestFeedAttachmentRepository {
     @Test
     public void getAttachmentTest() {
         Feed feed = Feed.builder().feedId(10000).build();
-        List<FeedAttachment> attachments = feedAttachmentRepository.findByFeed(feed);
+        List<FeedAttachment> feedAttachmentList = feedAttachmentRepository.findByFeedAndActivatedTrue(feed);
 
         // test 1) 개수 확인
-        assertThat(attachments.size()).isGreaterThan(0);
-        log.info(attachments.size());
+        assertThat(feedAttachmentList.size()).isGreaterThan(0);
+        log.info(feedAttachmentList.size());
 
         // test 2) console printing
         // attachments.stream().forEach(System.out::println);
@@ -62,7 +62,7 @@ public class TestFeedAttachmentRepository {
     }
 
     /**
-     * 피드에 첨부파일을 하나 삭제한다.
+     * 피드에 첨부파일을 하나 삭제한다. - activated = false
      * feed_id = 10000, attachment_id = 10000을 기준으로 한다.
      */
     @Transactional
@@ -74,5 +74,20 @@ public class TestFeedAttachmentRepository {
         // test 1) 수정 확인
         assertThat(feedAttachmentRepository.save(feedAttachment)).isNotNull();
         log.info(feedAttachment);
+    }
+
+    /**
+     * 첨부파일의 종류별로 목록을 가져온다.
+     * 이 테스트에서는 FileType.PHOTO 를 기준으로 가져온다.
+     */
+    @Transactional
+    @Test
+    public void getFeedAttachmentByFileType() {
+        List<FeedAttachment> attachments = feedAttachmentRepository.findByFileType(FileType.PHOTO);
+
+        assertThat(attachments.size()).isGreaterThan(0);
+        for (FeedAttachment attachment : attachments) {
+            log.info(attachment);
+        }
     }
 }
