@@ -42,7 +42,8 @@ public class TestFeedSubServiceImpl {
     @Autowired
     private FeedCommentRepository feedCommentRepository;
 
-    // -------------- 1. 피드 첨부 파일 관련 테스트 --------------
+    /* -------------- 1. 피드 첨부 파일 관련 테스트 -------------- */
+
     /**
      * 피드 첨부파일을 가져오는 것에 대한 테스트를 진행한다.
      * feed_id = 10001을 기준으로 진행한다.
@@ -113,7 +114,11 @@ public class TestFeedSubServiceImpl {
         }
     }
 
-    // -------------- 2. 피드의 좋아요, 북마크 관련 테스트 --------------
+    /* -------------- 2. 피드의 좋아요, 북마크 관련 테스트 -------------- */
+
+    /**
+     * 피드에 좋아요를 하나 추가한다.
+     */
     @Transactional
     @Test
     public void addFeedLikeTest() {
@@ -130,6 +135,9 @@ public class TestFeedSubServiceImpl {
         assertThat(zzim.orElseGet(null).getZzimType()).isEqualTo(ZzimType.LIKE);
     }
 
+    /**
+     * 피드의 좋아요를 취소한다.
+     */
     @Transactional
     @Test
     public void deleteFeedLikeTest() {
@@ -147,6 +155,9 @@ public class TestFeedSubServiceImpl {
         assertThat(zzim.orElseGet(null).isActivated()).isFalse();
     }
 
+    /**
+     * 피드의 북마크를 추가한다.
+     */
     @Transactional
     @Test
     public void addFeedBookmarkTest() {
@@ -163,10 +174,13 @@ public class TestFeedSubServiceImpl {
         assertThat(zzim.orElseGet(null).getZzimType()).isEqualTo(ZzimType.BOOKMARK);
     }
 
+    /**
+     * 피드의 북마크를 취소한다.
+     */
     @Transactional
     @Test
     public void deleteFeedBookmakrTest() {
-        int feedId = 10000;
+        int feedId = 10002;
         String memberId = "member_1";
 
         int zzimId = feedSubServiceImpl.deleteFeedBookmark(feedId, memberId);
@@ -176,10 +190,13 @@ public class TestFeedSubServiceImpl {
         log.info(zzim.orElseGet(null).getZzimId());
         assertThat(zzim.orElseGet(null).getFeedId()).isEqualTo(feedId);
         assertThat(zzim.orElseGet(null).getMemberId()).isEqualTo(memberId);
-        assertThat(zzim.orElseGet(null).getZzimType()).isEqualTo(ZzimType.LIKE);
+        assertThat(zzim.orElseGet(null).getZzimType()).isEqualTo(ZzimType.BOOKMARK);
         assertThat(zzim.orElseGet(null).isActivated()).isFalse();
     }
 
+    /**
+     *  피드에 좋아요를 누른 회원의 목록을 가져온다.
+     */
     @Transactional
     @Test
     public void getFeedLikeListTest() {
@@ -193,7 +210,11 @@ public class TestFeedSubServiceImpl {
         }
     }
 
-    // -------------- 3. 피드의 댓글 관련 테스트 --------------
+    /* -------------- 3. 피드의 댓글 관련 테스트 -------------- */
+
+    /**
+     * 피드의 댓글 리스트를 가져온다.
+     */
     @Transactional
     @Test
     public void getFeedCommentListTest() {
@@ -208,6 +229,9 @@ public class TestFeedSubServiceImpl {
         }
     }
 
+    /**
+     * 피드에 댓글을 하나 추가한다.
+     */
     @Transactional
     @Test
     public void addFeedCommentTest() {
@@ -228,6 +252,9 @@ public class TestFeedSubServiceImpl {
         assertThat(feedComment.getCommentText()).isEqualTo(feedCommentDto.getCommentText());
     }
 
+    /**
+     * 피드의 댓글을 하나 삭제한다.
+     */
     @Transactional
     @Test
     public void deleteFeedCommentTest() {
@@ -238,7 +265,10 @@ public class TestFeedSubServiceImpl {
         log.info(feedComment.getCommentId());
         assertThat(feedComment.isActivated()).isFalse();
     }
-    
+
+    /**
+     * 피드의 댓글을 수정한다.
+     */
     @Transactional
     @Test
     public void updateFeedCommentTest() {
@@ -253,7 +283,11 @@ public class TestFeedSubServiceImpl {
         assertThat(feedComment.getCommentText()).isEqualTo(feedCommentDto.getCommentText());
     }
     
-    // -------------- 4. 피드의 태그 관련 테스트 --------------
+    /* -------------- 4. 피드의 태그 관련 테스트 -------------- */
+
+    /**
+     * 피드에 등록된 태그를 가져온다.
+     */
     @Transactional
     @Test
     public void getFeedTagListTest() {
@@ -267,6 +301,9 @@ public class TestFeedSubServiceImpl {
         }
     }
 
+    /**
+     * 피드의 태그를 하나 추가한다.
+     */
     @Transactional
     @Test
     public void addFeedTagTest() {
@@ -288,6 +325,9 @@ public class TestFeedSubServiceImpl {
         assertThat(isAddTag).isTrue();
     }
 
+    /**
+     * 피드의 태그를 하나 삭제한다.
+     */
     @Transactional
     @Test
     public void deleteFeedTagTest() {

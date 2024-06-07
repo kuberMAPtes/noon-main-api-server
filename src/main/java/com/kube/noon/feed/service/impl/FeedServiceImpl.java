@@ -159,4 +159,12 @@ public class FeedServiceImpl implements FeedService {
 
         return searchFeedList;
     }
+
+    @Override
+    public int setViewCntUp(int feedId) {
+        Feed feed = feedRepository.findByFeedId(feedId);
+        feed.setViewCnt(feed.getViewCnt() + 1);
+
+        return feedRepository.save(feed).getFeedId();
+    }
 }

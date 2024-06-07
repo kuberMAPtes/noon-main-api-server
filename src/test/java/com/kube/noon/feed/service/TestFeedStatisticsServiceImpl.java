@@ -22,6 +22,9 @@ public class TestFeedStatisticsServiceImpl {
     @Autowired
     private FeedStatisticsServiceImpl feedStatisticsServiceImpl;
 
+    /**
+     * 건물별로 조회수가 높은 피드를 가져온다. (상위 5개)
+     */
     @Transactional
     @Test
     public void getFeedViewCntByBuildingTest() {
@@ -34,9 +37,12 @@ public class TestFeedStatisticsServiceImpl {
         }
     }
 
+    /**
+     * 피드에 많이 사용된 태그들을 가져온다. (상위 5개)
+     */
     @Transactional
     @Test
-    public void getFeedCntByBuildingTest() {
+    public void getFeedCntByTagTest() {
         List<FeedCntByTagDto> result = feedStatisticsServiceImpl.getFeedCntByTag();
 
         assertThat(result).isNotNull();
@@ -46,6 +52,9 @@ public class TestFeedStatisticsServiceImpl {
         }
     }
 
+    /**
+     * 건물별로 인기있는 피드를 가져온다. (상위 5개)
+     */
     @Transactional
     @Test
     public void getFeedPopularityTest() {
