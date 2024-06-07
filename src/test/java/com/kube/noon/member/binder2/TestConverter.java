@@ -1,9 +1,11 @@
 package com.kube.noon.member.binder2;
 
+import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.binder.MemberBinder;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.AddMemberDto;
 import com.kube.noon.member.dto.MemberProfileDto;
+import com.kube.noon.member.dto.UpdateMemberDto;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,7 +31,7 @@ public class TestConverter {
         System.out.println("Dto");
         AddMemberDto addMemberDto1 = (AddMemberDto) MemberBinder.INSTANCE.toDto(member, AddMemberDto.class);
         System.out.println(addMemberDto1);
-
+        //------------------------------------------------------------------------------------
         MemberProfileDto memberProfileDto = new MemberProfileDto();
         memberProfileDto.setMemberId("testI3d1234");
         memberProfileDto.setNickname("testNickna23me1");
@@ -45,6 +47,19 @@ public class TestConverter {
         MemberProfileDto memberProfileDto1 = (MemberProfileDto) MemberBinder.INSTANCE.toDto(member1, MemberProfileDto.class);
 
         System.out.println(memberProfileDto1);
+        //------------------------------------------------------------------------------------
+        UpdateMemberDto updateMemberDto = new UpdateMemberDto();
+        updateMemberDto.setMemberId("testId1234");
+        updateMemberDto.setNickname("testNickname1");
+        updateMemberDto.setAllFeedPublicRange(PublicRange.PRIVATE);
+        Member member2 = MemberBinder.INSTANCE.toEntity(updateMemberDto);
+        System.out.println("멤버");
+        System.out.println(member2);
+
+        System.out.println("Dto");
+        UpdateMemberDto updateMemberDto1 = (UpdateMemberDto) MemberBinder.INSTANCE.toDto(member2, UpdateMemberDto.class);
+        System.out.println(updateMemberDto1);
+
     }
 
 
