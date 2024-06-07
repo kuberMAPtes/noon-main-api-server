@@ -1,5 +1,6 @@
 package com.kube.noon.common.validator;
 
+import com.kube.noon.notification.service.validator.NotificationServiceValidator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
@@ -7,12 +8,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.aop.framework.AopProxyUtils;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,7 +42,9 @@ public class ValidationAspect {
         this.context.getBeansWithAnnotation(Validator.class)
                 .values()
                 .forEach((bean) -> {
-                    Class<?> cls = bean.getClass().getAnnotation(Validator.class).targetClass();
+                    Class<?> cls = AopProxyUtils.ultimateTargetClass(bean)
+                            .getAnnotation(Validator.class)
+                            .targetClass();
                     Method[] publicMethods = bean.getClass().getMethods();
                     Map<String, Method> methodMap = new HashMap<>();
                     for (Method method : publicMethods) {
@@ -76,12 +83,17 @@ public class ValidationAspect {
                     : validationMethod.invoke(beanAndMethod.getBean(), jp.getArgs());
             if (returnValue == null) {
                 return jp.proceed(jp.getArgs());
-            }
-            Boolean availableToProceed = (Boolean)returnValue;
-            if (availableToProceed) {
+            } else if (returnValue instanceof Problems problems) {
+                log.info("Problems exist");
+                checkProblems(problems);
                 return jp.proceed(jp.getArgs());
             } else {
-                return null; // TODO: What to do?
+                Boolean availableToProceed = (Boolean)returnValue;
+                if (availableToProceed) {
+                    return jp.proceed(jp.getArgs());
+                } else {
+                    return null; // TODO: What to do?
+                }
             }
         } catch (ClassCastException e) {
             return jp.proceed(jp.getArgs());
@@ -93,5 +105,19 @@ public class ValidationAspect {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void checkProblems(Problems problems) throws InvocationTargetException {
+        if (isAnyProblem(problems)) {
+            throw new InvocationTargetException(
+                    new IllegalServiceCallException("Problem in validation in " + this.getClass(), problems)
+            );
+        }
+    }
+
+    private boolean isAnyProblem(Problems problems) {
+        // "~이 아니다"라는 논리기 때문에 다소 가독성이 떨어짐
+        // 그래서 따로 메소드로 빼 놓음으로써 의미를 주었다.
+        return !problems.isEmpty();
     }
 }
