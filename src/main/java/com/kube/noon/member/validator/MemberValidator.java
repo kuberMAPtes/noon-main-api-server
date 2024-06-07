@@ -7,14 +7,14 @@ import com.kube.noon.member.dto.AddMemberDto;
 import com.kube.noon.member.dto.MemberRelationshipDto;
 import com.kube.noon.member.dto.UpdatePasswordDto;
 import com.kube.noon.member.repository.MemberRepository;
-import com.kube.noon.member.service.impl.MemberServiceImpl;
+import com.kube.noon.member.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 
 import java.util.regex.Pattern;
 
-@Validator(targetClass = MemberServiceImpl.class)
+@Validator(targetClass = MemberService.class)
 public class MemberValidator {
 
     private static final Pattern PHONE_NUMBER_PATTERN = Pattern.compile("^01(?:0|1|[6-9])-(?:\\d{3}|\\d{4})-\\d{4}$");
@@ -23,19 +23,17 @@ public class MemberValidator {
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9!@#\\$%\\^&\\*_]{8,16}$");
 
 
-    private final ValidationChain validationChain;
-
-    private final MemberRepository memberRepository;
+    private final ValidationChain<Object> validationChain;
+    MemberRepository memberRepository;
 
     @Autowired
-    public MemberValidator(ValidationChain validationChain, MemberRepository memberRepository) {
+    public MemberValidator(ValidationChain<Object> validationChain, MemberRepository memberRepository) {
         this.validationChain = validationChain;
         this.memberRepository = memberRepository;
-        this.setRule(memberRepository);
     }
 
     @EventListener(ApplicationReadyEvent.class)
-    public void setRule(MemberRepository memberRepository) {
+    public void setRule() {
 
         validationChain.addRule(AddMemberDto.class, dto -> {
 
@@ -100,10 +98,16 @@ public class MemberValidator {
 
     }//end of setRule
 
+    public void validate(Object dto) {
+        System.out.println("VALIDATE 실행되었습니다.");
+        validationChain.validate(dto);
+    }
+
+
     public void addMember(AddMemberDto memberDto) {
 
         System.out.println("밸리데이터 실행");
-        validationChain.validate(memberDto);
+        validate(memberDto);
 
     }
 
