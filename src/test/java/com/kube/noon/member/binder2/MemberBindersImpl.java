@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
  * DTO와 Member 엔티티 간의 변환을 위한 서비스입니다.
  */
 @Service
-public class MemberBinderImpl implements MemberBinder {
+public class MemberBindersImpl implements MemberBinders {
 
 //    /**
 //     * 각 DTO 타입에 대한 변환기를 저장하는 맵입니다.
