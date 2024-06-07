@@ -3,7 +3,7 @@ package com.kube.noon.feed.repository;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.domain.Tag;
 import com.kube.noon.feed.domain.TagFeed;
-import com.kube.noon.feed.repository.mybatis.TagMyBatisRepository;
+import com.kube.noon.feed.repository.mybatis.FeedMyBatisRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ public class TestTagFeedRepository {
     private TagRepository tagRepository;
 
     @Autowired
-    private TagMyBatisRepository tagMyBatisRepository;
+    private FeedMyBatisRepository tagMyBatisRepository;
 
     /**
      * 피드와 연관있는 태그를 가져온다.
