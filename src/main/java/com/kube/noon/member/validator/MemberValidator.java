@@ -42,6 +42,11 @@ public class MemberValidator {
         );
         validationChain.validate(dto);
     }
+    private <T> void isNull(T args){
+        if(args == null){
+            throw new IllegalServiceCallException("받은 데이터가 없습니다.");
+        }
+    }
 
     private void checkMemberisSignedOff(String memberId) {
         memberRepository.findMemberById(memberId)
@@ -57,6 +62,7 @@ public class MemberValidator {
     //Validation로직 즉시 통과하는 로직 구현
     public void addMember(AddMemberDto memberDto) {
         System.out.println("밸리데이터 실행");
+        isNull(memberDto);
         validate(memberDto);
     }
     //자기자신과는할수없지
@@ -77,34 +83,27 @@ public class MemberValidator {
     //나머지는 에러야
     public void addMemberRelationship(MemberRelationshipDto memberRelationshipDto) {
         System.out.println("밸리데이터 실행");
+        isNull(memberRelationshipDto);
         validate(memberRelationshipDto);
     }
 
     public void findMemberById(String memberId) {
-        if (memberId == null || memberId.isEmpty()) {
-            throw new IllegalServiceCallException("회원 아이디가 없습니다.");
-        }
+        isNull(memberId);
     }
 
     public void findMemberProfileById(String memberId) {
-        if (memberId == null || memberId.isEmpty()) {
-            throw new IllegalServiceCallException("회원 아이디가 없습니다.");
-        }
+        isNull(memberId);
     }
 
     public void findMemberByNickname(String nickname) {
-        if (nickname == null || nickname.isEmpty()) {
-            throw new IllegalServiceCallException("닉네임이 없습니다.");
-        }
+        isNull(nickname);
         if (!NICKNAME_PATTERN.matcher(nickname).matches()) {
             throw new IllegalServiceCallException("형식에 맞지 않는 닉네임입니다. 닉네임은 2자 이상 20자 이하여야 합니다.");
         }
     }
 
     public void findMemberByPhoneNumber(String phoneNumber) {
-        if (phoneNumber == null || phoneNumber.isEmpty()) {
-            throw new IllegalServiceCallException("전화번호가 없습니다.");
-        }
+        isNull(phoneNumber);
         if (!PHONE_NUMBER_PATTERN.matcher(phoneNumber).matches()) {
             throw new IllegalServiceCallException("전화번호 형식이 올바르지 않습니다. 올바른 형식 예: 010-XXXX-XXXX");
         }

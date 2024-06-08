@@ -1,15 +1,23 @@
 package com.kube.noon.common.binder;
 
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ResolvableType;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * DTO와 Entity 간의 변환을 위한 컨버터 클래스
+ */
 @Component
 public class DtoEntityConverter {
+
+    private static final Logger logger = LoggerFactory.getLogger(DtoEntityConverter.class);
 
     private final Map<Class<?>, Binder<?, ?>> converters = new HashMap<>();
     private final List<Binder<?, ?>> converterList;
@@ -21,10 +29,24 @@ public class DtoEntityConverter {
 
     @PostConstruct
     public void initialize() {
-        System.out.println("실행되는지 확인");
+        logger.info("초기화 시작");
+        logger.info("컨버터 리스트 크기: {}", converterList.size());
+
         for (Binder<?, ?> converter : converterList) {
-            converters.put(converter.getDtoType(), converter);// 엔티티 타입도 필요하면 저장
+            logger.info("처리 중인 컨버터: {}", converter.getClass().getName());
+
+            // ResolvableType을 사용하여 제네릭 타입 파라미터 추출
+            ResolvableType resolvableType = ResolvableType.forClass(converter.getClass()).as(Binder.class);
+            Class<?> dtoType = resolvableType.getGeneric(0).resolve();
+            if (dtoType != null) {
+                converters.put(dtoType, converter);
+                logger.info("DTO 타입: {}", dtoType.getName());
+            } else {
+                logger.warn("DTO 타입을 추출할 수 없습니다: {}", converter.getClass().getName());
+            }
         }
+
+        logger.info("컨버터 수: {}", converters.size());
         DtoEntityBinder.INSTANCE.setService(this);
     }
 

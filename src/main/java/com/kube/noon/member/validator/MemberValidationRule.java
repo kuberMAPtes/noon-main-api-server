@@ -6,7 +6,6 @@ import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.AddMemberDto;
 import com.kube.noon.member.dto.MemberRelationshipDto;
-import com.kube.noon.member.dto.MemberSearchCriteriaDto;
 import com.kube.noon.member.dto.UpdatePasswordDto;
 import com.kube.noon.member.enums.AddOrUpdate;
 import com.kube.noon.member.repository.MemberRepository;
@@ -35,6 +34,11 @@ public class MemberValidationRule {
         this.validationChain = validationChain;
         this.memberRepository = memberRepository;
     }
+    private <T>void checkIsNull(T argument){
+        if(argument == null){
+            throw new IllegalServiceCallException("받은 데이터가 없습니다.");
+        }
+    }
 
     @EventListener(ApplicationReadyEvent.class)
     public void setRule() {
@@ -43,6 +47,8 @@ public class MemberValidationRule {
 
             System.out.println("DTO 좀 보자 :::: " + dto);
             System.out.println("DTO 좀 보자 :::: " + dto.getClass());
+
+            checkIsNull(dto);
 
             if (dto.getMemberId() == null || dto.getMemberId().isEmpty()) {
                 throw new IllegalServiceCallException("회원 아이디가 없습니다.");
@@ -82,7 +88,8 @@ public class MemberValidationRule {
                     throw new IllegalServiceCallException("형식에 맞지 않은 비밀번호입니다. 형식 : 8~16자,영어와 숫자 포함, 특수문자,대소문자 허용");
                 }
             }
-        });
+        }
+        );
 
         validationChain.addRule(MemberRelationshipDto.class, dto -> {
 
@@ -144,14 +151,6 @@ public class MemberValidationRule {
             }
         });
 
-        validationChain.addRule(MemberSearchCriteriaDto.class, dto -> {
-
-        })
-
-
-        validationChain.addRule(MemberRelationshipDto.class, obj -> {
-
-        });
 
     }//end of setRule
 
