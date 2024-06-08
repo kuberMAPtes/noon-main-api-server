@@ -3,7 +3,9 @@ package com.kube.noon.feed.service;
 import com.kube.noon.feed.dto.FeedCntByTagDto;
 import com.kube.noon.feed.dto.FeedPopularityDto;
 import com.kube.noon.feed.dto.FeedViewCntByBuildingDto;
+import com.kube.noon.feed.dto.MemberLikeTagDto;
 import com.kube.noon.feed.service.impl.FeedStatisticsServiceImpl;
+import com.kube.noon.feed.service.recommend.FeedRecommendationService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TestFeedStatisticsServiceImpl {
     @Autowired
     private FeedStatisticsServiceImpl feedStatisticsServiceImpl;
+
+    @Autowired
+    private FeedRecommendationService feedRecommendationService;
 
     /**
      * 건물별로 조회수가 높은 피드를 가져온다. (상위 5개)
@@ -65,5 +70,11 @@ public class TestFeedStatisticsServiceImpl {
         for (FeedPopularityDto feedPopularityDto : result) {
             log.info(feedPopularityDto);
         }
+    }
+
+    @Transactional
+    @Test
+    public void getMemberLikeTagTest() {
+        feedRecommendationService.getMemberLikeTagsRecommendation();
     }
 }

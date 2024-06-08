@@ -1,6 +1,5 @@
 package com.kube.noon.feed.service;
 
-import com.kube.noon.building.domain.Building;
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.feed.domain.Feed;
@@ -8,8 +7,9 @@ import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.feed.service.impl.FeedServiceImpl;
-import com.kube.noon.member.domain.Member;
+import com.kube.noon.feed.service.recommend.FeedRecommendationService;
 import lombok.extern.log4j.Log4j2;
+import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,6 +31,9 @@ public class TestFeedServiceImpl {
 
     @Autowired
     private FeedRepository feedRepository;
+
+    @Autowired
+    private FeedRecommendationService feedRecommendationService;
 
     /**
      * 피드 목록을 가져오는 테스트를 한다.
