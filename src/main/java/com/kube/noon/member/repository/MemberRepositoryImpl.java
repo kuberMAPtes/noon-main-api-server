@@ -73,7 +73,7 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     @Override
     public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria) {
-        List<Member> lm = memberJpaRepository.findMemberListByCriteria(criteria);
+        List<Member> lm = memberJpaRepository.findMemberListByAdmin(criteria);
         if (lm.isEmpty()) {
             log.info("조건에 맞는 회원이 없음");
         } else {

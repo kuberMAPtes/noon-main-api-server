@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface MemberJpaRepositoryQuery {
 
-    List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria);
+    List<Member> findMemberListByAdmin(MemberSearchCriteriaDto criteria);
 
 }

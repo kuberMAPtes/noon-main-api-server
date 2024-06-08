@@ -17,7 +17,7 @@ public class MemberJpaRepositoryQueryImpl implements MemberJpaRepositoryQuery {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria) {
+    public List<Member> findMemberListByAdmin(MemberSearchCriteriaDto criteria) {
         QMember member = QMember.member;
 
         BooleanBuilder builder = new BooleanBuilder();
