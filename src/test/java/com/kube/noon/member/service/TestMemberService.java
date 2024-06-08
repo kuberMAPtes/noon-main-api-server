@@ -57,7 +57,7 @@ public class TestMemberService {
     @Test
     @DisplayName("회원 관계 추가 테스트")
     void addMemberRelationship() {
-        memberService.addMemberRelationship(MemberRelationshipDto.builder()
+        memberService.addMemberRelationship(AddMemberRelationshipDto.builder()
                 .fromId("member_1")
                 .toId("member_10")
                 .relationshipType(RelationshipType.FOLLOW)
@@ -90,14 +90,14 @@ public class TestMemberService {
 
     @Test
     @DisplayName("회원 리스트 찾기 테스트")
-    void findMemberListByCriteria() {
-        log.info("회원 리스트 찾기 테스트"+ memberService.findMemberListByCriteria(
+    void findMemberListByAdmin() {
+        log.info("회원 리스트 찾기 테스트"+ memberService.findMemberListByAdmin(
                 MemberSearchCriteriaDto
                         .builder()
                         .nickname("nickname")
                         .signedOff(false)
                         .build()));
-        assertThat(memberService.findMemberListByCriteria(
+        assertThat(memberService.findMemberListByAdmin(
                 MemberSearchCriteriaDto
                 .builder()
                         .nickname("nickname")
@@ -108,7 +108,7 @@ public class TestMemberService {
 
     @Test
     @DisplayName("회원 관계 리스트 찾기 테스트")
-    void findMemberRelationshipListByCriteria(){
+    void findMemberRelationshipListByAdmin(){
         MemberRelationshipSearchCriteriaDto mrsc= MemberRelationshipSearchCriteriaDto
                 .builder()
                 .memberId("member_1")
@@ -118,7 +118,7 @@ public class TestMemberService {
                 .blocker(true)
                 .build();
         log.info("회원 관계 리스트 찾기 테스트");
-        log.info(memberService.findMemberRelationshipListByCriteria(mrsc).toString());
+        log.info(memberService.findMemberRelationshipListByAdmin(mrsc).toString());
     }
 
     @Test
@@ -201,7 +201,7 @@ public class TestMemberService {
     @Test
     @DisplayName("회원 관계 삭제 테스트")
     void deleteMemberRelationship(){
-        memberService.deleteMemberRelationship(MemberRelationshipDto.builder()
+        memberService.deleteMemberRelationship(DeleteMemberRelationshipDto.builder()
                 .fromId("member_1")
                 .toId("member_2")
                 .relationshipType(RelationshipType.FOLLOW)

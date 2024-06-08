@@ -1,6 +1,5 @@
 package com.kube.noon.member.dto;
 
-import com.kube.noon.member.enums.AddOrUpdate;
 import com.kube.noon.member.enums.RelationshipType;
 import lombok.*;
 
@@ -12,7 +11,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class MemberRelationshipDto {
+public class AddMemberRelationshipDto {
 
     private String fromId;
 
@@ -21,7 +20,5 @@ public class MemberRelationshipDto {
     private RelationshipType relationshipType;
 
     private Boolean activated;
-
-    private AddOrUpdate addOrUpdate;
 
 }

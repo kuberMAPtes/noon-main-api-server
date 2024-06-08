@@ -11,7 +11,7 @@ public interface MemberService {
 
     void addMember(AddMemberDto memberDto);//JPA
 
-    void addMemberRelationship(MemberRelationshipDto memberRelationshipDto);
+    void addMemberRelationship(AddMemberRelationshipDto addMemberRelationshipDto);
 
     Optional<Member> findMemberById(String memberId);//JPA
 
@@ -22,9 +22,9 @@ public interface MemberService {
 
     Optional<Member> findMemberByPhoneNumber(String phoneNumber);
 
-    List<Member> findMemberListByCriteria(MemberSearchCriteriaDto searchDto);//JPA
+    List<Member> findMemberListByAdmin(MemberSearchCriteriaDto searchDto);//JPA
 
-    List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteriaDto);
+    List<MemberRelationship> findMemberRelationshipListByAdmin(MemberRelationshipSearchCriteriaDto criteriaDto);
 
     Optional<MemberRelationship> findMemberRelationship(String fromId, String toId);
 
@@ -38,7 +38,7 @@ public interface MemberService {
 
     void updateDajungScore(String memberId, int dajungScore);
 
-    void deleteMemberRelationship(MemberRelationshipDto dto);
+    void deleteMemberRelationship(DeleteMemberRelationshipDto dto);
 
     void deleteMember(String memberId);
 

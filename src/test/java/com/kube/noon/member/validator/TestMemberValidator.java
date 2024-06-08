@@ -1,7 +1,7 @@
 package com.kube.noon.member.validator;
 
 import com.kube.noon.member.domain.Member;
-import com.kube.noon.member.dto.MemberRelationshipDto;
+import com.kube.noon.member.dto.AddMemberRelationshipDto;
 import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
@@ -26,25 +26,25 @@ public class TestMemberValidator {
         System.out.println("member : " + Omember);
 
         //팔로우했어.
-        MemberRelationshipDto memberRelationshipDto = new MemberRelationshipDto();
-        memberRelationshipDto.setActivated(true);
-        memberRelationshipDto.setRelationshipType(RelationshipType.FOLLOW);
-        memberRelationshipDto.setToId("member_1");
-        memberRelationshipDto.setFromId("member_59");
+        AddMemberRelationshipDto addMemberRelationshipDto = new AddMemberRelationshipDto();
+        addMemberRelationshipDto.setActivated(true);
+        addMemberRelationshipDto.setRelationshipType(RelationshipType.FOLLOW);
+        addMemberRelationshipDto.setToId("member_1");
+        addMemberRelationshipDto.setFromId("member_59");
 
-        memberService.addMemberRelationship(memberRelationshipDto);
+        memberService.addMemberRelationship(addMemberRelationshipDto);
         //차단했어
-        MemberRelationshipDto memberRelationshipDto2 = new MemberRelationshipDto();
-        memberRelationshipDto2.setActivated(true);
-        memberRelationshipDto2.setRelationshipType(RelationshipType.BLOCK);
-        memberRelationshipDto2.setToId("member_1");
-        memberRelationshipDto2.setFromId("member_59");
+        AddMemberRelationshipDto addMemberRelationshipDto2 = new AddMemberRelationshipDto();
+        addMemberRelationshipDto2.setActivated(true);
+        addMemberRelationshipDto2.setRelationshipType(RelationshipType.BLOCK);
+        addMemberRelationshipDto2.setToId("member_1");
+        addMemberRelationshipDto2.setFromId("member_59");
         //팔로우했어
-        MemberRelationshipDto memberRelationshipDto3 = new MemberRelationshipDto();
+        AddMemberRelationshipDto addMemberRelationshipDto3 = new AddMemberRelationshipDto();
 
-        memberRelationshipDto3.setRelationshipType(RelationshipType.FOLLOW);
-        memberRelationshipDto3.setToId("member_1");
-        memberRelationshipDto3.setFromId("member_59");
+        addMemberRelationshipDto3.setRelationshipType(RelationshipType.FOLLOW);
+        addMemberRelationshipDto3.setToId("member_1");
+        addMemberRelationshipDto3.setFromId("member_59");
         //팔로우차단했어
     }
 

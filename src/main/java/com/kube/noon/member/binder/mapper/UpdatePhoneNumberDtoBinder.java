@@ -27,9 +27,4 @@ public interface UpdatePhoneNumberDtoBinder extends Binder<UpdatePhoneNumberDto,
     @Override
     UpdatePhoneNumberDto toDto(Member member);
 
-    @Override
-    default Class<UpdatePhoneNumberDto> getDtoType() {
-        return UpdatePhoneNumberDto.class;
-    }
-
 }

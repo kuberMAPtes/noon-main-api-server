@@ -27,9 +27,5 @@ public interface UpdatePasswordDtoBinder extends Binder<UpdatePasswordDto,Member
     @Override
     UpdatePasswordDto toDto(Member member);
 
-    @Override
-    default Class<UpdatePasswordDto> getDtoType() {
-        return UpdatePasswordDto.class;
-    }
 
 }

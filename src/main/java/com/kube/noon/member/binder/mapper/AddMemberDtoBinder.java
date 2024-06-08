@@ -25,8 +25,4 @@ public interface AddMemberDtoBinder extends Binder<AddMemberDto,Member> {
     @Override
     AddMemberDto toDto(Member member);
 
-    @Override
-    default Class<AddMemberDto> getDtoType() {
-        return AddMemberDto.class;
-    }
 }

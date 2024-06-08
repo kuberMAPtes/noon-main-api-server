@@ -28,8 +28,4 @@ public interface UpdateMemberProfilePhotoUrlBinder extends Binder<UpdateMemberPr
     @Override
     UpdateMemberProfilePhotoUrlDto toDto(Member member);
 
-    @Override
-    default Class<UpdateMemberProfilePhotoUrlDto> getDtoType() {
-        return UpdateMemberProfilePhotoUrlDto.class;
-    }
 }
