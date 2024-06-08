@@ -3,8 +3,8 @@ package com.kube.noon.member.service;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.*;
+import org.springframework.data.domain.Page;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface MemberService {
@@ -22,17 +22,9 @@ public interface MemberService {
 
     Optional<Member> findMemberByPhoneNumber(String phoneNumber);
 
-    List<Member> findMemberListByAdmin(MemberSearchCriteriaDto searchDto);//JPA
+    Page<Member> findMemberListByAdmin(MemberSearchCriteriaDto searchDto, int page, int size);//JPA
 
-    List<MemberRelationship> findMemberRelationshipListByAdmin(MemberRelationshipSearchCriteriaDto criteriaDto);
-
-    List<MemberRelationship> findFollowingList(String memberId);
-
-    List<MemberRelationship> findFollowerList(String memberId);
-
-    List<MemberRelationship> findBlockingList(String memberId);
-
-    List<MemberRelationship> findBlockerList(String memberId);
+    Page<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteriaDto, int page, int size);
 
     Optional<MemberRelationship> findMemberRelationship(String fromId, String toId);
 

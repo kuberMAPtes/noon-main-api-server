@@ -15,11 +15,11 @@ import com.kube.noon.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -44,6 +44,11 @@ public class MemberServiceImpl implements MemberService {
             log.info("회원 추가 중 : DTO {}", dto);
             Member member = DtoEntityBinder.INSTANCE.toEntity(dto);
             System.out.println("서비스에서 member 검증" + member);
+
+            memberRepository.findMemberById(member.getMemberId()).ifPresent(member->{
+
+            });
+
             if (Boolean.TRUE.equals(dto.getSocialSignUp())) {
                 dto.setPwd("social_sign_up");
             }
@@ -138,10 +143,10 @@ public class MemberServiceImpl implements MemberService {
 
 
     @Override
-    public List<Member> findMemberListByAdmin(MemberSearchCriteriaDto criteriaDto) {
+    public Page<Member> findMemberListByAdmin(MemberSearchCriteriaDto criteriaDto, int page, int size) {
         try {
             log.info("회원 리스트 찾는 중 : {}", criteriaDto);
-            return memberRepository.findMemberListByCriteria(criteriaDto);
+            return memberRepository.findMemberListByCriteria(criteriaDto,page,size);
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
             throw e;
@@ -159,51 +164,10 @@ public class MemberServiceImpl implements MemberService {
         }
     }
     @Override
-    public List<MemberRelationship> findMemberRelationshipListByAdmin(MemberRelationshipSearchCriteriaDto criteriaDto) {
+    public Page<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteriaDto,int page,int size) {
         try {
             checkMemberisSignedOff(criteriaDto.getMemberId());
-            return memberRepository.findMemberRelationshipListByCriteria(criteriaDto);
-        } catch (DataAccessException e) {
-            log.error("DB 접근 관련 문제 발생", e);
-            throw e;
-        }
-    }
-
-    @Override
-    public List<MemberRelationship> findFollowingList(String memberId) {
-        try {
-            checkMemberisSignedOff(memberId);
-            return memberRepository.findFollowingList(memberId);
-        } catch (DataAccessException e) {
-            log.error("DB 접근 관련 문제 발생", e);
-            throw e;
-        }
-    }
-    @Override
-    public List<MemberRelationship> findFollowerList(String memberId) {
-        try {
-            checkMemberisSignedOff(memberId);
-            return memberRepository.findFollowerList(memberId);
-        } catch (DataAccessException e) {
-            log.error("DB 접근 관련 문제 발생", e);
-            throw e;
-        }
-    }
-    @Override
-    public List<MemberRelationship> findBlockingList(String memberId) {
-        try {
-            checkMemberisSignedOff(memberId);
-            return memberRepository.findBlockingList(memberId);
-        } catch (DataAccessException e) {
-            log.error("DB 접근 관련 문제 발생", e);
-            throw e;
-        }
-    }
-    @Override
-    public List<MemberRelationship> findBlockerList(String memberId) {
-        try {
-            checkMemberisSignedOff(memberId);
-            return memberRepository.findBlockerList(memberId);
+            return memberRepository.findMemberRelationshipListByCriteria(criteriaDto,page,size);
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
             throw e;

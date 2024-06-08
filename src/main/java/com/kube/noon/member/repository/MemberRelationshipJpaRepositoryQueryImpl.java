@@ -20,74 +20,6 @@ public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelations
 
     private final JPAQueryFactory queryFactory;
 
-    public Page<MemberRelationship> findFollowingList(String memberId, Pageable pageable) {
-        QMemberRelationship ms = QMemberRelationship.memberRelationship;
-        List<MemberRelationship> results = queryFactory.selectFrom(ms)
-                .where(ms.fromMember.memberId.eq(memberId)
-                        .and(ms.relationshipType.eq(RelationshipType.FOLLOW)))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
-
-        long total = queryFactory.selectFrom(ms)
-                .where(ms.fromMember.memberId.eq(memberId)
-                        .and(ms.relationshipType.eq(RelationshipType.FOLLOW)))
-                .fetchCount();
-
-        return new PageImpl<>(results, pageable, total);
-    }
-
-    public Page<MemberRelationship> findFollowerList(String memberId, Pageable pageable) {
-        QMemberRelationship ms = QMemberRelationship.memberRelationship;
-        List<MemberRelationship> results = queryFactory.selectFrom(ms)
-                .where(ms.toMember.memberId.eq(memberId)
-                        .and(ms.relationshipType.eq(RelationshipType.FOLLOW)))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
-
-        long total = queryFactory.selectFrom(ms)
-                .where(ms.toMember.memberId.eq(memberId)
-                        .and(ms.relationshipType.eq(RelationshipType.FOLLOW)))
-                .fetchCount();
-
-        return new PageImpl<>(results, pageable, total);
-    }
-
-    public Page<MemberRelationship> findBlockingList(String memberId, Pageable pageable) {
-        QMemberRelationship ms = QMemberRelationship.memberRelationship;
-        List<MemberRelationship> results = queryFactory.selectFrom(ms)
-                .where(ms.fromMember.memberId.eq(memberId)
-                        .and(ms.relationshipType.eq(RelationshipType.BLOCK)))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
-
-        long total = queryFactory.selectFrom(ms)
-                .where(ms.fromMember.memberId.eq(memberId)
-                        .and(ms.relationshipType.eq(RelationshipType.BLOCK)))
-                .fetchCount();
-
-        return new PageImpl<>(results, pageable, total);
-    }
-
-    public Page<MemberRelationship> findBlockerList(String memberId, Pageable pageable) {
-        QMemberRelationship ms = QMemberRelationship.memberRelationship;
-        List<MemberRelationship> results = queryFactory.selectFrom(ms)
-                .where(ms.toMember.memberId.eq(memberId)
-                        .and(ms.relationshipType.eq(RelationshipType.BLOCK)))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
-
-        long total = queryFactory.selectFrom(ms)
-                .where(ms.toMember.memberId.eq(memberId)
-                        .and(ms.relationshipType.eq(RelationshipType.BLOCK)))
-                .fetchCount();
-
-        return new PageImpl<>(results, pageable, total);
-    }
-
     @Override
     public Page<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria, Pageable pageable) {
         QMemberRelationship ms = QMemberRelationship.memberRelationship;
@@ -95,16 +27,16 @@ public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelations
         BooleanBuilder builder = new BooleanBuilder();
 
         if (criteria.getFollowing() != null) {
-            builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
+            builder.and(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
         }
         if (criteria.getFollower() != null) {
-            builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
+            builder.and(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
         }
         if (criteria.getBlocking() != null) {
-            builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
+            builder.and(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
         }
         if (criteria.getBlocker() != null) {
-            builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
+            builder.and(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
         }
 
         List<MemberRelationship> results = queryFactory.selectFrom(ms)
@@ -119,4 +51,6 @@ public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelations
 
         return new PageImpl<>(results, pageable, total);
     }
+
+
 }

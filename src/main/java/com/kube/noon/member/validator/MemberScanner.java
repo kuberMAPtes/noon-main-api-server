@@ -42,33 +42,38 @@ public class MemberScanner {
     }
 
     //공통함수
-    public <T>void scanIsDataNull(T data){
+    public <T>void imoDataNotNull(T data){
         if (data == null) {
-            throw new IllegalServiceCallException("받은 데이터가 없습니다.");
+            throw new IllegalServiceCallException("데이터가 널입니다.");
         }
 
         if (data instanceof String && ((String) data).trim().isEmpty()) {
-            throw new IllegalServiceCallException("받은 데이터가 없습니다.");
+            throw new IllegalServiceCallException("데이터가 널입니다.");
         }
     }
     /**
      * 내부 속성 null 검사, 내부 속성 형식 검사
-     * @param dto
-     * @param <T>
-     */
-    public <T> void scanDtoField(T dto) {
-        log.info("scanDtoField 실행");
-        validationChain.validate(dto);
-    }
-
-    /**
-     * scanIsMemberSignedOff, scanIsMemberAlreadyExist, scanIsMemberNotExist
+     * imo = i think
+     * O = Ok,Yes
+     * is는 생략
+     * imoDataNotNull : 데이터가 낫널이다 = 낫널일 것이다 = 낫널이여야함 = 데이터가 널이면 에러
      *
      * @param dto
      * @param <T>
      */
-    public <T> void scanIsMemberSignedOff(T dto){
-        log.info("scanIsMemberSignedOff 실행");
+    public <T> void imoDtoFieldO(T dto) {
+        log.info("imoDtoFieldO 실행");
+        validationChain.validate(dto);
+    }
+
+    /**
+     * imoMemberNotSignedOff, imoMemberNotAlreadyExist, scanIsMemberNotExist
+     *
+     * @param dto
+     * @param <T>
+     */
+    public <T> void imoMemberNotSignedOff(T dto){
+        log.info("imoMemberNotSignedOff 실행");
 
         Member member = (Member) DtoEntityBinder.INSTANCE.toEntity(dto);
         if(member.getSignedOff()){
@@ -81,7 +86,7 @@ public class MemberScanner {
      * 회원이 탈퇴하지 않았는지 검사
      * @param memberId
      */
-    public void scanIsMemberSignedOff(String memberId) {
+    public void imoMemberNotSignedOff(String memberId) {
         memberRepository.findMemberById(memberId)
                 .ifPresent(member -> {
                     if (member.getSignedOff()) {
@@ -91,67 +96,73 @@ public class MemberScanner {
     }
 
     /**
-     *회원이 존재하는지 && 탈퇴하지 않았는지 검사
+     * 회원생각에 존재하는 회원인지 검사
+     *회원이 데이터가 있는지 + 탈퇴하지 않았는지 검사
+     * 회원 데이터가 있음 + 탈퇴안함-> 에러
+     * 회원 데이터가 있음 + 탈퇴함 -> 에러X
+     * 회원 데이터가 없음 -> 에러X
      */
-    public void scanIsMemberExist(String memberId) {
+    public void imoMemberNotExist(String memberId) {
         memberRepository.findMemberById(memberId).ifPresentOrElse(
                 (member)->{
-                    scanIsMemberSignedOff(member);
+                    if(!member.getSignedOff()){
+                        throw new MemberSecurityBreachException("존재하는 회원입니다.");
+                    }
                 },
                 ()->{
-                    throw new IllegalServiceCallException("존재하지 않는 회원입니다.");
+                    log.info("존재하지 않는 회원입니다. 통과");
                 }
         );
     }
-    public void scanIsMemberAlreadyExist(String memberId) {
+    public void imoMemberNotAlreadyExist(String memberId) {
         if (memberRepository.findMemberById(memberId).isPresent()) {
             throw new IllegalServiceCallException("이미 존재하는 회원 아이디입니다.");
         }
     }
-    public void scanIsSameMember(String fromId, String toId) {
+    public void imoMemberNotSame(String fromId, String toId) {
         if (fromId.equals(toId)) {
             throw new IllegalServiceCallException("자기 자신과의 관계는 설정할 수 없습니다.");
         }
     }
-    public boolean scanIsMemberRelationshipAlreadyExist(String fromId, String toId) {
+    public boolean imoMemberRelationshipAlreadyExist(String fromId, String toId) {
         return memberRepository.findMemberRelationship(fromId, toId).isPresent();
     }
-    public void scanMemberIdPattern(String memberId){
+    public void imoMemberIdPatternO(String memberId){
         if (!MEMBER_ID_PATTERN.matcher(memberId).matches()) {
             throw new IllegalServiceCallException("회원 아이디는 6자 이상 16자 이하여야 합니다.");
         }
     }
-    public void scanNicknameIsAlreadyExist(String nickname) {
+    public void imoNicknameAlreadyExist(String nickname) {
         if (memberRepository.findMemberByNickname(nickname).isPresent()) {
             throw new IllegalServiceCallException("이미 존재하는 닉네임입니다.");
         }
     }
-    public void scanNicknamePattern(String nickname) {
+    public void imoNicknamePatternO(String nickname) {
         if (!NICKNAME_PATTERN.matcher(nickname).matches()) {
             throw new IllegalServiceCallException("형식에 맞지 않는 닉네임입니다. 닉네임은 2자 이상 20자 이하여야 합니다.");
         }
     }
-    public void scanPhoneNumberIsAlreadyExist(String phoneNumber) {
+    public void imoPhoneNumberAlreadyExist(String phoneNumber) {
         if (memberRepository.findMemberByPhoneNumber(phoneNumber).isPresent()) {
             throw new IllegalServiceCallException("이미 존재하는 전화번호입니다.");
         }
     }
-    public void scanPhoneNumberPattern(String phoneNumber) {
+    public void imoPhoneNumberPatternO(String phoneNumber) {
         if (!PHONE_NUMBER_PATTERN.matcher(phoneNumber).matches()) {
             throw new IllegalServiceCallException("전화번호 형식이 올바르지 않습니다. 올바른 형식 예: 010-XXXX-XXXX");
         }
     }
-    public void scanPasswordPattern(String password) {
+    public void imoPasswordPatternO(String password) {
         if (!PASSWORD_PATTERN.matcher(password).matches()) {
             throw new IllegalServiceCallException("비밀번호는 8자 이상 16자 이하여야 합니다.");
         }
     }
-    public void scanDajungScorePattern(int dajungScore) {
+    public void imoDajungScorePatternO(int dajungScore) {
         if (dajungScore <= 0 || dajungScore >= 100) {
             throw new IllegalServiceCallException("다정 점수는 0 이상 100이하 이어야 합니다.");
         }
     }
-    public void scanImageFileName(String fileName) {
+    public void imoImageFileNameO(String fileName) {
         String fileExtension = getFileExtension(fileName).toLowerCase();
         boolean isValid = false;
         for (String extension : IMAGE_EXTENSIONS) {
@@ -170,7 +181,7 @@ public class MemberScanner {
         }
         return fileName.substring(fileName.lastIndexOf('.') + 1);
     }
-    public void scanImageUrl(String urlString) {
+    public void imoImageUrlO(String urlString) {
         try {
             byte[] body = webClient.get()
                     .uri(urlString)
@@ -213,7 +224,7 @@ public class MemberScanner {
             throw new IllegalServiceCallException("URL이 유효한 이미지 파일을 가리키지 않습니다.", e);
         }
     }
-    public void scanBase64Image(String base64String) {
+    public void imoBase64ImageO(String base64String) {
         try {
             String[] parts = base64String.split(",");
             String metadata = parts[0];
@@ -235,19 +246,19 @@ public class MemberScanner {
             throw new IllegalServiceCallException("Base64 데이터가 유효하지 않습니다.", e);
         }
     }
-    public void scanProfilePhotoUrlPattern(String profilePhotoString) {
+    public void imoProfilePhotoUrlPatternO(String profilePhotoString) {
 
         // URL 패턴 검증
         if (URL_PATTERN.matcher(profilePhotoString).matches()) {
-            scanImageUrl(profilePhotoString);
+            imoImageUrlO(profilePhotoString);
         }
         // Base64 패턴 검증
         else if (BASE64_PATTERN.matcher(profilePhotoString).matches()) {
-            scanBase64Image(profilePhotoString);
+            imoBase64ImageO(profilePhotoString);
         }
         // 파일 이름 패턴 검증
         else {
-            scanImageFileName(profilePhotoString);
+            imoImageFileNameO(profilePhotoString);
         }
     }
 

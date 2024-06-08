@@ -33,7 +33,7 @@ public class MemberValidationRule {
 
 
     /**
-     * memberScanner.scanDtoField()가 내부적으로 사용한다.
+     * memberScanner.imoDtoFieldO()가 내부적으로 사용한다.
      * service를 실행하면 validator작동되고 scanner가 Rule을 사용한다.
      */
     @EventListener(ApplicationReadyEvent.class)
@@ -44,37 +44,37 @@ public class MemberValidationRule {
             System.out.println("DTO 좀 보자 :::: " + dto);
             System.out.println("DTO 좀 보자 :::: " + dto.getClass());
 
-            memberScanner.scanIsDataNull(dto.getMemberId());
-            memberScanner.scanIsMemberAlreadyExist(dto.getMemberId());
-            memberScanner.scanMemberIdPattern(dto.getMemberId());
+            memberScanner.imoDataNotNull(dto.getMemberId());
+            memberScanner.imoMemberNotAlreadyExist(dto.getMemberId());
+            memberScanner.imoMemberIdPatternO(dto.getMemberId());
 
-            memberScanner.scanIsDataNull(dto.getNickname());
-            memberScanner.scanNicknameIsAlreadyExist(dto.getNickname());
-            memberScanner.scanNicknamePattern(dto.getNickname());
+            memberScanner.imoDataNotNull(dto.getNickname());
+            memberScanner.imoNicknameAlreadyExist(dto.getNickname());
+            memberScanner.imoNicknamePatternO(dto.getNickname());
 
-            memberScanner.scanIsDataNull(dto.getPhoneNumber());
-            memberScanner.scanPhoneNumberIsAlreadyExist(dto.getPhoneNumber());
-            memberScanner.scanPhoneNumberPattern(dto.getPhoneNumber());
+            memberScanner.imoDataNotNull(dto.getPhoneNumber());
+            memberScanner.imoPhoneNumberAlreadyExist(dto.getPhoneNumber());
+            memberScanner.imoPhoneNumberPatternO(dto.getPhoneNumber());
 
             if (Boolean.FALSE.equals(dto.getSocialSignUp())) {
-                memberScanner.scanIsDataNull(dto.getPwd());
-                memberScanner.scanPasswordPattern(dto.getPwd());
+                memberScanner.imoDataNotNull(dto.getPwd());
+                memberScanner.imoPasswordPatternO(dto.getPwd());
             }
         }
         );
 
         validationChain.addRule(AddMemberRelationshipDto.class, dto -> {
 
-            memberScanner.scanIsDataNull(dto.getFromId());
-            memberScanner.scanIsDataNull(dto.getToId());
-            memberScanner.scanIsDataNull(dto.getRelationshipType());
+            memberScanner.imoDataNotNull(dto.getFromId());
+            memberScanner.imoDataNotNull(dto.getToId());
+            memberScanner.imoDataNotNull(dto.getRelationshipType());
 
-            memberScanner.scanIsSameMember(dto.getFromId(), dto.getToId());
+            memberScanner.imoMemberNotSame(dto.getFromId(), dto.getToId());
 
             //이미 관계가 있는지 찾아서 관계가 있으면 있다고 하고
             //관계가 없다면 없다고 해야함
-            memberScanner.scanIsMemberExist(dto.getFromId());
-            memberScanner.scanIsMemberExist(dto.getToId());
+            memberScanner.imoMemberNotExist(dto.getFromId());
+            memberScanner.imoMemberNotExist(dto.getToId());
             /**
              * 내 dto와 db의 도메인이 Boolean빼고는 다 같으면 activated를 True로 바꾸고 update한다.
              * 내 dto와 도메인의 RelationshipType이 다르면 받은 타입으로 update한다.

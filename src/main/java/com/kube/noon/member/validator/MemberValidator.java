@@ -23,94 +23,93 @@ public class MemberValidator {
     }
 
     public void addMember(AddMemberDto dto) {
-        memberScanner.scanIsDataNull(dto);
-        memberScanner.scanIsMemberSignedOff(dto);
-        memberScanner.scanDtoField(dto);
+        memberScanner.imoDataNotNull(dto);
+        memberScanner.imoDtoFieldO(dto);
     }
     public void addMemberRelationship(AddMemberRelationshipDto dto) {
-        memberScanner.scanIsDataNull(dto);
-        memberScanner.scanIsMemberSignedOff(dto);
-        memberScanner.scanDtoField(dto);
+        memberScanner.imoDataNotNull(dto);
+        memberScanner.imoMemberNotSignedOff(dto);
+        memberScanner.imoDtoFieldO(dto);
     }
     public void findMemberById(String memberId) {
-        memberScanner.scanIsDataNull(memberId);
+        memberScanner.imoDataNotNull(memberId);
     }
     public void findMemberProfileById(String memberId) {
-        memberScanner.scanIsDataNull(memberId);
+        memberScanner.imoDataNotNull(memberId);
     }
     public void findMemberByNickname(String nickname) {
-        memberScanner.scanIsDataNull(nickname);
+        memberScanner.imoDataNotNull(nickname);
     }
     public void findMemberByPhoneNumber(String phoneNumber) {
-        memberScanner.scanIsDataNull(phoneNumber);
+        memberScanner.imoDataNotNull(phoneNumber);
     }
     public void findMemberListByCriiteria(MemberSearchCriteriaDto searchDto) {
-        memberScanner.scanIsDataNull(searchDto);
+        memberScanner.imoDataNotNull(searchDto);
 
     }
     public void updateMember(UpdateMemberDto updateMemberDto) {
-        memberScanner.scanDtoField(updateMemberDto);
+        memberScanner.imoDtoFieldO(updateMemberDto);
     }
     public void updatePassword(String memberId, String newPassword) {
         memberRepository.findMemberById(memberId).orElseThrow(() -> new IllegalServiceCallException("존재하지 않는 회원입니다."));
-        memberScanner.scanIsDataNull(memberId);
-        memberScanner.scanIsDataNull(newPassword);
+        memberScanner.imoDataNotNull(memberId);
+        memberScanner.imoDataNotNull(newPassword);
     }
 
     public void updatePhoneNumber(String memberId, String newPhoneNumber) {
         memberRepository.findMemberById(memberId).orElseThrow(() -> new IllegalServiceCallException("존재하지 않는 회원입니다."));
-        memberScanner.scanIsDataNull(memberId);
-        memberScanner.scanIsDataNull(newPhoneNumber);
-        memberScanner.scanPhoneNumberPattern(newPhoneNumber);
+        memberScanner.imoDataNotNull(memberId);
+        memberScanner.imoDataNotNull(newPhoneNumber);
+        memberScanner.imoPhoneNumberPatternO(newPhoneNumber);
     }
 
     public void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl) {
         memberRepository.findMemberById(memberId).orElseThrow(() -> new IllegalServiceCallException("존재하지 않는 회원입니다."));
-        memberScanner.scanIsDataNull(memberId);
-        memberScanner.scanIsDataNull(newProfilePhotoUrl);
-        memberScanner.scanProfilePhotoUrlPattern(newProfilePhotoUrl);
+        memberScanner.imoDataNotNull(memberId);
+        memberScanner.imoDataNotNull(newProfilePhotoUrl);
+        memberScanner.imoProfilePhotoUrlPatternO(newProfilePhotoUrl);
 
     }
 
     public void updateDajungScore(String memberId, int dajungScore) {
         memberRepository.findMemberById(memberId).orElseThrow(() -> new IllegalServiceCallException("존재하지 않는 회원입니다."));
-        memberScanner.scanIsDataNull(memberId);
-        memberScanner.scanIsDataNull(dajungScore);
-        memberScanner.scanDajungScorePattern(dajungScore);
+        memberScanner.imoDataNotNull(memberId);
+        memberScanner.imoDataNotNull(dajungScore);
+        memberScanner.imoDajungScorePatternO(dajungScore);
     }
 
     public void deleteMemberRelationship(DeleteMemberRelationshipDto dto) {
-        memberScanner.scanIsDataNull(dto);
-        memberScanner.scanDtoField(dto);
+        memberScanner.imoDataNotNull(dto);
+        memberScanner.imoDtoFieldO(dto);
     }
 
     public void deleteMember(String memberId) {
-        memberScanner.scanIsDataNull(memberId);
-        memberScanner.scanIsMemberSignedOff(memberId);
+        memberScanner.imoDataNotNull(memberId);
+        memberScanner.imoMemberNotSignedOff(memberId);
 
     }
 
     public void checkNickname(String nickname) {
-        memberScanner.scanIsDataNull(nickname);
-        memberScanner.scanNicknamePattern(nickname);
+        memberScanner.imoDataNotNull(nickname);
+        memberScanner.imoNicknamePatternO(nickname);
     }
 
     public void checkMemberId(String memberId) {
-        memberScanner.scanIsDataNull(memberId);
+        memberScanner.imoDataNotNull(memberId);
     }
 
     public void checkPassword(String email, String password) {
-        memberScanner.scanIsDataNull(email);
-        memberScanner.scanIsDataNull(password);
-        memberScanner.scanPasswordPattern(password);
+        memberScanner.imoDataNotNull(email);
+        memberScanner.imoDataNotNull(password);
+        memberScanner.imoPasswordPatternO(password);
     }
 
     public void checkPhoneNumber(String phoneNumber) {
-        memberScanner.scanIsDataNull(phoneNumber);
-        memberScanner.scanPhoneNumberPattern(phoneNumber);
+        memberScanner.imoDataNotNull(phoneNumber);
+        memberScanner.imoPhoneNumberPatternO(phoneNumber);
     }
 
     public void checkBadWord(String word) {
-        memberScanner.scanIsDataNull(word);
+        memberScanner.imoDataNotNull(word);
     }
 }

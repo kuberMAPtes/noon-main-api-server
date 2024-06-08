@@ -6,6 +6,9 @@ import com.kube.noon.member.dto.MemberSearchCriteriaDto;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,8 +19,7 @@ public class MemberJpaRepositoryQueryImpl implements MemberJpaRepositoryQuery {
 
     private final JPAQueryFactory queryFactory;
 
-    @Override
-    public List<Member> findMemberListByAdmin(MemberSearchCriteriaDto criteria) {
+    public Page<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria, Pageable pageable) {
         QMember member = QMember.member;
 
         BooleanBuilder builder = new BooleanBuilder();
@@ -38,9 +40,16 @@ public class MemberJpaRepositoryQueryImpl implements MemberJpaRepositoryQuery {
             builder.and(member.signedOff.eq(criteria.getSignedOff()));
         }
 
-        return queryFactory.selectFrom(member)
+        List<Member> results = queryFactory.selectFrom(member)
                 .where(builder)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
 
+        long total = queryFactory.selectFrom(member)
+                .where(builder)
+                .fetchCount();
+
+        return new PageImpl<>(results, pageable, total);
     }
 }

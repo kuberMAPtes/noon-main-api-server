@@ -9,9 +9,10 @@ import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.exception.MemberNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 
@@ -72,8 +73,9 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
-    public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria) {
-        List<Member> lm = memberJpaRepository.findMemberListByAdmin(criteria);
+    public Page<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria, int page, int size) {
+
+        Page<Member> lm = memberJpaRepository.findMemberListByCriteria(criteria, PageRequest.of(page, size));
         if (lm.isEmpty()) {
             log.info("조건에 맞는 회원이 없음");
         } else {
@@ -96,9 +98,10 @@ public class MemberRepositoryImpl implements MemberRepository {
         );
         return omr;
     }
+
     @Override
-    public List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria) {
-        List<MemberRelationship> lm = memberRelationshipJpaRepository.findMemberRelationshipListByCriteria(criteria);
+    public Page<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria, int page, int size) {
+        Page<MemberRelationship> lm = memberRelationshipJpaRepository.findMemberRelationshipListByCriteria(criteria, PageRequest.of(page, size));
         if (lm.isEmpty()) {
             log.info("조건에 맞는 회원 관계가 없음");
         } else {
@@ -112,68 +115,6 @@ public class MemberRepositoryImpl implements MemberRepository {
         return lm;
     }
 
-    @Override
-    public List<MemberRelationship> findFollowingList(String memberId) {
-        List<MemberRelationship> lm = memberRelationshipJpaRepository.findFollowingList(memberId);
-        if (lm.isEmpty()) {
-            log.info("조건에 맞는 회원 관계가 없음");
-        } else {
-            for (MemberRelationship mr : lm) {
-                log.info("member_1의 FromId 리스트 출력 : {}", mr.getFromMember().getMemberId());
-            }
-            for (MemberRelationship mr : lm) {
-                log.info("member_1의 ToId 리스트 출력 : {}", mr.getToMember().getMemberId());
-            }
-        }
-        return lm;
-    }
-
-    @Override
-    public List<MemberRelationship> findFollowerList(String memberId) {
-        List<MemberRelationship> lm = memberRelationshipJpaRepository.findFollowerList(memberId);
-        if (lm.isEmpty()) {
-            log.info("조건에 맞는 회원 관계가 없음");
-        } else {
-            for (MemberRelationship mr : lm) {
-                log.info("member_1의 FromId 리스트 출력 : {}", mr.getFromMember().getMemberId());
-            }
-            for (MemberRelationship mr : lm) {
-                log.info("member_1의 ToId 리스트 출력 : {}", mr.getToMember().getMemberId());
-            }
-        }
-        return lm;
-    }
-    @Override
-    public List<MemberRelationship> findBlockingList(String memberId) {
-        List<MemberRelationship> lm = memberRelationshipJpaRepository.findBlockingList(memberId);
-        if (lm.isEmpty()) {
-            log.info("조건에 맞는 회원 관계가 없음");
-        } else {
-            for (MemberRelationship mr : lm) {
-                log.info("member_1의 FromId 리스트 출력 : {}", mr.getFromMember().getMemberId());
-            }
-            for (MemberRelationship mr : lm) {
-                log.info("member_1의 ToId 리스트 출력 : {}", mr.getToMember().getMemberId());
-            }
-        }
-        return lm;
-    }
-
-    @Override
-    public List<MemberRelationship> findBlockerList(String memberId) {
-        List<MemberRelationship> lm = memberRelationshipJpaRepository.findBlockerList(memberId);
-        if (lm.isEmpty()) {
-            log.info("조건에 맞는 회원 관계가 없음");
-        } else {
-            for (MemberRelationship mr : lm) {
-                log.info("member_1의 FromId 리스트 출력 : {}", mr.getFromMember().getMemberId());
-            }
-            for (MemberRelationship mr : lm) {
-                log.info("member_1의 ToId 리스트 출력 : {}", mr.getToMember().getMemberId());
-            }
-        }
-        return lm;
-    }
 
 
 
