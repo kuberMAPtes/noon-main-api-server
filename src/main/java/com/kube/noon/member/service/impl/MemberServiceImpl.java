@@ -1,5 +1,6 @@
 package com.kube.noon.member.service.impl;
 
+import com.kube.noon.common.PublicRange;
 import com.kube.noon.common.badwordfiltering.BadWordFilterAgent;
 import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.feed.service.FeedService;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Optional;
+import java.util.Random;
 
 /**
  *
@@ -45,8 +47,11 @@ public class MemberServiceImpl implements MemberService {
             Member member = DtoEntityBinder.INSTANCE.toEntity(dto);
             System.out.println("서비스에서 member 검증" + member);
 
-            memberRepository.findMemberById(member.getMemberId()).ifPresent(member->{
-
+            //탈퇴된 회원이 다시 회원가입하면 탈퇴상태를 변경 member는 Dto에서 받아온 member
+            memberRepository.findMemberById(member.getMemberId()).ifPresent(memb->{
+                if(memb.getSignedOff()){
+                    memberRepository.updateMember(member);
+                }
             });
 
             if (Boolean.TRUE.equals(dto.getSocialSignUp())) {
@@ -174,7 +179,6 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-
     @Override
     public void updateMember(UpdateMemberDto updateMemberDto) {
         try {
@@ -255,11 +259,8 @@ public class MemberServiceImpl implements MemberService {
     public void deleteMember(String memberId) {
         log.info("회원 삭제 중 : {}", memberId);
         checkMemberisSignedOff(memberId);
-        memberRepository.updateMember(Member
-                .builder()
-                .memberId(memberId)
-                .signedOff(true)
-                .build());
+        setMemberInitializer(memberId);
+
         log.info("회원 삭제 성공 : {}", memberId);
     }
 
@@ -325,5 +326,33 @@ public class MemberServiceImpl implements MemberService {
                         throw new MemberSecurityBreachException("탈퇴한 회원입니다.");
                     }
                 });
+    }
+    private void setMemberInitializer(String memberId){
+        memberRepository.updateMember(Member
+                .builder()
+                .dajungScore(0)
+                .memberProfilePublicRange(PublicRange.PRIVATE)
+                .allFeedPublicRange(PublicRange.PRIVATE)
+                .buildingSubscriptionPublicRange(PublicRange.PRIVATE)
+                .receivingAllNotificationAllowed(false)
+                .signedOff(true)
+                .build());
+        memberRepository.updatePhoneNumber(memberId, generateRandomPhoneNumber());
+        memberRepository.updatePassword(memberId, "deleted0608");
+        memberRepository.updateMemberProfilePhoto(memberId, "thereisnoimage.jpg");
+
+//        memberRepository.findMemberRelationshipListByCriteria() 전부 회원관계 찾아내서 activated false로 바꾸기
+        memberRepository.findAllMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto.builder().memberId(memberId).build())
+                .forEach(mr->{
+                    mr.setActivated(false);
+                    memberRepository.updateMemberRelationship(mr);
+                });
+    }
+    private String generateRandomPhoneNumber() {
+        Random random = new Random();
+        int firstPart = 600 + random.nextInt(400); // 600-999
+        int secondPart = random.nextInt(10000); // 0000-9999
+        int thirdPart = random.nextInt(10000); // 0000-9999
+        return String.format("%03d-%04d-%04d", firstPart, secondPart, thirdPart);
     }
 }

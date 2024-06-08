@@ -52,7 +52,7 @@ public class MemberRelationship {
         this.fromMember = fromMember;
         this.toMember = toMember;
     }
-
+    //빌더패턴때문에 있음
     private MemberRelationship(int memberRelationshipId, RelationshipType relationshipType, Boolean activated, Member fromMember, Member toMember) {
         this.memberRelationshipId = memberRelationshipId;
         this.relationshipType = relationshipType;

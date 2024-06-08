@@ -13,12 +13,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 
 /**
  * Repository에서는 받은 데이터는 1차적으로 서비스로부터 검증된 데이터이다.
- * 그러므로 Validation 체크는 하지 않는다. null체크만 한다.
+ * 데이터의 일관성을 유지하기 위한 최소한의 검사를 수행한다.
  */
 @Repository
 @RequiredArgsConstructor
@@ -115,6 +116,21 @@ public class MemberRepositoryImpl implements MemberRepository {
         return lm;
     }
 
+    @Override
+    public List<MemberRelationship> findAllMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria) {
+        List<MemberRelationship> lm = memberRelationshipJpaRepository.findAllMemberRelationshipListByCriteria(criteria);
+        if (lm.isEmpty()) {
+            log.info("조건에 맞는 회원 관계가 없음");
+        } else {
+            for (MemberRelationship mr : lm) {
+                log.info("member_1의 FromId 리스트 출력 : {}", mr.getFromMember().getMemberId());
+            }
+            for (MemberRelationship mr : lm) {
+                log.info("member_1의 ToId 리스트 출력 : {}", mr.getToMember().getMemberId());
+            }
+        }
+        return lm;
+    }
 
 
 

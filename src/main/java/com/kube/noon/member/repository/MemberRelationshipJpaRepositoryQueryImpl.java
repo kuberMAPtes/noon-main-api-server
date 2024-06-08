@@ -52,5 +52,29 @@ public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelations
         return new PageImpl<>(results, pageable, total);
     }
 
+    @Override
+    public List<MemberRelationship> findAllMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria) {
+        QMemberRelationship ms = QMemberRelationship.memberRelationship;
+
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (criteria.getFollowing() != null) {
+            builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
+        }
+        if (criteria.getFollower() != null) {
+            builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
+        }
+        if (criteria.getBlocking() != null) {
+            builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
+        }
+        if (criteria.getBlocker() != null) {
+            builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
+        }
+
+        return queryFactory.selectFrom(ms)
+                .where(builder)
+                .fetch();
+    }
+
 
 }

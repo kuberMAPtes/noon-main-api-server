@@ -101,7 +101,7 @@ public class MemberValidator {
     public void checkPassword(String email, String password) {
         memberScanner.imoDataNotNull(email);
         memberScanner.imoDataNotNull(password);
-        memberScanner.imoPasswordPatternO(password);
+        memberScanner.imoPwdPatternO(password);
     }
 
     public void checkPhoneNumber(String phoneNumber) {

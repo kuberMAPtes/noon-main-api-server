@@ -16,6 +16,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.regex.Pattern;
 
@@ -42,7 +43,7 @@ public class MemberScanner {
     }
 
     //공통함수
-    public <T>void imoDataNotNull(T data){
+    public <T> void imoDataNotNull(T data){
         if (data == null) {
             throw new IllegalServiceCallException("데이터가 널입니다.");
         }
@@ -51,9 +52,27 @@ public class MemberScanner {
             throw new IllegalServiceCallException("데이터가 널입니다.");
         }
     }
+    public <T, U> void imoTwoDataNotNullSimul(T data1, U data2) {
+        boolean isData1Null = (data1 == null) || (data1 instanceof String && ((String) data1).trim().isEmpty());
+        boolean isData2Null = (data2 == null) || (data2 instanceof String && ((String) data2).trim().isEmpty());
+
+        if (isData1Null && isData2Null) {
+            throw new IllegalServiceCallException("두 데이터가 모두 널입니다.");
+        }
+    }
+    //3개
+    public <T, U, V> void imoThreeDataNotNullSimul(T data1, U data2, V data3) {
+        boolean isData1Null = (data1 == null) || (data1 instanceof String && ((String) data1).trim().isEmpty());
+        boolean isData2Null = (data2 == null) || (data2 instanceof String && ((String) data2).trim().isEmpty());
+        boolean isData3Null = (data3 == null) || (data3 instanceof String && ((String) data3).trim().isEmpty());
+
+        if (isData1Null && isData2Null && isData3Null) {
+            throw new IllegalServiceCallException("세 데이터가 모두 널입니다.");
+        }
+    }
     /**
      * 내부 속성 null 검사, 내부 속성 형식 검사
-     * imo = i think
+     * imo = In my opinion 내 생각에
      * O = Ok,Yes
      * is는 생략
      * imoDataNotNull : 데이터가 낫널이다 = 낫널일 것이다 = 낫널이여야함 = 데이터가 널이면 에러
@@ -97,24 +116,24 @@ public class MemberScanner {
 
     /**
      * 회원생각에 존재하는 회원인지 검사
-     *회원이 데이터가 있는지 + 탈퇴하지 않았는지 검사
-     * 회원 데이터가 있음 + 탈퇴안함-> 에러
-     * 회원 데이터가 있음 + 탈퇴함 -> 에러X
-     * 회원 데이터가 없음 -> 에러X
+     *회원관계 데이터가 있는지 + 탈퇴하지 않았는지 검사
+     * 회원 관계 데이터가 있음 + 탈퇴안함-> 에러
+     * 회원 관계 데이터가 있음 + 탈퇴함 -> 에러X
+     * 회원 관계 데이터가 없음 -> 에러X
      */
-    public void imoMemberNotExist(String memberId) {
-        memberRepository.findMemberById(memberId).ifPresentOrElse(
-                (member)->{
-                    if(!member.getSignedOff()){
-                        throw new MemberSecurityBreachException("존재하는 회원입니다.");
-                    }
-                },
-                ()->{
-                    log.info("존재하지 않는 회원입니다. 통과");
-                }
-        );
+    //존재하면 OK 존재하지 않으면 에러
+    public void imoMemberRelationshipExist(String fromId, String toId) {
+        if (memberRepository.findMemberRelationship(fromId, toId).isEmpty()) {
+            throw new IllegalServiceCallException("존재하지 않는 회원 관계입니다.");
+        }
     }
-    public void imoMemberNotAlreadyExist(String memberId) {
+    //존재하지 않으면 OK 존재하면 에러
+    public void imoMemberRelationshipNotExist(String fromId, String toId) {
+        if (memberRepository.findMemberRelationship(fromId, toId).isPresent()) {
+            throw new IllegalServiceCallException("이미 존재하는 회원 관계입니다.");
+        }
+    }
+    public void imoMemberIdNotExist(String memberId) {
         if (memberRepository.findMemberById(memberId).isPresent()) {
             throw new IllegalServiceCallException("이미 존재하는 회원 아이디입니다.");
         }
@@ -132,7 +151,7 @@ public class MemberScanner {
             throw new IllegalServiceCallException("회원 아이디는 6자 이상 16자 이하여야 합니다.");
         }
     }
-    public void imoNicknameAlreadyExist(String nickname) {
+    public void imoNicknameNotAlreadyExist(String nickname) {
         if (memberRepository.findMemberByNickname(nickname).isPresent()) {
             throw new IllegalServiceCallException("이미 존재하는 닉네임입니다.");
         }
@@ -142,7 +161,7 @@ public class MemberScanner {
             throw new IllegalServiceCallException("형식에 맞지 않는 닉네임입니다. 닉네임은 2자 이상 20자 이하여야 합니다.");
         }
     }
-    public void imoPhoneNumberAlreadyExist(String phoneNumber) {
+    public void imoPhoneNumberNotAlreadyExist(String phoneNumber) {
         if (memberRepository.findMemberByPhoneNumber(phoneNumber).isPresent()) {
             throw new IllegalServiceCallException("이미 존재하는 전화번호입니다.");
         }
@@ -152,7 +171,7 @@ public class MemberScanner {
             throw new IllegalServiceCallException("전화번호 형식이 올바르지 않습니다. 올바른 형식 예: 010-XXXX-XXXX");
         }
     }
-    public void imoPasswordPatternO(String password) {
+    public void imoPwdPatternO(String password) {
         if (!PASSWORD_PATTERN.matcher(password).matches()) {
             throw new IllegalServiceCallException("비밀번호는 8자 이상 16자 이하여야 합니다.");
         }
@@ -160,6 +179,16 @@ public class MemberScanner {
     public void imoDajungScorePatternO(int dajungScore) {
         if (dajungScore <= 0 || dajungScore >= 100) {
             throw new IllegalServiceCallException("다정 점수는 0 이상 100이하 이어야 합니다.");
+        }
+    }
+    public void imoProfileIntroPatternO(String profileIntro) {
+        if (profileIntro.length() > 150) {
+            throw new IllegalServiceCallException("프로필 소개는 150자 이하여야 합니다.");
+        }
+    }
+    public void imoUnlockTImePatternO(LocalDateTime unlockTime) {
+        if (unlockTime.isBefore(LocalDateTime.now())) {
+            throw new IllegalServiceCallException("잠금 해제 시간은 현재 시간 이후여야 합니다.");
         }
     }
     public void imoImageFileNameO(String fileName) {
