@@ -158,6 +158,16 @@ public class MemberServiceImpl implements MemberService {
             throw e;
         }
     }
+    @Override
+    public List<MemberRelationship> findMemberRelationshipListByAdmin(MemberRelationshipSearchCriteriaDto criteriaDto) {
+        try {
+            checkMemberisSignedOff(criteriaDto.getMemberId());
+            return memberRepository.findMemberRelationshipListByCriteria(criteriaDto);
+        } catch (DataAccessException e) {
+            log.error("DB 접근 관련 문제 발생", e);
+            throw e;
+        }
+    }
 
     @Override
     public List<MemberRelationship> findFollowingList(String memberId) {
