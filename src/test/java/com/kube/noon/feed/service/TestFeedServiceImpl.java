@@ -186,6 +186,8 @@ public class TestFeedServiceImpl {
     /**
      * 피드의 제목이나 내용을 기준으로 검색한다.
      */
+    @Transactional
+    @Test
     public void searchFeedListTest() {
         String keyword = "Title_1";
 
@@ -195,5 +197,22 @@ public class TestFeedServiceImpl {
         for(FeedSummaryDto f : searchFeedList) {
             log.info(f.toString());
         }
+    }
+
+    /**
+     * 피드의 조회수를 1 증가시킨다.
+     */
+    @Transactional
+    @Test
+    public void setViewCntUpTest() {
+        FeedDto beforeViewCntDto = feedServiceImpl.getFeedById(10000);
+        int beforeViewCnt = beforeViewCntDto.getViewCnt().intValue();
+
+        int feedId = feedServiceImpl.setViewCntUp(10000);
+
+        FeedDto afterViewCntDto = feedServiceImpl.getFeedById(feedId);
+        int afterViewCnt = afterViewCntDto.getViewCnt().intValue();
+
+        assertThat(afterViewCnt).isEqualTo(beforeViewCnt + 1);
     }
 }

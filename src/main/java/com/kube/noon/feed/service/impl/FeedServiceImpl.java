@@ -10,6 +10,7 @@ import com.kube.noon.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -85,12 +86,14 @@ public class FeedServiceImpl implements FeedService {
         return feedListByBuildingSubscription;
     }
 
+    @Transactional
     @Override
     public int addFeed(FeedDto feedDto) {
         Feed addFeed = FeedDto.toEntity(feedDto);
         return feedRepository.save(addFeed).getFeedId();
     }
 
+    @Transactional
     @Override
     public int updateFeed(FeedDto feedDto) {
         Feed updateFeed = feedRepository.findByFeedId(feedDto.getFeedId());
@@ -102,6 +105,7 @@ public class FeedServiceImpl implements FeedService {
         return feedRepository.save(updateFeed).getFeedId();
     }
 
+    @Transactional
     @Override
     public int deleteFeed(FeedDto feedDto) {
         Feed deleteFeed = feedRepository.findByFeedId(feedDto.getFeedId());
@@ -116,6 +120,7 @@ public class FeedServiceImpl implements FeedService {
         return FeedDto.toDto(getFeed);
     }
 
+    @Transactional
     @Override
     public int setPublicRage(FeedDto feedDto) {
         Feed setPublicRangeFeed = feedRepository.findByFeedId(feedDto.getFeedId());
@@ -124,6 +129,7 @@ public class FeedServiceImpl implements FeedService {
         return feedRepository.save(setPublicRangeFeed).getFeedId();
     }
 
+    @Transactional
     @Override
     public int setMainFeed(FeedDto feedDto) {
 
@@ -152,5 +158,13 @@ public class FeedServiceImpl implements FeedService {
         List<FeedSummaryDto> searchFeedList = FeedSummaryDto.toDtoList(searchFeedTextList);
 
         return searchFeedList;
+    }
+
+    @Override
+    public int setViewCntUp(int feedId) {
+        Feed feed = feedRepository.findByFeedId(feedId);
+        feed.setViewCnt(feed.getViewCnt() + 1);
+
+        return feedRepository.save(feed).getFeedId();
     }
 }

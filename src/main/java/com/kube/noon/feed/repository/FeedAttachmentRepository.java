@@ -9,11 +9,11 @@ import java.util.List;
 
 public interface FeedAttachmentRepository extends JpaRepository<FeedAttachment, Long> {
     /**
-     * 피드의 첨부파일을 가져온다.
+     * 피드의 첨부파일들을 가져온다.
      * @param feed
      * @return List<FeedAttachment>
      */
-    List<FeedAttachment> findByFeed(Feed feed);
+    List<FeedAttachment> findByFeedAndActivatedTrue(Feed feed);
 
     /**
      * 첨부파일 아이디로 첨부파일을 찾는다.

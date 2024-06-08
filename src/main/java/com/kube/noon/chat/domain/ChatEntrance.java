@@ -19,9 +19,14 @@ public class ChatEntrance {
     @Column(name = "chat_entrance_id")
     private int chatEntranceId;
 
+//    ////???////
+//    @Column(name = "chatroom_id", nullable = false)
+//    private int chatroomId;
+//    ////////////
+
     @ManyToOne
     @JoinColumn(name = "chatroom_id", nullable = false)
-    private Chatroom chatroomId;
+    private Chatroom chatroom;
 
     @Column(name = "chatroom_member_id", length = 20, nullable = false)
     private String chatroomMemberId;
