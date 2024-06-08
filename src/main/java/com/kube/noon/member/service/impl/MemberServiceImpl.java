@@ -1,8 +1,10 @@
 package com.kube.noon.member.service.impl;
 
 import com.kube.noon.common.badwordfiltering.BadWordFilterAgent;
+import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.service.FeedService;
+import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.*;
 import com.kube.noon.member.exception.MemberNotFoundException;
@@ -42,7 +44,7 @@ public class MemberServiceImpl implements MemberService {
     public void addMember(AddMemberDto memberDto) {
         try {
             log.info("회원 추가 중 : DTO {}", memberDto);
-            com.kube.noon.member.domain.Member member = DeprecatedBinding.INSTANCE.toMember(memberDto);
+            Member member = DtoEntityBinder.INSTANCE.toEntity(memberDto);
             System.out.println("서비스에서 member 검증"+member);
             memberRepository.addMember(member);
             log.info("회원 추가 성공 : DTO {}", memberDto);
@@ -55,27 +57,7 @@ public class MemberServiceImpl implements MemberService {
     public void addMemberRelationship(MemberRelationshipDto dto) {
         try {
             log.info("회원 관계 추가 중 : DTO {}", dto);
-            checkMemberisSignedOff(dto.getFromId());
-            memberRepository
-                    .findMemberById(dto.getFromId())
-                    .ifPresent(member -> {
-                        try {
-                            MemberRelationship mr = DeprecatedBinding.INSTANCE.toMemberRelationship(dto);
-                            memberRepository
-                                    .findMemberRelationship(mr.getFromMember().getMemberId(), mr.getToMember().getMemberId())
-                                    .ifPresent(relationship -> {
-                                        throw new MemberSecurityBreachException("이미 추가된 관계입니다.");
-                                    });
-
-                            if (member.getMemberId().equals(dto.getToId())) {
-                                throw new MemberSecurityBreachException("자기 자신과의 관계는 추가할 수 없습니다.");
-                            }
-                            //중복 추가가 되지 않아야 함
-                        } catch (DataAccessException e) {
-                            throw new MemberSecurityBreachException("회원 관계 추가 실패 : " + dto);
-                        }
-                    });
-            MemberRelationship memberRelationship = DeprecatedBinding.INSTANCE.toMemberRelationship(dto);
+            MemberRelationship memberRelationship = DtoEntityBinder.INSTANCE.toEntity(dto);
             memberRepository.addMemberRelationship(memberRelationship);
             log.info("회원 관계 추가 성공 : DTO {}", memberRelationship);
         } catch (DataAccessException e) {
@@ -83,7 +65,7 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 @Override
-public Optional<com.kube.noon.member.domain.Member> findMemberById(String memberId) {
+public Optional<Member> findMemberById(String memberId) {
     try {
         log.info("회원 찾는 중 ID: {}", memberId);
         return memberRepository.findMemberById(memberId);
@@ -97,12 +79,12 @@ public Optional<com.kube.noon.member.domain.Member> findMemberById(String member
     public Optional<MemberProfileDto> findMemberProfileById(String memberId) {
         try {
             log.info("회원 프로필 찾는 중 ID: {}", memberId);
-            Optional<com.kube.noon.member.domain.Member> om = memberRepository.findMemberById(memberId);
+            Optional<Member> om = memberRepository.findMemberById(memberId);
             return Optional.ofNullable(om.map(member -> {
                 List<FeedDto> feedDtoList = new ArrayList<>();
                 // feedDtoList = feedService.findFeedListByMemberId(memberId);
                 // memberProfileDto.setFeedDtoList(feedDtoList);
-                return DeprecatedBinding.INSTANCE.toDto(member,MemberProfileDto.class);
+                return DtoEntityBinder.INSTANCE.toDto(member,MemberProfileDto.class);
             }).orElseGet(() -> {
                 log.info("회원이 없습니다");
                 return null;
@@ -114,7 +96,7 @@ public Optional<com.kube.noon.member.domain.Member> findMemberById(String member
     }
 
     @Override
-    public Optional<com.kube.noon.member.domain.Member> findMemberByNickname(String nickname) {
+    public Optional<Member> findMemberByNickname(String nickname) {
         try {
             log.info("회원 찾는 중 닉네임: {}", nickname);
             return memberRepository.findMemberByNickname(nickname);
@@ -125,7 +107,7 @@ public Optional<com.kube.noon.member.domain.Member> findMemberById(String member
     }
 
 @Override
-public Optional<com.kube.noon.member.domain.Member> findMemberByPhoneNumber(String phoneNumber) {
+public Optional<Member> findMemberByPhoneNumber(String phoneNumber) {
     try {
         log.info("회원 찾는 중 전화번호: {}", phoneNumber);
         return memberRepository.findMemberByPhoneNumber(phoneNumber);
@@ -137,7 +119,7 @@ public Optional<com.kube.noon.member.domain.Member> findMemberByPhoneNumber(Stri
 
 
     @Override
-    public List<com.kube.noon.member.domain.Member> findMemberListByCriteria(MemberSearchCriteriaDto criteriaDto) {
+    public List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteriaDto) {
         try {
             log.info("회원 리스트 찾는 중 : {}", criteriaDto);
             return memberRepository.findMemberListByCriteria(criteriaDto);
@@ -175,7 +157,7 @@ public Optional<com.kube.noon.member.domain.Member> findMemberByPhoneNumber(Stri
         try {
             log.info("회원 업데이트 중");
             checkMemberisSignedOff(updateMemberDto.getMemberId());
-            memberRepository.updateMember(DeprecatedBinding.INSTANCE.toMember(updateMemberDto));
+            memberRepository.updateMember(DtoEntityBinder.INSTANCE.toEntity(updateMemberDto));
         } catch (DataAccessException e) {
             throw new MemberUpdateException("회원 업데이트 실패", e);
         }
@@ -240,7 +222,7 @@ public Optional<com.kube.noon.member.domain.Member> findMemberByPhoneNumber(Stri
     public void deleteMemberRelationship(MemberRelationshipDto dto) {
         log.info("회원 관계 삭제 중 : {}", dto);
         checkMemberisSignedOff(dto.getFromId());
-        MemberRelationship mr = DeprecatedBinding.INSTANCE.toMemberRelationship(dto);
+        MemberRelationship mr = DtoEntityBinder.INSTANCE.toEntity(dto);
         mr.setActivated(false);
         memberRepository.updateMemberRelationship(mr);
         log.info("회원 관계 삭제 성공");
@@ -250,7 +232,7 @@ public Optional<com.kube.noon.member.domain.Member> findMemberByPhoneNumber(Stri
     public void deleteMember(String memberId) {
         log.info("회원 삭제 중 : {}", memberId);
         checkMemberisSignedOff(memberId);
-        memberRepository.updateMember(com.kube.noon.member.domain.Member
+        memberRepository.updateMember(Member
                 .builder()
                 .memberId(memberId)
                 .signedOff(true)

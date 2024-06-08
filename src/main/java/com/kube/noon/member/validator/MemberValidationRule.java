@@ -6,6 +6,7 @@ import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.AddMemberDto;
 import com.kube.noon.member.dto.MemberRelationshipDto;
+import com.kube.noon.member.dto.MemberSearchCriteriaDto;
 import com.kube.noon.member.dto.UpdatePasswordDto;
 import com.kube.noon.member.enums.AddOrUpdate;
 import com.kube.noon.member.repository.MemberRepository;
@@ -142,6 +143,11 @@ public class MemberValidationRule {
                 throw new IllegalServiceCallException("비밀번호는 8자 이상 16자 이하여야 합니다.");
             }
         });
+
+        validationChain.addRule(MemberSearchCriteriaDto.class, dto -> {
+
+        })
+
 
         validationChain.addRule(MemberRelationshipDto.class, obj -> {
 

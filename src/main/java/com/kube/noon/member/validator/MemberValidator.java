@@ -79,6 +79,7 @@ public class MemberValidator {
         System.out.println("밸리데이터 실행");
         validate(memberRelationshipDto);
     }
+
     public void findMemberById(String memberId) {
         if (memberId == null || memberId.isEmpty()) {
             throw new IllegalServiceCallException("회원 아이디가 없습니다.");
@@ -113,6 +114,7 @@ public class MemberValidator {
         if (searchDto == null) {
             throw new IllegalServiceCallException("검색 조건이 없습니다.");
         }
+        validate(searchDto);
     }
 
 
