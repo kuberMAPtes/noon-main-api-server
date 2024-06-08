@@ -34,6 +34,6 @@ public class Chatroom {
     @Column(name = "activated", nullable = false)
     private boolean activated = true;
 
-    @Column(name = "chatroom_min_temp")
+    @Column(name = "chatroom_dajung_temp_min")
     private Float chatroomMinTemp;
 }
