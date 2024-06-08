@@ -26,6 +26,14 @@ public interface MemberService {
 
     List<MemberRelationship> findMemberRelationshipListByAdmin(MemberRelationshipSearchCriteriaDto criteriaDto);
 
+    List<MemberRelationship> findFollowingList(String memberId);
+
+    List<MemberRelationship> findFollowerList(String memberId);
+
+    List<MemberRelationship> findBlockingList(String memberId);
+
+    List<MemberRelationship> findBlockerList(String memberId);
+
     Optional<MemberRelationship> findMemberRelationship(String fromId, String toId);
 
     void updateMember(UpdateMemberDto updateMemberDto);

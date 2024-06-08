@@ -120,6 +120,30 @@ public class TestMemberService {
         log.info("회원 관계 리스트 찾기 테스트");
         log.info(memberService.findMemberRelationshipListByAdmin(mrsc).toString());
     }
+    @Test
+    @DisplayName("팔로우 한 리스트 찾기 테스트")
+    void findFollowingList(){
+        log.info("팔로잉 리스트 찾기 테스트");
+        log.info(memberService.findFollowingList("member_1").toString());
+    }
+    @Test
+    @DisplayName("팔로우 당한 리스트 찾기 테스트")
+    void findFollowerList(){
+        log.info("팔로워 리스트 찾기 테스트");
+        log.info(memberService.findFollowerList("member_1").toString());
+    }
+    @Test
+    @DisplayName("차단 리스트 찾기 테스트")
+    void findBlockingList(){
+        log.info("차단 리스트 찾기 테스트");
+        log.info(memberService.findBlockingList("member_1").toString());
+    }
+    @Test
+    @DisplayName("차단당한 리스트 찾기 테스트")
+    void findBlockerList(){
+        log.info("차단당한 리스트 찾기 테스트");
+        log.info(memberService.findBlockerList("member_1").toString());
+    }
 
     @Test
     @DisplayName("회원 업데이트 테스트")

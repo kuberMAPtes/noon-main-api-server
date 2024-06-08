@@ -160,10 +160,40 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public List<MemberRelationship> findMemberRelationshipListByAdmin(MemberRelationshipSearchCriteriaDto criteriaDto) {
+    public List<MemberRelationship> findFollowingList(String memberId) {
         try {
-            checkMemberisSignedOff(criteriaDto.getMemberId());
-            return memberRepository.findMemberRelationshipListByCriteria(criteriaDto);
+            checkMemberisSignedOff(memberId);
+            return memberRepository.findFollowingList(memberId);
+        } catch (DataAccessException e) {
+            log.error("DB 접근 관련 문제 발생", e);
+            throw e;
+        }
+    }
+    @Override
+    public List<MemberRelationship> findFollowerList(String memberId) {
+        try {
+            checkMemberisSignedOff(memberId);
+            return memberRepository.findFollowerList(memberId);
+        } catch (DataAccessException e) {
+            log.error("DB 접근 관련 문제 발생", e);
+            throw e;
+        }
+    }
+    @Override
+    public List<MemberRelationship> findBlockingList(String memberId) {
+        try {
+            checkMemberisSignedOff(memberId);
+            return memberRepository.findBlockingList(memberId);
+        } catch (DataAccessException e) {
+            log.error("DB 접근 관련 문제 발생", e);
+            throw e;
+        }
+    }
+    @Override
+    public List<MemberRelationship> findBlockerList(String memberId) {
+        try {
+            checkMemberisSignedOff(memberId);
+            return memberRepository.findBlockerList(memberId);
         } catch (DataAccessException e) {
             log.error("DB 접근 관련 문제 발생", e);
             throw e;

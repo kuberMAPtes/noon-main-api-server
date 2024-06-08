@@ -3,7 +3,6 @@ package com.kube.noon.member.repository;
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
-import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
 import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.exception.MemberNotFoundException;
@@ -97,10 +96,9 @@ public class MemberRepositoryImpl implements MemberRepository {
         return omr;
     }
 
-
     @Override
-    public List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria) {
-        List<MemberRelationship> lm = memberRelationshipJpaRepository.findMemberRelationshipListByCriteria(criteria);
+    public List<MemberRelationship> findFollowingList(String memberId) {
+        List<MemberRelationship> lm = memberRelationshipJpaRepository.findFollowingList(memberId);
         if (lm.isEmpty()) {
             log.info("조건에 맞는 회원 관계가 없음");
         } else {
@@ -113,6 +111,55 @@ public class MemberRepositoryImpl implements MemberRepository {
         }
         return lm;
     }
+
+    @Override
+    public List<MemberRelationship> findFollowerList(String memberId) {
+        List<MemberRelationship> lm = memberRelationshipJpaRepository.findFollowerList(memberId);
+        if (lm.isEmpty()) {
+            log.info("조건에 맞는 회원 관계가 없음");
+        } else {
+            for (MemberRelationship mr : lm) {
+                log.info("member_1의 FromId 리스트 출력 : {}", mr.getFromMember().getMemberId());
+            }
+            for (MemberRelationship mr : lm) {
+                log.info("member_1의 ToId 리스트 출력 : {}", mr.getToMember().getMemberId());
+            }
+        }
+        return lm;
+    }
+    @Override
+    public List<MemberRelationship> findBlockingList(String memberId) {
+        List<MemberRelationship> lm = memberRelationshipJpaRepository.findBlockingList(memberId);
+        if (lm.isEmpty()) {
+            log.info("조건에 맞는 회원 관계가 없음");
+        } else {
+            for (MemberRelationship mr : lm) {
+                log.info("member_1의 FromId 리스트 출력 : {}", mr.getFromMember().getMemberId());
+            }
+            for (MemberRelationship mr : lm) {
+                log.info("member_1의 ToId 리스트 출력 : {}", mr.getToMember().getMemberId());
+            }
+        }
+        return lm;
+    }
+
+    @Override
+    public List<MemberRelationship> findBlockerList(String memberId) {
+        List<MemberRelationship> lm = memberRelationshipJpaRepository.findBlockerList(memberId);
+        if (lm.isEmpty()) {
+            log.info("조건에 맞는 회원 관계가 없음");
+        } else {
+            for (MemberRelationship mr : lm) {
+                log.info("member_1의 FromId 리스트 출력 : {}", mr.getFromMember().getMemberId());
+            }
+            for (MemberRelationship mr : lm) {
+                log.info("member_1의 ToId 리스트 출력 : {}", mr.getToMember().getMemberId());
+            }
+        }
+        return lm;
+    }
+
+
 
     @Override
     public void updateMember(Member member) {

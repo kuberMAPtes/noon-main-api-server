@@ -2,9 +2,7 @@ package com.kube.noon.member.repository;
 
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.domain.QMemberRelationship;
-import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.enums.RelationshipType;
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -17,35 +15,35 @@ public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelations
 
     private final JPAQueryFactory queryFactory;
 
-
-    /**
-     * 다 선택하면 다 나오고, 하나 선택하면 하나만 나옴
-     *
-     * @param criteria
-     * @return
-     */
-    @Override
-    public List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria) {
+    public List<MemberRelationship> findFollowingList(String memberId) {
         QMemberRelationship ms = QMemberRelationship.memberRelationship;
-
-        BooleanBuilder builder = new BooleanBuilder();
-
-        if (criteria.getFollowing() != null) {
-            builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
-        }
-        if (criteria.getFollower() != null) {
-            builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
-        }
-        if (criteria.getBlocking() != null) {
-            builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
-        }
-        if (criteria.getBlocker() != null) {
-            builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
-        }
-
         return queryFactory.selectFrom(ms)
-                .where(builder)
+                .where(ms.fromMember.memberId.eq(memberId)
+                        .and(ms.relationshipType.eq(RelationshipType.FOLLOW)))
                 .fetch();
     }
 
+    public List<MemberRelationship> findFollowerList(String memberId) {
+        QMemberRelationship ms = QMemberRelationship.memberRelationship;
+        return queryFactory.selectFrom(ms)
+                .where(ms.toMember.memberId.eq(memberId)
+                        .and(ms.relationshipType.eq(RelationshipType.FOLLOW)))
+                .fetch();
+    }
+
+    public List<MemberRelationship> findBlockingList(String memberId) {
+        QMemberRelationship ms = QMemberRelationship.memberRelationship;
+        return queryFactory.selectFrom(ms)
+                .where(ms.fromMember.memberId.eq(memberId)
+                        .and(ms.relationshipType.eq(RelationshipType.BLOCK)))
+                .fetch();
+    }
+
+    public List<MemberRelationship> findBlockerList(String memberId) {
+        QMemberRelationship ms = QMemberRelationship.memberRelationship;
+        return queryFactory.selectFrom(ms)
+                .where(ms.toMember.memberId.eq(memberId)
+                        .and(ms.relationshipType.eq(RelationshipType.BLOCK)))
+                .fetch();
+    }
 }
