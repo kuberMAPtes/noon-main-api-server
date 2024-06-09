@@ -281,8 +281,6 @@ public class MemberRestController {
         MemberDto dto = null;
         MemberDto fromMemberDto = memberService.findMemberById(fromId,memberId);
 
-
-
         return ResponseEntity.ok(dto);
     }
 
@@ -297,69 +295,41 @@ public class MemberRestController {
 
     @PostMapping("/listMember")
     public ResponseEntity<Page<MemberDto>> listMember(@RequestBody MemberSearchCriteriaRequestDto requestDto) {
-        try {
-            MemberSearchCriteriaDto memberSearchCriteriaDto = DtoEntityBinder.INSTANCE.toOtherDto(requestDto);
-            Page<MemberDto> members = memberService.findMemberListByCriteria(requestDto.getMemberId(),memberSearchCriteriaDto, pageUnit, pageSize);
-            return ResponseEntity.ok(members);
-        } catch (Exception e) {
-            log.error("ID가 {}인 회원 목록을 조회하는 중 오류 발생", requestDto.getMemberId(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+        MemberSearchCriteriaDto memberSearchCriteriaDto = DtoEntityBinder.INSTANCE.toOtherDto(requestDto);
+        Page<MemberDto> members = memberService.findMemberListByCriteria(requestDto.getMemberId(), memberSearchCriteriaDto, pageUnit, pageSize);
+        return ResponseEntity.ok(members);
     }
 
     @PostMapping("/deleteMember/{memberId}")
     public ResponseEntity<ApiResponse<Void>> deleteMember(@PathVariable String memberId) {
-        try {
-            memberService.deleteMember(memberId);
-            ApiResponse<Void> response = ApiResponseFactory.createResponse("회원이 성공적으로 삭제되었습니다.", null);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("ID가 {}인 회원을 삭제하는 중 오류 발생", memberId, e);
-            ApiResponse<Void> response = ApiResponseFactory.createErrorResponse("회원 삭제 중 오류 발생");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        memberService.deleteMember(memberId);
+        ApiResponse<Void> response = ApiResponseFactory.createResponse("회원이 성공적으로 삭제되었습니다.", null);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/addMemberRelationship")
     public ResponseEntity<String> addMemberRelationship(@RequestBody AddMemberRelationshipDto dto) {
-        try {
-            memberService.addMemberRelationship(dto);
-            return ResponseEntity.ok("회원 관계가 성공적으로 추가되었습니다.");
-        } catch (Exception e) {
-            log.error("ID가 {}에서 {}로의 회원 관계를 추가하는 중 오류 발생", dto.getFromId(), dto.getToId(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("회원 관계 추가 중 오류 발생");
-        }
+        memberService.addMemberRelationship(dto);
+        return ResponseEntity.ok("회원 관계가 성공적으로 추가되었습니다.");
     }
 
     @PostMapping("/getMemberRelationshipList")
     public ResponseEntity<Page<MemberRelationshipDto>> getMemberRelationshipList(@RequestBody MemberRelationshipSearchCriteriaRequestDto requestDto) {
-        try {
-            MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto = DtoEntityBinder.INSTANCE.toOtherDto(requestDto);
-            Page<MemberRelationshipDto> relationships = memberService.findMemberRelationshipListByCriteria(requestDto.getFromId(),memberRelationshipSearchCriteriaDto, pageUnit, pageSize);
-            return ResponseEntity.ok(relationships);
-        } catch (Exception e) {
-            log.error("ID가 {}에서 {}로의 회원 관계 목록을 조회하는 중 오류 발생", requestDto.getFromId(), requestDto.getMemberId(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+        MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto = DtoEntityBinder.INSTANCE.toOtherDto(requestDto);
+        Page<MemberRelationshipDto> relationships = memberService.findMemberRelationshipListByCriteria(requestDto.getFromId(), memberRelationshipSearchCriteriaDto, pageUnit, pageSize);
+        return ResponseEntity.ok(relationships);
     }
 
     @PostMapping("/deleteMemberRelationship/{fromId}/{toId}")
-    public ResponseEntity<ApiResponse<Void>> deleteMemberRelationship(
-            @RequestBody DeleteMemberRelationshipDto requestDto) {
-        try {
-            // JWT 토큰 검증
-            String fromId = validateJwtToken(RequestContext.getAuthorization());
+    public ResponseEntity<ApiResponse<Void>> deleteMemberRelationship(@RequestBody DeleteMemberRelationshipDto requestDto) {
+        // JWT 토큰 검증
+        String fromId = validateJwtToken(RequestContext.getAuthorization());
 
-            requestDto.setFromId(fromId);
-            memberService.deleteMemberRelationship(requestDto);
-            String message = requestDto.getRelationshipType() == RelationshipType.FOLLOW ? "팔로우가 해제되었습니다." : "차단이 해제되었습니다.";
-            ApiResponse<Void> response = ApiResponseFactory.createResponse(message, null);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("ID가 {}에서 {}로의 회원 관계를 삭제하는 중 오류 발생", requestDto.getFromId(), requestDto.getToId(), e);
-            ApiResponse<Void> response = ApiResponseFactory.createErrorResponse("회원 관계 삭제 중 오류 발생");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        requestDto.setFromId(fromId);
+        memberService.deleteMemberRelationship(requestDto);
+        String message = requestDto.getRelationshipType() == RelationshipType.FOLLOW ? "팔로우가 해제되었습니다." : "차단이 해제되었습니다.";
+        ApiResponse<Void> response = ApiResponseFactory.createResponse(message, null);
+        return ResponseEntity.ok(response);
     }
 
     private String validateJwtToken(String token) {
