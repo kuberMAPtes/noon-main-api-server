@@ -31,21 +31,46 @@ public class MemberValidator {
         memberScanner.imoMemberNotSignedOff(dto);
         memberScanner.imoDtoFieldO(dto);
     }
+    public void findMemberById(String fromId,String memberId){
+        memberScanner.imoDataNotNull(fromId);
+        memberScanner.imoMemberNotSignedOff(fromId);
+        memberScanner.imoDataNotNull(memberId);
+    }
     public void findMemberById(String memberId) {
         memberScanner.imoDataNotNull(memberId);
+        memberScanner.imoMemberIdExist(memberId);
+
     }
-    public void findMemberProfileById(String memberId) {
+    public void findMemberProfileById(String fromId, String memberId) {
+        memberScanner.imoDataNotNull(fromId);
         memberScanner.imoDataNotNull(memberId);
+        memberScanner.imoMemberIdExist(fromId);
+        memberScanner.imoMemberIdExist(memberId);
     }
-    public void findMemberByNickname(String nickname) {
+    public void findMemberByNickname(String fromId, String nickname) {
+        memberScanner.imoDataNotNull(fromId);
         memberScanner.imoDataNotNull(nickname);
+        memberScanner.imoMemberIdExist(fromId);
+        memberScanner.imoMemberNicknameExist(nickname);
     }
-    public void findMemberByPhoneNumber(String phoneNumber) {
+    public void findMemberByPhoneNumberByAdmin(String fromId, String phoneNumber) {
+        memberScanner.imoDataNotNull(fromId);
+        memberScanner.imoMemberIsAdmin(fromId);
         memberScanner.imoDataNotNull(phoneNumber);
+        memberScanner.imoMemberIdExist(fromId);
     }
-    public void findMemberListByCriiteria(MemberSearchCriteriaDto searchDto) {
+    public void findMemberListByCriteria(String fromId, MemberSearchCriteriaDto searchDto) {
+        memberScanner.imoDataNotNull(fromId);
         memberScanner.imoDataNotNull(searchDto);
 
+    }
+    public void findMemberRelationshipListByCriteria(String fromId, MemberRelationshipSearchCriteriaDto searchDto) {
+        memberScanner.imoDataNotNull(fromId);
+        memberScanner.imoDataNotNull(searchDto);
+    }
+    public void findMemberRelationship(String fromId, String toId) {
+        memberScanner.imoDataNotNull(fromId);
+        memberScanner.imoDataNotNull(toId);
     }
     public void updateMember(UpdateMemberDto updateMemberDto) {
         memberScanner.imoDtoFieldO(updateMemberDto);
@@ -66,7 +91,7 @@ public class MemberValidator {
     public void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl) {
         memberRepository.findMemberById(memberId).orElseThrow(() -> new IllegalServiceCallException("존재하지 않는 회원입니다."));
         memberScanner.imoDataNotNull(memberId);
-        memberScanner.imoDataNotNull(newProfilePhotoUrl);
+        //프로필사진Url은 null이 가능하다.
         memberScanner.imoProfilePhotoUrlPatternO(newProfilePhotoUrl);
 
     }
@@ -86,16 +111,19 @@ public class MemberValidator {
     public void deleteMember(String memberId) {
         memberScanner.imoDataNotNull(memberId);
         memberScanner.imoMemberNotSignedOff(memberId);
-
+        memberScanner.imoMemberIdExist(memberId);
     }
 
     public void checkNickname(String nickname) {
         memberScanner.imoDataNotNull(nickname);
         memberScanner.imoNicknamePatternO(nickname);
+        memberScanner.imoMemberNicknameNotExist(nickname);
     }
 
     public void checkMemberId(String memberId) {
         memberScanner.imoDataNotNull(memberId);
+        memberScanner.imoMemberIdPatternO(memberId);
+        memberScanner.imoMemberIdNotExist(memberId);
     }
 
     public void checkPassword(String email, String password) {
@@ -107,6 +135,7 @@ public class MemberValidator {
     public void checkPhoneNumber(String phoneNumber) {
         memberScanner.imoDataNotNull(phoneNumber);
         memberScanner.imoPhoneNumberPatternO(phoneNumber);
+        memberScanner.imoMemberPhoneNumberNotExist(phoneNumber);
     }
 
     public void checkBadWord(String word) {

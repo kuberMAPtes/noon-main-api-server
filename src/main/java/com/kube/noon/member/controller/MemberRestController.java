@@ -1,8 +1,6 @@
 package com.kube.noon.member.controller;
 
-import com.kube.noon.member.dto.AddMemberDto;
-import com.kube.noon.member.dto.LoginRequestDto;
-import com.kube.noon.member.dto.MemberProfileDto;
+import com.kube.noon.member.dto.*;
 import com.kube.noon.member.enums.LoginFlag;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
@@ -128,17 +126,18 @@ public class MemberRestController {
 
         AtomicReference<LoginFlag> isCorrect = new AtomicReference<>(LoginFlag.FAILURE);
 
-        memberService.findMemberById(id).ifPresentOrElse(
-                member -> {
-                    if (member.getPwd().equals(dto.getPwd())) {
-                        isCorrect.set(LoginFlag.SUCCESS);
-                    } else {
-                        isCorrect.set(LoginFlag.INCORRECT_PASSWORD);
-                    }
-                },
-                () -> {
-                    isCorrect.set(LoginFlag.INCORRECT_ID);
-                });
+        MemberDto memberDto = memberService.findMemberById(id,id);
+
+        if(memberDto == null) {
+            isCorrect.set(LoginFlag.INCORRECT_ID);
+        } else {
+            if (memberDto.getPwd().equals(dto.getPwd())) {
+                isCorrect.set(LoginFlag.SUCCESS);
+            } else {
+                isCorrect.set(LoginFlag.INCORRECT_PASSWORD);
+            }
+        }
+
         if (isCorrect.get().equals(LoginFlag.SUCCESS)) {
 
             String jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0IiwiaWF0IjoxNjI5MzQwNjYwLCJleHAiOjE2MjkzNDA2NjB9.1";
@@ -206,7 +205,7 @@ public class MemberRestController {
         System.out.println("샘플서비스실행");
 //        sampleService.func1();
         System.out.println("샘플서비스실행완료");
-        memberService.findMemberById("member_1");
+//        memberService.findMemberById("member_1");
 
 //        memberService.updatePassword(memberId, newPassword);
 
@@ -220,25 +219,25 @@ public class MemberRestController {
 
     @GetMapping("/updateProfilePhoto")
     public ResponseEntity<?> updateProfilePhoto() {
+//
+//        MemberProfileDto memberProfileDto = new MemberProfileDto();
+//        memberProfileDto.setMemberId("test");
+//        memberProfileDto.setProfilePhotoUrl("test");
+//        memberProfileDto.setNickname("얍얍얍얍");
+//        redisTemplate.opsForValue().set("abc", memberProfileDto);
+//
+//        MemberProfileDto message = (MemberProfileDto) redisTemplate.opsForValue().get("abc");
+//
+//        System.out.println(message.getProfilePhotoUrl());
+//        System.out.println(message);
+//
+//        Map<String, Object> map = new HashMap<>();
+//
+//        map.put("message", message);
+//
+//        map.put("message2", memberService.findMemberById("member_1"));
 
-        MemberProfileDto memberProfileDto = new MemberProfileDto();
-        memberProfileDto.setMemberId("test");
-        memberProfileDto.setProfilePhotoUrl("test");
-        memberProfileDto.setNickname("얍얍얍얍");
-        redisTemplate.opsForValue().set("abc", memberProfileDto);
-
-        MemberProfileDto message = (MemberProfileDto) redisTemplate.opsForValue().get("abc");
-
-        System.out.println(message.getProfilePhotoUrl());
-        System.out.println(message);
-
-        Map<String, Object> map = new HashMap<>();
-
-        map.put("message", message);
-
-        map.put("message2", memberService.findMemberById("member_1"));
-
-        return ResponseEntity.ok(map);
+        return null;
     }
 
     public ResponseEntity<?> updateProfileIntro(@RequestParam String memberId, @RequestParam String newProfileIntro) {
@@ -261,17 +260,37 @@ public class MemberRestController {
         return ResponseEntity.ok("다정점수 변경 성공");
     }
 
-    public ResponseEntity<?> getMember(@RequestParam String memberId) {
+    /**
+     * 관리자가 사용
+     * @param memberId
+     * @return
+     */
+    @GetMapping("/getMember/{fromId}/{memberId}/")
+    public ResponseEntity<?> getMember(@PathVariable String fromId, @PathVariable String memberId) {
 
-//        return memberService.findMemberById(memberId).orElse(new GetMemberResponseDto());
-        return null;
+        MemberDto dto = null;
+        MemberDto fromMemberDto = memberService.findMemberById(fromId,memberId);
+
+
+
+        return ResponseEntity.ok(dto);
     }
 
-    public ResponseEntity<?> getMemberProfile(@RequestParam String memberId) {
-        return null;
+    @GetMapping("/getMemberProfile/{fromId}/{memberId}")
+    public ResponseEntity<MemberProfileDto> getMemberProfile(@PathVariable String fromId, @PathVariable String memberId) {
+
+        MemberProfileDto dto = null;
+        MemberDto fromMemberDto = memberService.findMemberById(fromId,memberId);
+        MemberRelationshipDto memberRelationshipDto = memberService.findMemberRelationship(fromId, memberId);
+        return ResponseEntity.ok(dto);
     }
 
-    public ResponseEntity<?> ListMember(@RequestParam String memberId) {
+    @GetMapping("/listMember/{memberId}")
+    public ResponseEntity<?> ListMember(@PathVariable String memberId) {
+
+        MemberSearchCriteriaDto memberSearchCriteriaDto = MemberSearchCriteriaDto.builder().memberId(memberId).build();
+
+//        memberService.findMemberListByCriteria(null, 0, 0);
         return null;
     }
 

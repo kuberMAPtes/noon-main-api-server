@@ -4,6 +4,8 @@ import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.common.validator.IllegalServiceCallException;
 import com.kube.noon.common.validator.ValidationChain;
 import com.kube.noon.member.domain.Member;
+import com.kube.noon.member.dto.AddMemberRelationshipDto;
+import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.exception.MemberSecurityBreachException;
 import com.kube.noon.member.repository.MemberRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +32,8 @@ public class MemberScanner {
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9!@#\\$%\\^&\\*_]{8,16}$");
     private static final Pattern URL_PATTERN = Pattern.compile("^(https?|ftp)://[^\s/$.?#].[^\s]*$", Pattern.CASE_INSENSITIVE);
     private static final Pattern BASE64_PATTERN = Pattern.compile("^data:image/(png|jpg|jpeg|gif|webp);base64,[a-zA-Z0-9+/]+={0,2}$");
-    private static final String[] IMAGE_EXTENSIONS = { "png", "jpg", "jpeg", "gif", "webp" };
+    private static final Pattern IMAGE_FILE_PATTERN = Pattern.compile("^.*\\.(png|jpg|jpeg|gif|webp)$", Pattern.CASE_INSENSITIVE);
+
 
     private final WebClient webClient;
     private final ValidationChain validationChain;
@@ -100,7 +103,20 @@ public class MemberScanner {
         }
 
     }
-
+    public void imoMemberNotSignedOff(AddMemberRelationshipDto dto) {
+        memberRepository.findMemberById(dto.getFromId())
+                .ifPresent(member -> {
+                    if (member.getSignedOff()) {
+                        throw new MemberSecurityBreachException("탈퇴한 회원입니다.");
+                    }
+                });
+        memberRepository.findMemberById(dto.getToId())
+                .ifPresent(member -> {
+                    if (member.getSignedOff()) {
+                        throw new MemberSecurityBreachException("탈퇴한 회원입니다.");
+                    }
+                });
+    }
     /**
      * 회원이 탈퇴하지 않았는지 검사
      * @param memberId
@@ -133,6 +149,31 @@ public class MemberScanner {
             throw new IllegalServiceCallException("이미 존재하는 회원 관계입니다.");
         }
     }
+    public void imoMemberIdExist(String memberId) {
+        if (memberRepository.findMemberById(memberId).isEmpty()) {
+            throw new IllegalServiceCallException("존재하지 않는 회원 아이디입니다.");
+        }
+    }
+    public void imoMemberNicknameExist(String nickname) {
+        if (memberRepository.findMemberByNickname(nickname).isEmpty()) {
+            throw new IllegalServiceCallException("존재하지 않는 회원 아이디입니다.");
+        }
+    }
+    public void imoMemberNicknameNotExist(String nickname) {
+        if (memberRepository.findMemberByNickname(nickname).isPresent()) {
+            throw new IllegalServiceCallException("이미 존재하는 닉네임입니다.");
+        }
+    }
+    public void imoMemberPhoneNumberNotExist(String phoneNumber) {
+        if (memberRepository.findMemberByPhoneNumber(phoneNumber).isPresent()) {
+            throw new IllegalServiceCallException("이미 존재하는 전화번호입니다.");
+        }
+    }
+    public void imoMemberIsAdmin(String memberId){
+        if(!memberRepository.findMemberById(memberId).get().getMemberRole().equals(Role.ADMIN)){
+            throw new IllegalServiceCallException("관리자가 아닙니다.");
+        }
+    }
     public void imoMemberIdNotExist(String memberId) {
         if (memberRepository.findMemberById(memberId).isPresent()) {
             throw new IllegalServiceCallException("이미 존재하는 회원 아이디입니다.");
@@ -143,27 +184,24 @@ public class MemberScanner {
             throw new IllegalServiceCallException("자기 자신과의 관계는 설정할 수 없습니다.");
         }
     }
-    public boolean imoMemberRelationshipAlreadyExist(String fromId, String toId) {
-        return memberRepository.findMemberRelationship(fromId, toId).isPresent();
+    public void imoNicknameNotAlreadyExist(String nickname) {
+        if (memberRepository.findMemberByNickname(nickname).isPresent()) {
+            throw new IllegalServiceCallException("이미 존재하는 닉네임입니다.");
+        }
+    }
+    public void imoPhoneNumberNotAlreadyExist(String phoneNumber) {
+        if (memberRepository.findMemberByPhoneNumber(phoneNumber).isPresent()) {
+            throw new IllegalServiceCallException("이미 존재하는 전화번호입니다.");
+        }
     }
     public void imoMemberIdPatternO(String memberId){
         if (!MEMBER_ID_PATTERN.matcher(memberId).matches()) {
             throw new IllegalServiceCallException("회원 아이디는 6자 이상 16자 이하여야 합니다.");
         }
     }
-    public void imoNicknameNotAlreadyExist(String nickname) {
-        if (memberRepository.findMemberByNickname(nickname).isPresent()) {
-            throw new IllegalServiceCallException("이미 존재하는 닉네임입니다.");
-        }
-    }
     public void imoNicknamePatternO(String nickname) {
         if (!NICKNAME_PATTERN.matcher(nickname).matches()) {
             throw new IllegalServiceCallException("형식에 맞지 않는 닉네임입니다. 닉네임은 2자 이상 20자 이하여야 합니다.");
-        }
-    }
-    public void imoPhoneNumberNotAlreadyExist(String phoneNumber) {
-        if (memberRepository.findMemberByPhoneNumber(phoneNumber).isPresent()) {
-            throw new IllegalServiceCallException("이미 존재하는 전화번호입니다.");
         }
     }
     public void imoPhoneNumberPatternO(String phoneNumber) {
@@ -177,7 +215,7 @@ public class MemberScanner {
         }
     }
     public void imoDajungScorePatternO(int dajungScore) {
-        if (dajungScore <= 0 || dajungScore >= 100) {
+        if (dajungScore < 0 || dajungScore > 100) {
             throw new IllegalServiceCallException("다정 점수는 0 이상 100이하 이어야 합니다.");
         }
     }
@@ -189,19 +227,6 @@ public class MemberScanner {
     public void imoUnlockTImePatternO(LocalDateTime unlockTime) {
         if (unlockTime.isBefore(LocalDateTime.now())) {
             throw new IllegalServiceCallException("잠금 해제 시간은 현재 시간 이후여야 합니다.");
-        }
-    }
-    public void imoImageFileNameO(String fileName) {
-        String fileExtension = getFileExtension(fileName).toLowerCase();
-        boolean isValid = false;
-        for (String extension : IMAGE_EXTENSIONS) {
-            if (fileExtension.equals(extension)) {
-                isValid = true;
-                break;
-            }
-        }
-        if (!isValid) {
-            throw new IllegalServiceCallException("유효한 이미지 파일 이름이 아닙니다.");
         }
     }
     public String getFileExtension(String fileName) {
@@ -253,41 +278,74 @@ public class MemberScanner {
             throw new IllegalServiceCallException("URL이 유효한 이미지 파일을 가리키지 않습니다.", e);
         }
     }
+
     public void imoBase64ImageO(String base64String) {
         try {
+            log.info("imoBase64ImageO 메서드 시작");
+
             String[] parts = base64String.split(",");
+            if (parts.length != 2) {
+                log.info("잘못된 Base64 형식: " + base64String);
+                throw new IllegalServiceCallException("Base64 데이터 형식이 올바르지 않습니다.");
+            }
+            log.info("Base64 문자열을 성공적으로 분할했습니다");
+
             String metadata = parts[0];
             String base64Data = parts[1];
+            log.info("메타데이터: " + metadata);
+            log.info("Base64 데이터: " + base64Data.substring(0, Math.min(30, base64Data.length())) + "..."); // Base64 데이터 일부만 출력
+
             String mimeType = metadata.split(":")[1].split(";")[0];
+            log.info("Mime 타입 추출: " + mimeType);
 
             if (!mimeType.startsWith("image/")) {
+                log.info("지원하지 않는 mime 타입: " + mimeType);
                 throw new IllegalServiceCallException("지원하지 않는 Base64 데이터 형식입니다.");
             }
+            log.info("Mime 타입이 지원됩니다");
 
             byte[] dataBytes = Base64.getDecoder().decode(base64Data);
+            log.info("Base64 데이터를 성공적으로 디코딩했습니다, 데이터 길이: " + dataBytes.length);
+
             try (InputStream inputStream = new ByteArrayInputStream(dataBytes)) {
                 BufferedImage image = ImageIO.read(inputStream);
                 if (image == null) {
+                    log.info("ImageIO.read가 null을 반환했습니다, 유효하지 않은 이미지 데이터");
                     throw new IllegalServiceCallException("Base64 데이터가 유효한 이미지 파일을 가리키지 않습니다.");
                 }
+                log.info("Base64 데이터에서 이미지를 성공적으로 읽었습니다");
             }
+        } catch (IllegalServiceCallException e) {
+            log.info("IllegalServiceCallException 발생: " + e.getMessage());
+            throw e;
         } catch (Exception e) {
+            log.info("Exception 발생: " + e.getMessage());
             throw new IllegalServiceCallException("Base64 데이터가 유효하지 않습니다.", e);
+        } finally {
+            log.info("imoBase64ImageO 메서드 실행 종료");
         }
     }
+
+
     public void imoProfilePhotoUrlPatternO(String profilePhotoString) {
 
+        // null이면 통과
+        if(profilePhotoString == null || profilePhotoString.isEmpty()){
+            return;
+        }
         // URL 패턴 검증
         if (URL_PATTERN.matcher(profilePhotoString).matches()) {
             imoImageUrlO(profilePhotoString);
+            return;
         }
         // Base64 패턴 검증
-        else if (BASE64_PATTERN.matcher(profilePhotoString).matches()) {
+        if (BASE64_PATTERN.matcher(profilePhotoString).matches()) {
             imoBase64ImageO(profilePhotoString);
+            return;
         }
         // 파일 이름 패턴 검증
-        else {
-            imoImageFileNameO(profilePhotoString);
+        if (IMAGE_FILE_PATTERN.matcher(profilePhotoString).matches()) {
+            throw new IllegalServiceCallException("유효한 이미지 파일 이름이 아닙니다.");
         }
     }
 

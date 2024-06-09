@@ -38,11 +38,11 @@ public class MemberRelationship {
     @Column(name = "activated", nullable = false)
     private Boolean activated = true;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "from_id", referencedColumnName = "member_id")
     private Member fromMember;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "to_id", referencedColumnName = "member_id")
     private Member toMember;
 

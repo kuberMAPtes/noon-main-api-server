@@ -6,7 +6,7 @@ import com.kube.noon.member.dto.UpdatePasswordDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface UpdatePasswordDtoBinder extends Binder<UpdatePasswordDto,Member> {
 
     @Override

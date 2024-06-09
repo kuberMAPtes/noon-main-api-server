@@ -54,6 +54,7 @@ public class MemberRepositoryImpl implements MemberRepository {
             throw new MemberNotFoundException("회원관계가 이미 존재합니다");
         });
         memberRelationship.setActivated(true);
+        log.info("INSERT 명령어 수행 : {}", memberRelationship);
         memberRelationshipJpaRepository.save(memberRelationship);
 
     }
@@ -157,7 +158,7 @@ public class MemberRepositoryImpl implements MemberRepository {
         }
         if (member.getSignedOff() != null) {
             newMember.setSignedOff(member.getSignedOff());
-        }
+    }
         if (member.getBuildingSubscriptionPublicRange() != null) {
             newMember.setBuildingSubscriptionPublicRange(member.getBuildingSubscriptionPublicRange());
         }

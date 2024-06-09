@@ -24,6 +24,7 @@ public class DtoEntityConverter {
 
     @Autowired
     public DtoEntityConverter(List<Binder<?, ?>> converterList) {
+//       Binder 인터페이스를 구현한 모든 빈을 찾아서 주입
         this.converterList = converterList;
     }
 
@@ -57,6 +58,14 @@ public class DtoEntityConverter {
             throw new IllegalArgumentException("지원되지 않는 DTO 타입입니다: " + dto.getClass());
         }
         return converter.toEntity(dto);
+    }
+    @SuppressWarnings("unchecked")
+    public <D, E> E toResponseDto(D dto) {
+        Binder<D, E> converter = (Binder<D, E>) converters.get(dto.getClass());
+        if (converter == null) {
+            throw new IllegalArgumentException("지원되지 않는 DTO 타입입니다: " + dto.getClass());
+        }
+        return converter.toResponseDto(dto);
     }
 
     @SuppressWarnings("unchecked")

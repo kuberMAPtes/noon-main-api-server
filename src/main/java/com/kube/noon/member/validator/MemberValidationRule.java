@@ -58,7 +58,6 @@ public class MemberValidationRule {
             memberScanner.imoDataNotNull(dto.getToId());
             memberScanner.imoDataNotNull(dto.getRelationshipType());
             memberScanner.imoMemberNotSame(dto.getFromId(), dto.getToId());
-            memberScanner.imoMemberRelationshipExist(dto.getFromId(), dto.getToId());
             /**
              * 내 dto와 db의 도메인이 Boolean빼고는 다 같으면 activated를 True로 바꾸고 update한다.
              * 내 dto와 도메인의 RelationshipType이 다르면 받은 타입으로 update한다.

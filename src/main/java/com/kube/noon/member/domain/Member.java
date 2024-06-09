@@ -18,7 +18,6 @@ public class Member {
 
     private static final String ANSI_RESET = "\u001B[0m";
     private static final String ANSI_RED = "\u001B[31m";
-
     @Id
     @Column(name = "member_id", length = 20)
     private String memberId;
@@ -28,7 +27,7 @@ public class Member {
     private Role memberRole = Role.MEMBER;
 
     @Column(name = "nickname", length = 30, unique = true, nullable = false)
-    private String nickname;
+    private String nickname;//
 
     @Column(name = "pwd", length = 5000, nullable = false)
     private String pwd;
@@ -40,13 +39,13 @@ public class Member {
     private LocalDateTime unlockTime = LocalDateTime.of(1, 1, 1, 1, 1, 1);
 
     @Column(name = "profile_photo_url", columnDefinition = "TEXT")
-    private String profilePhotoUrl;
+    private String profilePhotoUrl;//
 
     @Column(name = "profile_intro", length = 200)
-    private String profileIntro;
+    private String profileIntro;//
 
     @Column(name = "dajung_score", nullable = false, columnDefinition = "INT default 0")
-    private Integer dajungScore = 0;
+    private Integer dajungScore = 0;//
 
     @Column(name = "signed_off", nullable = false, columnDefinition = "BOOLEAN default FALSE")
     private Boolean signedOff = false;
@@ -68,7 +67,7 @@ public class Member {
 
     public String toString() {
         return ANSI_RED
-                +"Member(memberId=" + this.getMemberId()
+                + "Member(memberId=" + this.getMemberId()
                 + ", memberRole=" + this.getMemberRole()
                 + ", nickname=" + this.getNickname()
                 + ", pwd=" + this.getPwd()
@@ -93,6 +92,6 @@ public class Member {
                 + ", receivingAllNotificationAllowed="
                 + this.getReceivingAllNotificationAllowed()
                 + ")"
-                +ANSI_RESET;
+                + ANSI_RESET;
     }
 }
