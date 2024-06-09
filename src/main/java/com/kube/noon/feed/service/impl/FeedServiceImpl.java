@@ -7,6 +7,7 @@ import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.feed.service.FeedStatisticsService;
+import com.kube.noon.feed.service.FeedSubService;
 import com.kube.noon.feed.service.recommend.FeedRecommendationMemberId;
 import com.kube.noon.member.domain.Member;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,8 @@ public class FeedServiceImpl implements FeedService {
 
     private final FeedRepository feedRepository;
 
-    private final FeedStatisticsService feedStatisticsServiceImpl;
+    private final FeedSubService feedSubService;
+    private final FeedStatisticsService feedStatisticsService;
 
     @Override
     public List<FeedSummaryDto> getFeedListByMember(String memberId) {
@@ -46,7 +48,7 @@ public class FeedServiceImpl implements FeedService {
         Building building = Building.builder().buildingId(buildingId).build();
         List<Feed> entities = new ArrayList<>();
 
-        FeedRecommendationMemberId.initData(feedStatisticsServiceImpl.getMemberLikeTag());
+        FeedRecommendationMemberId.initData(feedStatisticsService.getMemberLikeTag());
         List<String> memberIdList = FeedRecommendationMemberId.getMemberLikeTagsRecommendation(memberId);
 
         // 추천 맴버가 없다면 빌딩 그대로 보여주기
