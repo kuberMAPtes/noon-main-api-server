@@ -9,6 +9,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class UpdateMemberProfilePhotoUrlDto {
 
     private String memberId;

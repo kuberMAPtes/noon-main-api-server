@@ -31,11 +31,11 @@ public interface MemberService {
 
     void updateMember(UpdateMemberDto updateMemberDto);
 
-    void updatePassword(String memberId, String newPassword);
+    void updatePassword(UpdatePasswordDto updatePasswordDto);
 
-    void updatePhoneNumber(String memberId,String newPassword);
+    void updatePhoneNumber(UpdatePhoneNumberDto updatePhoneNumberDto);
 
-    void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl);
+    void updateMemberProfilePhoto(UpdateMemberProfilePhotoUrlDto updateMemberProfilePhotoUrlDto);
 
     void updateDajungScore(String memberId, int dajungScore);
 

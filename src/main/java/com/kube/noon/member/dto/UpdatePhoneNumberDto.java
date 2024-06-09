@@ -8,10 +8,11 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class UpdatePhoneNumberDto {
 
     private String memberId;
 
-    private String PhoneNumber;
+    private String phoneNumber;
 
 }

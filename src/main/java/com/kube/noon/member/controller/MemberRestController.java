@@ -187,7 +187,6 @@ public class MemberRestController {
     // 체크 : 완료
     @PostMapping("/addMember")
     public ResponseEntity<?> addMember(@Valid @RequestBody AddMemberDto dto, BindingResult bindingResult) {
-//        try {
             System.out.println("왜 로그가 안찍혀");
             if (bindingResult.hasErrors()) {
                 System.out.println("여기는 머야");
@@ -203,70 +202,35 @@ public class MemberRestController {
             memberService.addMember(dto);
 
             return ResponseEntity.ok("회원가입 성공");
-//        }
-//        catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.CONFLICT).body("회원이 이미 존재합니다.");
-//        }
     }
 
     @PostMapping("/updatePassword")
-    public ResponseEntity<?> updatePassword() {
-
-        System.out.println("샘플서비스실행");
-//        sampleService.func1();
-        System.out.println("샘플서비스실행완료");
-//        memberService.findMemberById("member_1");
-
-//        memberService.updatePassword(memberId, newPassword);
-
-        return null;
+    public ResponseEntity<?> updatePassword(@RequestBody UpdatePasswordDto requestDto) {
+        memberService.updatePassword(requestDto);
+        return ResponseEntity.ok("비밀번호 변경 성공");
     }
 
-    public ResponseEntity<?> updatePhoneNumber(@RequestParam String memberId, @RequestParam String newPassword) {
-        memberService.updatePhoneNumber(memberId, newPassword);
+    @PostMapping("/updateNickname")
+    public ResponseEntity<?> updatePhoneNumber(@RequestBody UpdatePhoneNumberDto requestDto) {
+        memberService.updatePhoneNumber(requestDto);
         return ResponseEntity.ok("전화번호 변경 성공");
     }
 
-    @GetMapping("/updateProfilePhoto")
-    public ResponseEntity<?> updateProfilePhoto() {
-//
-//        MemberProfileDto memberProfileDto = new MemberProfileDto();
-//        memberProfileDto.setMemberId("test");
-//        memberProfileDto.setProfilePhotoUrl("test");
-//        memberProfileDto.setNickname("얍얍얍얍");
-//        redisTemplate.opsForValue().set("abc", memberProfileDto);
-//
-//        MemberProfileDto message = (MemberProfileDto) redisTemplate.opsForValue().get("abc");
-//
-//        System.out.println(message.getProfilePhotoUrl());
-//        System.out.println(message);
-//
-//        Map<String, Object> map = new HashMap<>();
-//
-//        map.put("message", message);
-//
-//        map.put("message2", memberService.findMemberById("member_1"));
-
-        return null;
+    @PostMapping("/updateProfilePhoto")
+    public ResponseEntity<?> updateProfilePhoto(@RequestBody UpdateMemberProfilePhotoUrlDto requestDto) {
+        memberService.updateMemberProfilePhoto(requestDto);
+        return ResponseEntity.ok("프로필 사진 변경 성공");
     }
-
-    public ResponseEntity<?> updateProfileIntro(@RequestParam String memberId, @RequestParam String newProfileIntro) {
-
-//        memberService.updateMember(
-//                memberService.findMemberById(memberId).map(
-//                        (member)->{
-//                            member.setProfileIntro(newProfileIntro);
-//
-//                            return MemberBinder.INSTANCE.toDto(member, MemberProfileDto.class);
-//                        }).orElseGet(()->{
-//                            return null;
-//                        })
-//        );
-        return null;
+    @PostMapping("/updateProfileIntro")
+    public ResponseEntity<?> updateProfileIntro(@RequestBody UpdateMemberProfileIntroDto requestDto) {
+        //String memberId, Stirng ProfileIntro
+        memberService.updateMemberProfileIntro(requestDto);
+        return ResponseEntity.ok("프로필 소개 변경 성공");
     }
-
-    public ResponseEntity<?> updateDajungScore(@RequestParam String memberId, @RequestParam int newDajungScore) {
-        memberService.updateDajungScore(memberId, newDajungScore);
+    @PostMapping("/updateDajungScore")
+    public ResponseEntity<?> updateDajungScore(@RequestBody UpdateDajungScoreDto requestDto) {
+        //@RequestParam String memberId, @RequestParam int newDajungScore
+        memberService.updateDajungScore(requestDto);
         return ResponseEntity.ok("다정점수 변경 성공");
     }
 

@@ -59,9 +59,9 @@ public class MemberServiceImpl implements MemberService {
             }
             memberRepository.addMember(member);
             log.info("회원 추가 성공 : DTO {}", dto);
-        } catch (DataAccessException e) {
+        } catch (MemberCreationException e) {
             log.error("회원 추가 중 오류 발생: {}", dto, e);
-            throw new MemberCreationException(String.format("회원 추가 실패: %s", dto), e);
+            throw e;  // 이미 구체적인 예외를 잡았으므로 그대로 던짐
         }
     }
 
@@ -86,9 +86,9 @@ public class MemberServiceImpl implements MemberService {
                     );
 
             log.info("회원 관계 추가 성공 : DTO {}", memberRelationship);
-        } catch (DataAccessException e) {
+        } catch (MemberRelationshipCreationException e) {
             log.error("회원 관계 추가 중 오류 발생: {}", dto, e);
-            throw new MemberRelationshipCreationException(String.format("회원 관계 추가 실패: %s", dto), e);
+            throw e;  // 이미 구체적인 예외를 잡았으므로 그대로 던짐
         }
     }
 
@@ -106,9 +106,9 @@ public class MemberServiceImpl implements MemberService {
                             }))
                     .orElse(null); // 조회된 회원이 없으면 null 반환
 
-        } catch (DataAccessException e) {
+        } catch (MemberNotFoundException e) {
             log.error("회원 조회 중 오류 발생", e);
-            throw new MemberNotFoundException(String.format("회원 조회 중 오류 발생: ID=%s", memberId), e);
+            throw e;  // 이미 구체적인 예외를 잡았으므로 그대로 던짐
         }
     }
 
@@ -116,32 +116,12 @@ public class MemberServiceImpl implements MemberService {
     public Optional<Member> findMemberById(String memberId) {
         try {
             return memberRepository.findMemberById(memberId);
-        } catch (DataAccessException e) {
+        } catch (MemberNotFoundException e) {
             log.error("회원 조회 중 오류 발생: ID={}", memberId, e);
-            throw new MemberNotFoundException(String.format("회원 조회 중 오류 발생: ID=%s", memberId), e);
+            throw e;  // 이미 구체적인 예외를 잡았으므로 그대로 던짐
         }
     }
 
-
-    /**
-     *         if(fromMemberDto.getMemberRole().equals(Role.ADMIN)){
-     *             dto = memberService.findMemberProfileById(fromId,memberId);
-     *         }else{
-     *             //어드민은 아니야? 그럼 회원관계를 따져봐야해.
-     *             //서로 같은 사람이면 바로 주면 돼
-     *             //member가 from를 차단했으면 주면 안돼
-     *             //member의 ProfilePublicRange가 Public일 때는 무조건 주면 돼
-     *             //member의 ProfilePublicRange가 Private일 때는 무조건 안주면 돼
-     *             //member의 ProfilePublicRange가 Follow일 때 from이 member를 팔로우하고 있으면 주면 돼
-     *             //member의 ProfilePublicRange가 Mutual_ONLY일 때 서로 팔로우하고 있으면 주면 돼
-     *             MemberRelationshipDto memberRelationshipDto = memberService.findMemberRelationship(fromId, memberId);
-     * //            if(memberRelationshipDto )
-     *
-     *         }
-     * @param fromId
-     * @param memberId
-     * @return
-     */
     @Override
     public MemberProfileDto findMemberProfileById(String fromId, String memberId) {
         try {
@@ -152,9 +132,9 @@ public class MemberServiceImpl implements MemberService {
                     .flatMap(fromMember -> handleProfileRetrieval(fromMember, fromId, memberId))
                     .orElse(null);  // 조건을 만족하지 않으면 null 반환
 
-        } catch (DataAccessException e) {
-            log.error("DB 접근 관련 문제 발생", e);  // DB 접근 중 오류 발생 시 로그 기록
-            throw e;  // 예외를 다시 던져 호출자에게 알림
+        } catch (MemberNotFoundException e) {
+            log.error("회원 프로필 조회 중 오류 발생: ID={}", memberId, e);
+            throw e;  // 이미 구체적인 예외를 잡았으므로 그대로 던짐
         }
     }
 
@@ -229,20 +209,17 @@ public class MemberServiceImpl implements MemberService {
                         return null;
                     });
 
-        } catch (DataAccessException e) {
-            log.error("DB 접근 관련 문제 발생", e);
-            throw e;
+        } catch (MemberNotFoundException e) {
+            log.error("회원 조회 중 오류 발생: 닉네임={}", nickname, e);
+            throw new MemberNotFoundException(String.format("회원 조회 중 오류 발생: 닉네임=%s", nickname), e);
         }
     }
 
-
     private Optional<MemberDto> handleMemberSearchByNickname(Member fromMember, String nickname, String fromId) {
         if (fromMember.getMemberRole().equals(Role.ADMIN)) {
-            // 관리자이면 모든 회원 검색 가능
             return memberRepository.findMemberByNickname(nickname)
                     .map(member -> DtoEntityBinder.INSTANCE.toDto(member, MemberDto.class));
         } else {
-            // 일반 회원인 경우 차단 여부 확인
             return memberRepository.findMemberByNickname(nickname)
                     .filter(member -> !fromMemberIsBlocked(member.getMemberId(), fromId))
                     .map(member -> DtoEntityBinder.INSTANCE.toDto(member, MemberDto.class));
@@ -254,8 +231,6 @@ public class MemberServiceImpl implements MemberService {
         return blockRelationshipDto.getRelationshipType() == RelationshipType.BLOCK;
     }
 
-
-    //전화번호로 회원찾기는 관리자만 가능
     @Override
     public MemberDto findMemberByPhoneNumberByAdmin(String fromId, String phoneNumber) {
         try {
@@ -267,12 +242,11 @@ public class MemberServiceImpl implements MemberService {
             });
 
             return DtoEntityBinder.INSTANCE.toDto(member, MemberDto.class);
-        } catch (DataAccessException e) {
-            log.error("DB 접근 관련 문제 발생", e);
-            throw e;
+        } catch (MemberNotFoundException e) {
+            log.error("회원 조회 중 오류 발생: 전화번호={}", phoneNumber, e);
+            throw new MemberNotFoundException(String.format("회원 조회 중 오류 발생: 전화번호=%s", phoneNumber), e);
         }
     }
-
 
     @Override
     public Page<MemberDto> findMemberListByCriteria(String fromId, MemberSearchCriteriaDto criteriaDto, int page, int size) {
@@ -282,9 +256,9 @@ public class MemberServiceImpl implements MemberService {
             Page<Member> memberPage = memberRepository.findMemberListByCriteria(criteriaDto, page, size);
             Page<MemberDto> memberDtoPage = memberPage.map(member -> DtoEntityBinder.INSTANCE.toDto(member, MemberDto.class));
             return memberDtoPage;
-        } catch (DataAccessException e) {
-            log.error("DB 접근 관련 문제 발생", e);
-            throw e;
+        } catch (MemberNotFoundException e) {
+            log.error("회원 리스트 조회 중 오류 발생: {}", criteriaDto, e);
+            throw new MemberNotFoundException(String.format("회원 리스트 조회 중 오류 발생: %s", criteriaDto), e);
         }
     }
 
@@ -294,9 +268,9 @@ public class MemberServiceImpl implements MemberService {
             return DtoEntityBinder.INSTANCE.toDto(memberRepository.findMemberRelationship(fromId, toId)
                             .orElse(null)
                     , MemberRelationshipDto.class);
-        } catch (DataAccessException e) {
-            log.error("DB 접근 관련 문제 발생", e);
-            throw e;
+        } catch (MemberRelationshipNotFoundException e) {
+            log.error("회원 관계 조회 중 오류 발생: fromId={}, toId={}", fromId, toId, e);
+            throw new MemberRelationshipNotFoundException(String.format("회원 관계 조회 중 오류 발생: fromId=%s, toId=%s", fromId, toId), e);
         }
     }
 
@@ -305,9 +279,9 @@ public class MemberServiceImpl implements MemberService {
         try {
             return memberRepository.findMemberRelationshipListByCriteria(criteriaDto, page, size)
                     .map(mr -> DtoEntityBinder.INSTANCE.toDto(mr, MemberRelationshipDto.class));
-        } catch (DataAccessException e) {
-            log.error("DB 접근 관련 문제 발생", e);
-            throw e;
+        } catch (MemberRelationshipNotFoundException e) {
+            log.error("회원 관계 리스트 조회 중 오류 발생: {}", criteriaDto, e);
+            throw new MemberRelationshipNotFoundException(String.format("회원 관계 리스트 조회 중 오류 발생: %s", criteriaDto), e);
         }
     }
 
@@ -316,42 +290,47 @@ public class MemberServiceImpl implements MemberService {
         try {
             log.info("회원 업데이트 중");
             memberRepository.updateMember(DtoEntityBinder.INSTANCE.toEntity(updateMemberDto));
-        } catch (DataAccessException e) {
+        } catch (MemberUpdateException e) {
+            log.error("회원 업데이트 중 오류 발생: {}", updateMemberDto, e);
             throw new MemberUpdateException("회원 업데이트 실패", e);
         }
     }
 
     @Override
-    public void updatePassword(String memberId, String newPassword) {
+    public void updatePassword(UpdatePasswordDto dto) {
         try {
+            String memberId = dto.getMemberId();
+            String newPassword = dto.getPwd();
             log.info("회원 비밀번호 업데이트 중");
-            checkMemberisSignedOff(memberId);
             memberRepository.updatePassword(memberId, newPassword);
-        } catch (DataAccessException e) {
-            throw new MemberUpdateException(String.format("회원 비밀번호 업데이트 실패! : %s", memberId), e);
+        } catch (MemberUpdateException e) {
+            log.error("회원 비밀번호 업데이트 중 오류 발생: {}", dto, e);
+            throw new MemberUpdateException(String.format("회원 비밀번호 업데이트 실패! : %s", dto), e);
         }
     }
 
     //비밀번호 변경
     @Override
-    public void updatePhoneNumber(String memberId, String newPhoneNumber) {
+    public void updatePhoneNumber(UpdatePhoneNumberDto dto) {
         try {
+            String memberId = dto.getMemberId();
+            String newPhoneNumber = dto.getPhoneNumber();
             log.info("회원 전화번호 업데이트 중 :  {}", memberId);
-            checkMemberisSignedOff(memberId);
             memberRepository.updatePhoneNumber(memberId, newPhoneNumber);
         } catch (DataAccessException e) {
-            throw new MemberUpdateException(String.format("회원 전화번호 업데이트 실패! : %s", memberId), e);
+            throw new MemberUpdateException(String.format("회원 전화번호 업데이트 실패! : %s", dto), e);
         }
     }
 
     @Override
-    public void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl) {
+    public void updateMemberProfilePhoto(UpdateMemberProfilePhotoUrlDto dto) {
         try {
+            String memberId = dto.getMemberId();
+            String newProfilePhotoUrl = dto.getProfilePhotoUrl();
             log.info("회원 프로필 사진 업데이트 중 : {}", memberId);
-            checkMemberisSignedOff(memberId);
             memberRepository.updateMemberProfilePhoto(memberId, newProfilePhotoUrl);
         } catch (DataAccessException e) {
-            throw new MemberUpdateException(String.format("회원 프로필 사진 업데이트 실패 : %s", memberId), e);
+            throw new MemberUpdateException(String.format("회원 프로필 사진 업데이트 실패 : %s", dto), e);
         }
     }
 
@@ -359,7 +338,6 @@ public class MemberServiceImpl implements MemberService {
     public void updateDajungScore(String memberId, int dajungScore) {
         try {
             log.info("회원 다정점수 업데이트 중 : {}", memberId);
-            checkMemberisSignedOff(memberId);
             memberRepository.updateMember(
                     memberRepository.findMemberById(memberId)
                             .map(member -> {
@@ -379,7 +357,6 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void deleteMemberRelationship(DeleteMemberRelationshipDto dto) {
         log.info("회원 관계 삭제 중 : {}", dto);
-        checkMemberisSignedOff(dto.getFromId());
         MemberRelationship mr = DtoEntityBinder.INSTANCE.toEntity(dto);
         mr.setActivated(false);
         memberRepository.updateMemberRelationship(mr);
@@ -389,7 +366,6 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void deleteMember(String memberId) {
         log.info("회원 삭제 중 : {}", memberId);
-        checkMemberisSignedOff(memberId);
         setMemberInitializer(memberId);
 
         log.info("회원 삭제 성공 : {}", memberId);
@@ -397,47 +373,25 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public boolean checkNickname(String nickname) {
-
-        memberRepository.findMemberByNickname(nickname)
-                .ifPresent(member -> {
-                    throw new MemberSecurityBreachException("닉네임이 중복됩니다.");
-                });
-
+        log.info("회원 닉네임 중복 확인 완료 : {}", nickname);
         return false;
     }
 
     @Override
     public boolean checkMemberId(String memberId) {
-
-        memberRepository.findMemberById(memberId)
-                .ifPresent(member -> {
-                    throw new MemberSecurityBreachException("아이디가 중복됩니다.");
-                });
-
+        log.info("회원 아이디 중복 확인 완료 : {}", memberId);
         return false;
     }
 
     @Override
     public boolean checkPassword(String memberId, String password) {
-
-        memberRepository.findMemberById(memberId)
-                .ifPresent(member -> {
-                    if (!member.getPwd().equals(password)) {
-                        throw new MemberSecurityBreachException("비밀번호가 일치하지 않습니다.");
-                    }
-                });
-
+        log.info("회원 비밀번호 확인 완료 : {}", memberId);
         return false;
     }
 
     @Override
     public boolean checkPhoneNumber(String phoneNumber) {
-
-        memberRepository.findMemberByPhoneNumber(phoneNumber)
-                .ifPresent(member -> {
-                    throw new MemberSecurityBreachException("전화번호가 중복됩니다.");
-                });
-
+        log.info("회원 전화번호 중복 확인 완료 : {}", phoneNumber);
         return false;
     }
 
@@ -448,15 +402,6 @@ public class MemberServiceImpl implements MemberService {
                         , badWordFilterAgent.getBadWordSeparator()
                 )
                 .contains("*");
-    }
-
-    private void checkMemberisSignedOff(String memberId) {
-        memberRepository.findMemberById(memberId)
-                .ifPresent(member -> {
-                    if (member.getSignedOff()) {
-                        throw new MemberSecurityBreachException("탈퇴한 회원입니다.");
-                    }
-                });
     }
 
     private void setMemberInitializer(String memberId) {
