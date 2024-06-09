@@ -53,6 +53,7 @@
         ORDER BY popularity DESC;
     </select>
 
+
     <select id = "getMemberLikeTag" resultMap="memberLikeTagMap">
         SELECT z.member_id, r.tag_text, COUNT(*) as tag_count FROM zzim z
         INNER JOIN

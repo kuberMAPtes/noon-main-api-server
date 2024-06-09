@@ -1,8 +1,7 @@
-package com.kube.noon.feed.util;
+package com.kube.noon.feed.service.recommend;
 
 import com.kube.noon.feed.dto.MemberLikeTagDto;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -37,9 +36,10 @@ public class MinMaxScaler {
 
         double finalMin = min;
         double finalMax = max;
+
         memberLikeTagDtoList.stream().forEach(s -> {
             double x = s.getTagCount();
-            double scaleNum = (x - finalMin) * (5.0 - 1.0) / (finalMax - finalMin) + 1.0;
+            double scaleNum = Math.round(((x - finalMin) * (5.0 - 1.0) / (finalMax - finalMin) + 1.0) * 10) / 10.0;
 
             s.setTagCount(scaleNum);
         });

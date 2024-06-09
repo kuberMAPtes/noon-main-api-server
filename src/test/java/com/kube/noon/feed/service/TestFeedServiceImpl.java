@@ -7,9 +7,9 @@ import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.feed.service.impl.FeedServiceImpl;
-import com.kube.noon.feed.service.recommend.FeedRecommendationService;
+import com.kube.noon.feed.service.impl.FeedStatisticsServiceImpl;
+import com.kube.noon.feed.service.recommend.FeedRecommendationMemberId;
 import lombok.extern.log4j.Log4j2;
-import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,7 +33,7 @@ public class TestFeedServiceImpl {
     private FeedRepository feedRepository;
 
     @Autowired
-    private FeedRecommendationService feedRecommendationService;
+    private FeedStatisticsServiceImpl feedStatisticsServiceImpl;
 
     /**
      * 피드 목록을 가져오는 테스트를 한다.
@@ -49,7 +49,7 @@ public class TestFeedServiceImpl {
             log.info(feedSummaryDto);
         }
 
-        List<FeedSummaryDto> feedListByBuilding = feedServiceImpl.getFeedListByBuilding(10000);
+        List<FeedSummaryDto> feedListByBuilding = feedServiceImpl.getFeedListByBuilding("member_3", 10001);
         assertThat(feedListByBuilding).isNotNull();
         assertThat(feedListByBuilding.size()).isGreaterThan(0);
         for (FeedSummaryDto feedSummaryDto : feedListByBuilding) {
@@ -217,5 +217,22 @@ public class TestFeedServiceImpl {
         int afterViewCnt = afterViewCntDto.getViewCnt().intValue();
 
         assertThat(afterViewCnt).isEqualTo(beforeViewCnt + 1);
+    }
+
+    /**
+     * 유저와 비슷한 성향을 가진 유저 이름 추천 -> 피드 추천 알고리즘 생성 시 사용함
+     */
+    @Transactional
+    @Test
+    public void getMeberLikeTagsRecommendationTest() {
+        FeedRecommendationMemberId.initData(feedStatisticsServiceImpl.getMemberLikeTag());
+        List<String> memberIdList = FeedRecommendationMemberId.getMemberLikeTagsRecommendation("member_1");
+
+        if(memberIdList == null || memberIdList.isEmpty()) {
+            assertThat(false).isTrue();
+        } else {
+            assertThat(memberIdList.size()).isGreaterThan(0);
+            memberIdList.stream().forEach(System.out::println);
+        }
     }
 }
