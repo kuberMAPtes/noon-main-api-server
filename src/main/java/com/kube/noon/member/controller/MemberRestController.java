@@ -1,6 +1,9 @@
 package com.kube.noon.member.controller;
 
+import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.member.dto.*;
+import com.kube.noon.member.dto.RequestDto.MemberRelationshipSearchCriteriaRequestDto;
+import com.kube.noon.member.dto.RequestDto.MemberSearchCriteriaRequestDto;
 import com.kube.noon.member.enums.LoginFlag;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
@@ -8,6 +11,8 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +32,12 @@ public class MemberRestController {
     @Qualifier("memberServiceImpl")
     private MemberService memberService;
 
-//    @Autowired
-//    private SampleService sampleService;
+    @Value("${pageUnit}")
+    int pageUnit;
+
+    @Value("${pageSize}")
+    int pageSize;
+
 
     @Autowired
     @Qualifier("loginAttemptCheckerAgent")
@@ -276,42 +285,71 @@ public class MemberRestController {
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/getMemberProfile/{fromId}/{memberId}")
-    public ResponseEntity<MemberProfileDto> getMemberProfile(@PathVariable String fromId, @PathVariable String memberId) {
+    @GetMapping("/getMemberProfile/{fromId}/{toId}")
+    public ResponseEntity<MemberProfileDto> getMemberProfile(@PathVariable String fromId, @PathVariable String toId) {
 
         MemberProfileDto dto = null;
-        MemberDto fromMemberDto = memberService.findMemberById(fromId,memberId);
-        MemberRelationshipDto memberRelationshipDto = memberService.findMemberRelationship(fromId, memberId);
+        MemberDto fromMemberDto = memberService.findMemberById(fromId, toId);
+        MemberRelationshipDto memberRelationshipDto = memberService.findMemberRelationship(fromId, toId);
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/listMember/{memberId}")
-    public ResponseEntity<?> ListMember(@PathVariable String memberId) {
-
-        MemberSearchCriteriaDto memberSearchCriteriaDto = MemberSearchCriteriaDto.builder().memberId(memberId).build();
-
-//        memberService.findMemberListByCriteria(null, 0, 0);
-        return null;
+    @PostMapping("/listMember")
+    public ResponseEntity<Page<MemberDto>> listMember(@RequestBody MemberSearchCriteriaRequestDto requestDto) {
+        try {
+            MemberSearchCriteriaDto memberSearchCriteriaDto = DtoEntityBinder.INSTANCE.toOtherDto(requestDto);
+            Page<MemberDto> members = memberService.findMemberListByCriteria(requestDto.getMemberId(),memberSearchCriteriaDto, pageUnit, pageSize);
+            return ResponseEntity.ok(members);
+        } catch (Exception e) {
+            log.error("ID가 {}인 회원 목록을 조회하는 중 오류 발생", requestDto.getMemberId(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
-    public ResponseEntity<?> updateMember(@RequestParam String memberId) {
-        return null;
+    @PostMapping("/deleteMember/{memberId}")
+    public ResponseEntity<String> deleteMember(@PathVariable String memberId) {
+        try {
+            memberService.deleteMember(memberId);
+            return ResponseEntity.ok("회원이 성공적으로 삭제되었습니다.");
+        } catch (Exception e) {
+            log.error("ID가 {}인 회원을 삭제하는 중 오류 발생", memberId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("회원 삭제 중 오류 발생");
+        }
     }
 
-    public ResponseEntity<?> deleteMember(@RequestParam String memberId) {
-        return null;
+    @PostMapping("/addMemberRelationship")
+    public ResponseEntity<String> addMemberRelationship(@RequestBody AddMemberRelationshipDto dto) {
+        try {
+            memberService.addMemberRelationship(dto);
+            return ResponseEntity.ok("회원 관계가 성공적으로 추가되었습니다.");
+        } catch (Exception e) {
+            log.error("ID가 {}에서 {}로의 회원 관계를 추가하는 중 오류 발생", dto.getFromId(), dto.getToId(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("회원 관계 추가 중 오류 발생");
+        }
     }
 
-    public ResponseEntity<?> addMemberRelationship(@RequestParam String memberId) {
-        return null;
+    @PostMapping("/getMemberRelationshipList")
+    public ResponseEntity<Page<MemberRelationshipDto>> getMemberRelationshipList(@RequestBody MemberRelationshipSearchCriteriaRequestDto requestDto) {
+        try {
+            MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto = DtoEntityBinder.INSTANCE.toOtherDto(requestDto);
+            Page<MemberRelationshipDto> relationships = memberService.findMemberRelationshipListByCriteria(requestDto.getFromId(),memberRelationshipSearchCriteriaDto, pageUnit, pageSize);
+            return ResponseEntity.ok(relationships);
+        } catch (Exception e) {
+            log.error("ID가 {}에서 {}로의 회원 관계 목록을 조회하는 중 오류 발생", requestDto.getFromId(), requestDto.getMemberId(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
-    public ResponseEntity<?> getMemberRelationshipList(@RequestParam String memberId) {
-        return null;
-    }
+    @PostMapping("/deleteMemberRelationship/{fromId}/{toId}")
+    public ResponseEntity<String> deleteMemberRelationship(@RequestBody DeleteMemberRelationshipDto requestDto) {
+        try {
 
-    public ResponseEntity<?> deleteMemberRelationship(@RequestParam String memberId) {
-        return null;
+            memberService.deleteMemberRelationship(requestDto);
+            return ResponseEntity.ok("회원 관계가 성공적으로 삭제되었습니다.");
+        } catch (Exception e) {
+            log.error("ID가 {}에서 {}로의 회원 관계를 삭제하는 중 오류 발생", requestDto.getFromId(), requestDto.getToId(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("회원 관계 삭제 중 오류 발생");
+        }
     }
 
 

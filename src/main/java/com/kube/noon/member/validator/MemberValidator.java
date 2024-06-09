@@ -59,18 +59,18 @@ public class MemberValidator {
         memberScanner.imoDataNotNull(phoneNumber);
         memberScanner.imoMemberIdExist(fromId);
     }
-    public void findMemberListByCriteria(String fromId, MemberSearchCriteriaDto searchDto) {
+    public void findMemberListByCriteria(String fromId, MemberSearchCriteriaDto searchDto, int page, int size) {
         memberScanner.imoDataNotNull(fromId);
         memberScanner.imoDataNotNull(searchDto);
 
     }
-    public void findMemberRelationshipListByCriteria(String fromId, MemberRelationshipSearchCriteriaDto searchDto) {
-        memberScanner.imoDataNotNull(fromId);
-        memberScanner.imoDataNotNull(searchDto);
-    }
     public void findMemberRelationship(String fromId, String toId) {
         memberScanner.imoDataNotNull(fromId);
         memberScanner.imoDataNotNull(toId);
+    }
+    public void findMemberRelationshipListByCriteria(String fromId, MemberRelationshipSearchCriteriaDto searchDto,int page,int size) {
+        memberScanner.imoDataNotNull(fromId);
+        memberScanner.imoDataNotNull(searchDto);
     }
     public void updateMember(UpdateMemberDto updateMemberDto) {
         memberScanner.imoDtoFieldO(updateMemberDto);
@@ -126,8 +126,8 @@ public class MemberValidator {
         memberScanner.imoMemberIdNotExist(memberId);
     }
 
-    public void checkPassword(String email, String password) {
-        memberScanner.imoDataNotNull(email);
+    public void checkPassword(String memberId, String password) {
+        memberScanner.imoDataNotNull(memberId);
         memberScanner.imoDataNotNull(password);
         memberScanner.imoPwdPatternO(password);
     }

@@ -1,4 +1,4 @@
-package com.kube.noon.member.binder.mapper;
+package com.kube.noon.member.binder.mapper.toMember;
 
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.UpdateMemberDto;

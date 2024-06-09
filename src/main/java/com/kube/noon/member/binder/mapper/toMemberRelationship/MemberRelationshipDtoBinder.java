@@ -1,4 +1,4 @@
-package com.kube.noon.member.binder.mapper;
+package com.kube.noon.member.binder.mapper.toMemberRelationship;
 
 
 import com.kube.noon.common.binder.Binder;

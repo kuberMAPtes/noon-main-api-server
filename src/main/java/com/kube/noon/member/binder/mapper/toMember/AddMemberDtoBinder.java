@@ -1,18 +1,16 @@
-package com.kube.noon.member.binder.mapper;
+package com.kube.noon.member.binder.mapper.toMember;
 
 import com.kube.noon.common.binder.Binder;
 import com.kube.noon.member.domain.Member;
-import com.kube.noon.member.dto.UpdatePasswordDto;
+import com.kube.noon.member.dto.AddMemberDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
-public interface UpdatePasswordDtoBinder extends Binder<UpdatePasswordDto,Member> {
+public interface AddMemberDtoBinder extends Binder<AddMemberDto,Member> {
 
     @Override
     @Mapping(target = "memberRole", ignore = true)
-    @Mapping(target = "nickname", ignore = true)
-    @Mapping(target = "phoneNumber", ignore = true)
     @Mapping(target = "unlockTime", ignore = true)
     @Mapping(target = "profilePhotoUrl", ignore = true)
     @Mapping(target = "profileIntro", ignore = true)
@@ -22,10 +20,9 @@ public interface UpdatePasswordDtoBinder extends Binder<UpdatePasswordDto,Member
     @Mapping(target = "allFeedPublicRange", ignore = true)
     @Mapping(target = "memberProfilePublicRange", ignore = true)
     @Mapping(target = "receivingAllNotificationAllowed", ignore = true)
-    Member toEntity(UpdatePasswordDto dto);
+    Member toEntity(AddMemberDto dto);
 
     @Override
-    UpdatePasswordDto toDto(Member member);
-
+    AddMemberDto toDto(Member member);
 
 }

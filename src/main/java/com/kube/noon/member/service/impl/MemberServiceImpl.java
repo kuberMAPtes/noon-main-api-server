@@ -336,11 +336,11 @@ public class MemberServiceImpl implements MemberService {
 
     //비밀번호 변경
     @Override
-    public void updatePhoneNumber(String memberId, String newPassword) {
+    public void updatePhoneNumber(String memberId, String newPhoneNumber) {
         try {
             log.info("회원 전화번호 업데이트 중 :  {}", memberId);
             checkMemberisSignedOff(memberId);
-            memberRepository.updatePhoneNumber(memberId, newPassword);
+            memberRepository.updatePhoneNumber(memberId, newPhoneNumber);
         } catch (DataAccessException e) {
             throw new MemberUpdateException(String.format("회원 전화번호 업데이트 실패! : %s", memberId), e);
         }

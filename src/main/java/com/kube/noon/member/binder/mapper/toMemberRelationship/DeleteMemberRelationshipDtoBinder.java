@@ -1,26 +1,25 @@
-package com.kube.noon.member.binder.mapper;
+package com.kube.noon.member.binder.mapper.toMemberRelationship;
 
 import com.kube.noon.common.binder.Binder;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
-import com.kube.noon.member.dto.AddMemberRelationshipDto;
+import com.kube.noon.member.dto.DeleteMemberRelationshipDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring")
-public interface AddMemberRelationshipDtoBinder extends Binder<AddMemberRelationshipDto, MemberRelationship> {
+public interface DeleteMemberRelationshipDtoBinder extends Binder<DeleteMemberRelationshipDto, MemberRelationship> {
 
     @Override
     @Mapping(target = "fromMember", source = "fromId", qualifiedByName = "toMemberEntity")
     @Mapping(target = "toMember", source = "toId", qualifiedByName = "toMemberEntity")
-    MemberRelationship toEntity(AddMemberRelationshipDto dto);
+    MemberRelationship toEntity(DeleteMemberRelationshipDto dto);
 
     @Override
     @Mapping(source = "fromMember.memberId", target = "fromId")
     @Mapping(source = "toMember.memberId", target = "toId")
-    AddMemberRelationshipDto toDto(MemberRelationship memberRelationship);
-
+    DeleteMemberRelationshipDto toDto(MemberRelationship memberRelationship);
     /**
      * source > memberId target > Member로 메서드를 호출한다.
      * @param memberId
@@ -36,5 +35,3 @@ public interface AddMemberRelationshipDtoBinder extends Binder<AddMemberRelation
         return member;
     }
 }
-
-
