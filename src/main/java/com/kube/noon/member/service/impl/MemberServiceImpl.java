@@ -9,10 +9,7 @@ import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.*;
 import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.enums.Role;
-import com.kube.noon.member.exception.MemberNotFoundException;
-import com.kube.noon.member.exception.MemberRelationshipUpdateException;
-import com.kube.noon.member.exception.MemberSecurityBreachException;
-import com.kube.noon.member.exception.MemberUpdateException;
+import com.kube.noon.member.exception.*;
 import com.kube.noon.member.repository.MemberRepository;
 import com.kube.noon.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -48,9 +45,9 @@ public class MemberServiceImpl implements MemberService {
         try {
             log.info("회원 추가 중 : DTO {}", dto);
             Member member = DtoEntityBinder.INSTANCE.toEntity(dto);
-            System.out.println("서비스에서 member 검증" + member);
+            log.info("서비스에서 member 검증: {}", member);
 
-            //탈퇴된 회원이 다시 회원가입하면 탈퇴상태를 변경 member는 Dto에서 받아온 member
+            // 탈퇴된 회원이 다시 회원가입하면 탈퇴상태를 변경
             memberRepository.findMemberById(member.getMemberId()).ifPresent(memb -> {
                 if (memb.getSignedOff()) {
                     memberRepository.updateMember(member);
@@ -63,11 +60,12 @@ public class MemberServiceImpl implements MemberService {
             memberRepository.addMember(member);
             log.info("회원 추가 성공 : DTO {}", dto);
         } catch (DataAccessException e) {
-            throw new MemberUpdateException(String.format("회원 추가 실패 : %s", dto), e);
+            log.error("회원 추가 중 오류 발생: {}", dto, e);
+            throw new MemberCreationException(String.format("회원 추가 실패: %s", dto), e);
         }
     }
 
-    @Override//팔로우 or 차단
+    @Override
     public void addMemberRelationship(AddMemberRelationshipDto dto) {
         try {
             log.info("회원 관계 추가 중 : DTO {}", dto);
@@ -77,11 +75,11 @@ public class MemberServiceImpl implements MemberService {
 
             memberRepository.findMemberRelationship(dto.getFromId(), dto.getToId())
                     .ifPresentOrElse(
-                            mr -> {//관계가 있었던 경우
+                            mr -> {
                                 log.info("업데이트 합니다");
                                 memberRepository.updateMemberRelationship(memberRelationship);
-
-                            }, () -> {//관계가 없었던 경우
+                            },
+                            () -> {
                                 log.info("관계를 추가합니다.");
                                 memberRepository.addMemberRelationship(memberRelationship);
                             }
@@ -89,16 +87,11 @@ public class MemberServiceImpl implements MemberService {
 
             log.info("회원 관계 추가 성공 : DTO {}", memberRelationship);
         } catch (DataAccessException e) {
-            throw new MemberRelationshipUpdateException(String.format("회원 관계 추가 실패 : %s", dto), e);
+            log.error("회원 관계 추가 중 오류 발생: {}", dto, e);
+            throw new MemberRelationshipCreationException(String.format("회원 관계 추가 실패: %s", dto), e);
         }
     }
 
-    /**
-     * 상세정보찾기 자기자신만 조회가능.
-     * @param fromId
-     * @param memberId
-     * @return
-     */
     @Override
     public MemberDto findMemberById(String fromId, String memberId) {
         try {
@@ -108,20 +101,25 @@ public class MemberServiceImpl implements MemberService {
                     .filter(fromMember -> fromMember.getMemberRole().equals(Role.ADMIN) || fromId.equals(memberId))
                     .flatMap(fromMember -> memberRepository.findMemberById(memberId)
                             .map(member -> {
-                                // Member 엔티티를 MemberDto로 변환하는 로직
                                 MemberDto memberDto = DtoEntityBinder.INSTANCE.toDto(member, MemberDto.class);
                                 return memberDto;
                             }))
                     .orElse(null); // 조회된 회원이 없으면 null 반환
 
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             log.error("회원 조회 중 오류 발생", e);
-            return null; // 오류 발생 시 null 반환 또는 다른 예외 처리 가능
+            throw new MemberNotFoundException(String.format("회원 조회 중 오류 발생: ID=%s", memberId), e);
         }
     }
+
     @Override
     public Optional<Member> findMemberById(String memberId) {
-        return memberRepository.findMemberById(memberId);
+        try {
+            return memberRepository.findMemberById(memberId);
+        } catch (DataAccessException e) {
+            log.error("회원 조회 중 오류 발생: ID={}", memberId, e);
+            throw new MemberNotFoundException(String.format("회원 조회 중 오류 발생: ID=%s", memberId), e);
+        }
     }
 
 

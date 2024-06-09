@@ -5,6 +5,7 @@ import com.kube.noon.member.dto.*;
 import com.kube.noon.member.dto.RequestDto.MemberRelationshipSearchCriteriaRequestDto;
 import com.kube.noon.member.dto.RequestDto.MemberSearchCriteriaRequestDto;
 import com.kube.noon.member.enums.LoginFlag;
+import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
 import jakarta.validation.Valid;
@@ -307,13 +308,15 @@ public class MemberRestController {
     }
 
     @PostMapping("/deleteMember/{memberId}")
-    public ResponseEntity<String> deleteMember(@PathVariable String memberId) {
+    public ResponseEntity<ApiResponse<Void>> deleteMember(@PathVariable String memberId) {
         try {
             memberService.deleteMember(memberId);
-            return ResponseEntity.ok("회원이 성공적으로 삭제되었습니다.");
+            ApiResponse<Void> response = ApiResponseFactory.createResponse("회원이 성공적으로 삭제되었습니다.", null);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("ID가 {}인 회원을 삭제하는 중 오류 발생", memberId, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("회원 삭제 중 오류 발생");
+            ApiResponse<Void> response = ApiResponseFactory.createErrorResponse("회원 삭제 중 오류 발생");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
@@ -341,15 +344,28 @@ public class MemberRestController {
     }
 
     @PostMapping("/deleteMemberRelationship/{fromId}/{toId}")
-    public ResponseEntity<String> deleteMemberRelationship(@RequestBody DeleteMemberRelationshipDto requestDto) {
+    public ResponseEntity<ApiResponse<Void>> deleteMemberRelationship(
+            @RequestBody DeleteMemberRelationshipDto requestDto) {
         try {
+            // JWT 토큰 검증
+            String fromId = validateJwtToken(RequestContext.getAuthorization());
 
+            requestDto.setFromId(fromId);
             memberService.deleteMemberRelationship(requestDto);
-            return ResponseEntity.ok("회원 관계가 성공적으로 삭제되었습니다.");
+            String message = requestDto.getRelationshipType() == RelationshipType.FOLLOW ? "팔로우가 해제되었습니다." : "차단이 해제되었습니다.";
+            ApiResponse<Void> response = ApiResponseFactory.createResponse(message, null);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("ID가 {}에서 {}로의 회원 관계를 삭제하는 중 오류 발생", requestDto.getFromId(), requestDto.getToId(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("회원 관계 삭제 중 오류 발생");
+            ApiResponse<Void> response = ApiResponseFactory.createErrorResponse("회원 관계 삭제 중 오류 발생");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
+    }
+
+    private String validateJwtToken(String token) {
+        // JWT 토큰 검증 로직 구현
+        // 유효한 토큰이면 사용자 ID를 반환하고, 그렇지 않으면 예외를 던집니다.
+        return "member_100"; // 예시로 사용자 ID 반환
     }
 
 

@@ -95,7 +95,7 @@ public class MemberValidationRule {
                 memberScanner.imoProfileIntroPatternO(dto.getProfileIntro());
             }
             if(dto.getUnlockTime()!=null){
-                memberScanner.imoUnlockTImePatternO(dto.getUnlockTime());
+                memberScanner.imoUnlockTimePatternO(dto.getUnlockTime());
             }
             //레인지는 정할 룰이 없다.
             //알람설정은 정할 룰이 없다.
