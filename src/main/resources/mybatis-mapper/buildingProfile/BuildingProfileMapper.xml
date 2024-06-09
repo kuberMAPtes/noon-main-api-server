@@ -18,7 +18,7 @@
         <id property="memberId" column="member_id"/>
         <result property="memberRole" column="member_role"/>
         <result property="nickname" column="nickname"/>
-        <result property="password" column="pwd"/>
+        <result property="pwd" column="pwd"/>
         <result property="phoneNumber" column="phone_number"/>
         <result property="unlockTime" column="unlock_time"/>
         <result property="profilePhotoUrl" column="profile_photo_url"/>
