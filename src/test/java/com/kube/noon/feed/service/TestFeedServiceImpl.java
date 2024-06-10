@@ -135,9 +135,7 @@ public class TestFeedServiceImpl {
     @Transactional
     @Test
     public void deleteFeedTest() {
-        FeedDto deleteFeed = feedServiceImpl.getFeedById(10000);
-
-        int feedId = feedServiceImpl.deleteFeed(deleteFeed);
+        int feedId = feedServiceImpl.deleteFeed(10000);
 
         // 지워진 피드는 Repository 내에서 확인 가능하다.
         Feed getFeed = feedRepository.findByFeedId(feedId);

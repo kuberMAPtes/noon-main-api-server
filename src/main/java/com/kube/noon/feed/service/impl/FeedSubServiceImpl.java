@@ -164,7 +164,7 @@ public class FeedSubServiceImpl implements FeedSubService {
     @Override
     public int addFeedComment(FeedCommentDto feedCommentDto) {
         FeedComment addFeedComment = FeedCommentDto.toEntity(feedCommentDto);
-
+        addFeedComment.setActivated(true);
         return feedCommentRepository.save(addFeedComment).getCommentId();
     }
 

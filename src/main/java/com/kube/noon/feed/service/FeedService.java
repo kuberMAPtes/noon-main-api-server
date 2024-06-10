@@ -38,7 +38,7 @@ public interface FeedService {
     int updateFeed(FeedDto feedDto);
 
     // 피드를 삭제한다.
-    int deleteFeed(FeedDto feedDto);
+    int deleteFeed(int feedId);
 
     // 피드 하나를 상세보기한다.
     FeedDto getFeedById(int feedId);

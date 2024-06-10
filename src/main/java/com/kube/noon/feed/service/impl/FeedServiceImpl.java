@@ -139,8 +139,8 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional
     @Override
-    public int deleteFeed(FeedDto feedDto) {
-        Feed deleteFeed = feedRepository.findByFeedId(feedDto.getFeedId());
+    public int deleteFeed(int feedId) {
+        Feed deleteFeed = feedRepository.findByFeedId(feedId);
 
         deleteFeed.setActivated(false);
         return feedRepository.save(deleteFeed).getFeedId();
@@ -176,6 +176,12 @@ public class FeedServiceImpl implements FeedService {
 
         // 2. 새로운 대표 피드 등록
         Feed setMainFeed = feedRepository.findByFeedId(feedDto.getFeedId());
+
+        // 만약 피드가 없거나 자신의 피드가 아니라면 -1 반환
+        if(setMainFeed == null || !setMainFeed.getWriter().equals(feedDto.getWriterId())) {
+            return -1;
+        }
+
         setMainFeed.setMainActivated(true);
         return feedRepository.save(setMainFeed).getFeedId();
     }

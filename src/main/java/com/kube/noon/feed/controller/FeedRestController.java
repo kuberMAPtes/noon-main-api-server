@@ -70,9 +70,9 @@ public class FeedRestController {
         return feedId;
     }
 
-    @PostMapping("/deleteFeed")
-    public int deleteFeed(@RequestBody FeedDto feedDto) {
-        int deleteFeedId = feedService.deleteFeed(feedDto);
+    @PostMapping("/deleteFeed/{feedId}")
+    public int deleteFeed(@PathVariable int feedId) {
+        int deleteFeedId = feedService.deleteFeed(feedId);
 
         return deleteFeedId;
     }
@@ -84,6 +84,7 @@ public class FeedRestController {
         return getFeedDto;
     }
 
+    // 필요 조건 : feedId, memberId
     @PostMapping("/setMainFeed")
     public int setMainFeed(@RequestBody FeedDto feedDto) {
         int mainFeedId = feedService.setMainFeed(feedDto);
@@ -105,7 +106,7 @@ public class FeedRestController {
         return cntUpFeedId;
     }
 
-    @GetMapping("/feedAttachmentList/{feedId}")
+    @GetMapping("/getFeedAttachmentList/{feedId}")
     public List<FeedAttachmentDto> getFeedAttachmentList(@PathVariable("feedId") int feedId) {
         List<FeedAttachmentDto> result = feedSubService.getFeedAttachmentList(feedId);
 
@@ -119,9 +120,9 @@ public class FeedRestController {
         return attachmentId;
     }
 
-    @PostMapping("/deleteFeedAttachment")
-    public int deleteFeedAttachment(@RequestBody FeedAttachmentDto feedAttachmentDto) {
-        int deleteAttachmentId = feedSubService.deleteFeedAttachment(feedAttachmentDto.getAttachmentId());
+    @PostMapping("/deleteFeedAttachment/{attachmentId}")
+    public int deleteFeedAttachment(@PathVariable("attachmentId") int attachmentId) {
+        int deleteAttachmentId = feedSubService.deleteFeedAttachment(attachmentId);
 
         return deleteAttachmentId;
     }
@@ -162,7 +163,7 @@ public class FeedRestController {
         return zzimId;
     }
 
-    @GetMapping("/feedLikeList/{feedId}")
+    @GetMapping("/getFeedLikeList/{feedId}")
     public List<FeedLIkeMemberDto> getFeedLikeList(@PathVariable("feedId") int feedId) {
         return feedSubService.getFeedLikeList(feedId);
     }
@@ -172,7 +173,7 @@ public class FeedRestController {
         return feedSubService.addFeedComment(feedCommentDto);
     }
 
-    @PostMapping("/deleteFeedList/{commentId}")
+    @PostMapping("/deleteFeedComment/{commentId}")
     public int deleteFeedComment(@PathVariable("commentId") int commentId) {
         return feedSubService.deleteFeedComment(commentId);
     }
@@ -187,18 +188,14 @@ public class FeedRestController {
         return feedSubService.getFeedTagList(feedId);
     }
 
-    @PostMapping("/addFeedTag/{feedId}/{tagText}")
-    public int addFeedTag(
-            @PathVariable("feedId") int feedId,
-            @PathVariable("tagText") String memberId) {
-        return feedSubService.addFeedTag(feedId, memberId);
+    @PostMapping("/addFeedTag")
+    public int addFeedTag(@RequestBody AddTagDto addTagDto) {
+        return feedSubService.addFeedTag(addTagDto.getFeedId(), addTagDto.getTagText());
     }
 
-    @PostMapping("/deleteFeedTag/{feedId}/{tagText}")
-    public int deleteFeedTag(
-            @PathVariable("feedId") int feedId,
-            @PathVariable("tagText") String memberId) {
-        return feedSubService.addFeedTag(feedId, memberId);
+    @PostMapping("/deleteFeedTag")
+    public int deleteFeedTag(@RequestBody AddTagDto addTagDto) {
+        return feedSubService.addFeedTag(addTagDto.getFeedId(), addTagDto.getTagText());
     }
 
     @GetMapping("/feedViewCuntByBuilding/{buildingId}")
