@@ -16,6 +16,8 @@ import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.member.dto.MemberRelationshipDto;
+import com.kube.noon.notification.domain.NotificationType;
+import com.kube.noon.notification.dto.NotificationDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -58,9 +60,11 @@ public class CustomerSupportRestController {
 
         log.info("reportProcessingDto={}",reportProcessingDto);
 
-        ///////////////////////////////////////////처리되었다고 문자 알림 추가.
-
         reportProcessingDto.setReportedTime(LocalDateTime.now());
+
+        //신고 처리 알림
+        customerSupportService.sendReportNotification(reportProcessingDto);
+
         return customerSupportService.updateReport(reportProcessingDto);
     }
 

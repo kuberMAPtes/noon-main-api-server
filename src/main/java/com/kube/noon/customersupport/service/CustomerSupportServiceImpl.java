@@ -2,7 +2,6 @@ package com.kube.noon.customersupport.service;
 
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.common.FileType;
-import com.kube.noon.common.ObjectStorageAWS3S;
 import com.kube.noon.customersupport.domain.Report;
 import com.kube.noon.customersupport.dto.notice.NoticeDto;
 import com.kube.noon.customersupport.dto.report.ReportDto;
@@ -18,10 +17,13 @@ import com.kube.noon.feed.repository.FeedAttachmentRepository;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.UpdateMemberDto;
 import com.kube.noon.member.service.MemberService;
+import com.kube.noon.notification.domain.NotificationType;
+import com.kube.noon.notification.dto.NotificationDto;
+import com.kube.noon.notification.service.NotificationServiceImpl;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +41,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class CustomerSupportServiceImpl implements CustomerSupportService{
 
 
@@ -48,23 +51,7 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
     private final AttachmentFilteringRepository attachmentFilteringRepository;
     private final FeedAttachmentRepository feedAttachmentRepository;
     private final NoticeRepository noticeRepository;
-    private final String bucketName;
-    private final ObjectStorageAWS3S objectStorageAWS3S;
-
-
-    public CustomerSupportServiceImpl(
-            ReportRepository reportRepository,
-            MemberService memberService, AttachmentFilteringRepository attachmentFilteringRepository, FeedAttachmentRepository feedAttachmentRepository, NoticeRepository noticeRepository,
-            @Value("${bucket.name}") String bucketName,
-            ObjectStorageAWS3S objectStorageAWS3S) {
-        this.reportRepository = reportRepository;
-        this.memberService = memberService;
-        this.attachmentFilteringRepository = attachmentFilteringRepository;
-        this.feedAttachmentRepository = feedAttachmentRepository;
-        this.noticeRepository = noticeRepository;
-        this.bucketName = bucketName;
-        this.objectStorageAWS3S = objectStorageAWS3S;
-    }
+    private final NotificationServiceImpl notificationService;
 
 
     /**
@@ -283,6 +270,17 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
 
 
         return filteredList;
+    }
+
+    @Override
+    public void sendReportNotification(ReportProcessingDto reportProcessingDto) {
+
+        NotificationDto notificationDto = new NotificationDto();
+        notificationDto.setReceiverId(reportProcessingDto.getReporterId());
+        notificationDto.setNotificationType(NotificationType.REPORT);
+        notificationDto.setNotificationText(reportProcessingDto.getProcessingText());
+
+        notificationService.sendNotification(notificationDto);
     }
 
 

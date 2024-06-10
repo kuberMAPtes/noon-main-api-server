@@ -1,6 +1,5 @@
 package com.kube.noon.customersupport.service;
 
-import com.kube.noon.customersupport.domain.Report;
 import com.kube.noon.customersupport.dto.notice.NoticeDto;
 import com.kube.noon.customersupport.dto.report.ReportDto;
 import com.kube.noon.customersupport.dto.report.ReportProcessingDto;
@@ -27,5 +26,5 @@ public interface CustomerSupportService {
     List<FeedAttachmentDto> getFilteredListByAI();
     List<FeedAttachmentDto> getFilteredListByAIAndPageable(int pageNumber);
 
-
+    void sendReportNotification(ReportProcessingDto reportProcessingDto);
 }
