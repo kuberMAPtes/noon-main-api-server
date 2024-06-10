@@ -21,6 +21,12 @@
         <result property = "popularity" column = "popularity" jdbcType = "NUMERIC"/>
     </resultMap>
 
+    <resultMap id = "memberLikeTagMap" type = "com.kube.noon.feed.dto.MemberLikeTagDto">
+        <result property = "memberId" column = "member_id" jdbcType = "VARCHAR"/>
+        <result property = "tagText" column = "tag_text" jdbcType = "VARCHAR"/>
+        <result property = "tagCount" column = "tag_count" jdbcType = "NUMERIC"/>
+    </resultMap>
+
     <select id = "getFeedViewCntByBuilding" parameterType = "int" resultMap = "feedViewCntByBuildingMap">
         SELECT feed_id, title, view_cnt from feed  WHERE building_id = #{buildingId} ORDER BY view_cnt desc limit 5;
     </select>
@@ -45,5 +51,17 @@
         ) bookmarks ON f.feed_id = bookmarks.feed_id
         WHERE building_id = #{buildingId}
         ORDER BY popularity DESC;
+    </select>
+
+
+    <select id = "getMemberLikeTag" resultMap="memberLikeTagMap">
+        SELECT z.member_id, r.tag_text, COUNT(*) as tag_count FROM zzim z
+        INNER JOIN
+            (SELECT f.feed_id, t.*
+             FROM tag t
+             INNER JOIN tag_feed f ON f.tag_id = t.tag_id) r
+        ON r.feed_id = z.feed_id
+        WHERE z.zzim_type = 'LIKE'
+        GROUP BY r.tag_text, z.member_id;
     </select>
 </mapper>

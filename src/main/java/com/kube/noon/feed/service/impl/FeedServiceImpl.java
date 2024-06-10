@@ -6,13 +6,18 @@ import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.feed.service.FeedService;
+import com.kube.noon.feed.service.FeedStatisticsService;
+import com.kube.noon.feed.service.FeedSubService;
+import com.kube.noon.feed.service.recommend.FeedRecommendationMemberId;
 import com.kube.noon.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Service
 @Log4j2
@@ -20,6 +25,9 @@ import java.util.List;
 public class FeedServiceImpl implements FeedService {
 
     private final FeedRepository feedRepository;
+
+    private final FeedSubService feedSubService;
+    private final FeedStatisticsService feedStatisticsService;
 
     @Override
     public List<FeedSummaryDto> getFeedListByMember(String memberId) {
@@ -35,12 +43,23 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public List<FeedSummaryDto> getFeedListByBuilding(int buildingId) {
-        List<Feed> entities = feedRepository.findByBuildingAndActivatedTrue(
-                Building.builder()
-                        .buildingId(buildingId)
-                        .build()
-        );
+    public List<FeedSummaryDto> getFeedListByBuilding(String memberId, int buildingId) {
+        Member member = Member.builder().memberId(memberId).build();
+        Building building = Building.builder().buildingId(buildingId).build();
+        List<Feed> entities = new ArrayList<>();
+
+        FeedRecommendationMemberId.initData(feedStatisticsService.getMemberLikeTag());
+        List<String> memberIdList = FeedRecommendationMemberId.getMemberLikeTagsRecommendation(memberId);
+
+        // 추천 맴버가 없다면 빌딩 그대로 보여주기
+        if(memberIdList == null || memberIdList.isEmpty()) {
+            entities = feedRepository.findByBuildingAndActivatedTrue(building);
+        } else {
+            Random rand = new Random();
+            String recommandMemberId = memberIdList.get(rand.nextInt(memberIdList.size()));
+
+            entities = feedRepository.findFeedWithLikesFirst(member, building);
+        }
 
         List<FeedSummaryDto> feedListByBuilding = FeedSummaryDto.toDtoList(entities);
 
