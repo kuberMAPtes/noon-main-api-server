@@ -1,7 +1,6 @@
 package com.kube.noon.member.dto;
 
-import com.kube.noon.common.PublicRange;
-import com.kube.noon.feed.dto.FeedDto;
+import com.kube.noon.feed.dto.FeedSummaryDto;
 import lombok.*;
 
 import java.util.List;
@@ -26,14 +25,6 @@ public class MemberProfileDto {
 
     private Integer dajungScore;
 
-    private Boolean signedOff;
-
-    private List<FeedDto> feedDtoList;
-
-    private PublicRange buildingSubscriptionPublicRange;
-
-    private PublicRange allFeedPublicRange;
-
-    private PublicRange memberProfilePublicRange;
+    private List<FeedSummaryDto> feedDtoList;
 
 }

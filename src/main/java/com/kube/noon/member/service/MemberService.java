@@ -1,32 +1,33 @@
 package com.kube.noon.member.service;
 
 import com.kube.noon.member.domain.Member;
-import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.*;
+import org.springframework.data.domain.Page;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface MemberService {
 
     void addMember(AddMemberDto memberDto);//JPA
 
-    void addMemberRelationship(MemberRelationshipDto memberRelationshipDto);
+    void addMemberRelationship(AddMemberRelationshipDto addMemberRelationshipDto);
 
-    Optional<Member> findMemberById(String memberId);//JPA
+    MemberDto findMemberById(String fromId,String memberId);//JPA
 
-    //레포지토리에서 없음
-    Optional<MemberProfileDto> findMemberProfileById(String memberId);
+    //다른 서비스가 사용하는 목적으로 존재
+    Optional<Member> findMemberById(String memberId);
 
-    Optional<Member> findMemberByNickname(String nickname);//JPA
+    MemberProfileDto findMemberProfileById(String fromId,String memberId);
 
-    Optional<Member> findMemberByPhoneNumber(String phoneNumber);
+    MemberDto findMemberByNickname(String fromId,String nickname);//JPA
 
-    List<Member> findMemberListByCriteria(MemberSearchCriteriaDto searchDto);//JPA
+    MemberDto findMemberByPhoneNumberByAdmin(String fromId, String phoneNumber);
 
-    List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteriaDto);
+    Page<MemberDto> findMemberListByCriteria(String fromId,MemberSearchCriteriaDto memberSearchCriteriaDto, int page, int size);//JPA
 
-    Optional<MemberRelationship> findMemberRelationship(String fromId, String toId);
+    Page<MemberRelationshipDto> findMemberRelationshipListByCriteria(String fromId,MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto, int page, int size);
+
+    MemberRelationshipDto findMemberRelationship(String fromId, String toId);
 
     void updateMember(UpdateMemberDto updateMemberDto);
 
@@ -38,7 +39,7 @@ public interface MemberService {
 
     void updateDajungScore(String memberId, int dajungScore);
 
-    void deleteMemberRelationship(MemberRelationshipDto dto);
+    void deleteMemberRelationship(DeleteMemberRelationshipDto dto);
 
     void deleteMember(String memberId);
 
