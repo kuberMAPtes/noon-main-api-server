@@ -212,6 +212,29 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
     }
 
     @Override
+    public List<FeedAttachmentDto> getImageList() {
+
+        return feedAttachmentRepository.findByFileType(FileType.PHOTO).stream()
+                .map(FeedAttachmentDto::toDto)
+                .collect(Collectors.toList());
+
+    }
+
+    /**
+     * 모든 피드의 이미지 목록 가져오기
+     */
+    @Override
+    public List<FeedAttachmentDto> getImageListByPageable(int pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber, 2);
+        return feedAttachmentRepository.findByFileType(FileType.PHOTO, pageable).stream()
+                .map(FeedAttachmentDto::toDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 페이지별로 모든 피드의 이미지 목록 가져오기
+     */
+    @Override
     public FeedAttachmentDto getImageByAttatchmentId(int attachmentId) {
 
         return FeedAttachmentDto.toDto(feedAttachmentRepository.findByAttachmentId(attachmentId));

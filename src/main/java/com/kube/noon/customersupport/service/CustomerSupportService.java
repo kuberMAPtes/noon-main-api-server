@@ -20,6 +20,8 @@ public interface CustomerSupportService {
     ReportDto addReport(ReportDto reportDto);
     ReportProcessingDto updateReport(ReportProcessingDto reportProcessingDto);
 
+    List<FeedAttachmentDto> getImageList();
+    List<FeedAttachmentDto> getImageListByPageable(int pageNumber);
     FeedAttachmentDto getImageByAttatchmentId(int attachmentId);
     FeedAttachmentDto addBluredImage(FeedAttachmentDto attachmentDto) throws IOException;
     List<FeedAttachmentDto> getFilteredListByAI();

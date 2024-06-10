@@ -165,22 +165,18 @@ public class CustomerSupportRestController {
 
 
     /**
-     * 이미지 목록 보기 ==> 도엽님의 서비스 완성되면 적용
+     * 이미지 목록 보기
      */
-    /*
-    @GetMapping("/getFeedImageList")
-    public List<ReportDto> getFeedImageList(@RequestParam(required = false) Integer pageNumber) {
+    @GetMapping("/getImageList")
+    public List<FeedAttachmentDto> getImageList(@RequestParam(required = false) Integer pageNumber) {
 
         log.info("pageNumber={}",pageNumber);
 
-
         if(pageNumber==null){
-            return feedService.getFeedImageList();
+            return customerSupportService.getImageList();
         }
-        return feedService.getFeedImageListByPageable(pageNumber);
-
+        return customerSupportService.getImageListByPageable(pageNumber);
     }
-    */
 
 
     /**
