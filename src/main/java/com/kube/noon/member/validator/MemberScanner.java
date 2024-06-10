@@ -5,7 +5,7 @@ import com.kube.noon.common.validator.IllegalServiceCallException;
 import com.kube.noon.common.validator.Problems;
 import com.kube.noon.common.validator.ValidationChain;
 import com.kube.noon.member.domain.Member;
-import com.kube.noon.member.dto.AddMemberRelationshipDto;
+import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
 import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.repository.MemberRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -165,6 +165,11 @@ public class MemberScanner {
     public void imoMemberNicknameExist(String nickname) {
         if (memberRepository.findMemberByNickname(nickname).isEmpty()) {
             throw new IllegalServiceCallException("존재하지 않는 닉네임입니다.", new Problems(Map.of("nickname", nickname)));
+        }
+    }
+    public void imoMemberPhoneNumberExist(String phoneNumber) {
+        if (memberRepository.findMemberByPhoneNumber(phoneNumber).isEmpty()) {
+            throw new IllegalServiceCallException("존재하지 않는 전화번호입니다.", new Problems(Map.of("phoneNumber", phoneNumber)));
         }
     }
 

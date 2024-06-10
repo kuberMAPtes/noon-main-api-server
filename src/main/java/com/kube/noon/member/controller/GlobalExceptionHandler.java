@@ -66,7 +66,7 @@ public class GlobalExceptionHandler {
         if (map != null) {
             responseBody.put("map", map);
         }
-        return new ResponseEntity<>(responseBody, status);
+        return ResponseEntity.status(status).body(responseBody);
     }
 
 }

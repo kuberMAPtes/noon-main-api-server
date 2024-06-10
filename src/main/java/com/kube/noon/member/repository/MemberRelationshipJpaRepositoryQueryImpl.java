@@ -2,7 +2,7 @@ package com.kube.noon.member.repository;
 
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.domain.QMemberRelationship;
-import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
+import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.enums.RelationshipType;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;

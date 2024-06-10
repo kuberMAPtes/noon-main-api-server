@@ -1,7 +1,7 @@
 package com.kube.noon.setting.service;
 
 import com.kube.noon.member.domain.Member;
-import com.kube.noon.member.dto.UpdateMemberDto;
+import com.kube.noon.member.dto.member.UpdateMemberDto;
 import com.kube.noon.member.service.MemberService;
 import com.kube.noon.setting.dto.SettingDto;
 import lombok.RequiredArgsConstructor;

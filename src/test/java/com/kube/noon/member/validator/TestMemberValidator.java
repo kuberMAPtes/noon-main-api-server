@@ -1,7 +1,7 @@
 package com.kube.noon.member.validator;
 
 import com.kube.noon.member.domain.Member;
-import com.kube.noon.member.dto.AddMemberRelationshipDto;
+import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
 import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.service.MemberService;
 import lombok.extern.slf4j.Slf4j;

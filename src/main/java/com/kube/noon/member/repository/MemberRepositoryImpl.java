@@ -3,8 +3,8 @@ package com.kube.noon.member.repository;
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
-import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
-import com.kube.noon.member.dto.MemberSearchCriteriaDto;
+import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
+import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.exception.*;
 import lombok.RequiredArgsConstructor;
@@ -287,6 +287,19 @@ public class MemberRepositoryImpl implements MemberRepository {
         } catch (DataAccessException e) {
             log.error("회원 프로필 사진 업데이트 중 오류 발생", e);
             throw new MemberUpdateException("회원 프로필 사진 업데이트 중 오류 발생", e);
+        }
+    }
+    @Override
+    public void updateMemberProfileIntro(String memberId, String newProfileIntro) {
+        try {
+            memberJpaRepository.findMemberByMemberId(memberId).ifPresent(
+                    member -> {
+                        member.setProfileIntro(newProfileIntro);
+                        memberJpaRepository.save(member);
+                    });
+        } catch (DataAccessException e) {
+            log.error("회원 프로필 소개 업데이트 중 오류 발생", e);
+            throw new MemberUpdateException("회원 프로필 소개 업데이트 중 오류 발생", e);
         }
     }
 

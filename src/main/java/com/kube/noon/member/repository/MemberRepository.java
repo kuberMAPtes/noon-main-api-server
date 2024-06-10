@@ -2,8 +2,8 @@ package com.kube.noon.member.repository;
 
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
-import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
-import com.kube.noon.member.dto.MemberSearchCriteriaDto;
+import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
+import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -41,6 +41,8 @@ public interface MemberRepository {
     void updatePhoneNumber(String memberId, String newPhoneNumber);
 
     void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl);
+
+    public void updateMemberProfileIntro(String memberId, String profileIntro);
 
     void updateMemberRelationship(MemberRelationship memberRelationship);
 
