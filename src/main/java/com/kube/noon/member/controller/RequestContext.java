@@ -4,7 +4,6 @@ import lombok.*;
 
 @AllArgsConstructor
 @ToString
-@NoArgsConstructor
 @EqualsAndHashCode
 @SuppressWarnings({"LombokGetterMayBeUsed", "LombokSetterMayBeUsed"})
 public class RequestContext {

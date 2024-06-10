@@ -2,7 +2,6 @@ package com.kube.noon.member.service.impl;
 
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.common.binder.DtoEntityBinder;
-import com.kube.noon.common.messagesender.NotificationCoolSmsMessageSender;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
@@ -17,7 +16,6 @@ import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.exception.*;
 import com.kube.noon.member.repository.MemberRepository;
-import com.kube.noon.member.repository.impl.SmsCertificationRepository;
 import com.kube.noon.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,8 +39,6 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final FeedService feedService;
-    private final SmsCertificationRepository smsCertificationRepository;
-    private final NotificationCoolSmsMessageSender notificationCoolSmsMessageSender;
 
 //    private final SettingService settingService;
 

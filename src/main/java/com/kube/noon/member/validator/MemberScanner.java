@@ -32,6 +32,7 @@ public class MemberScanner {
     private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9가-힣_ ]{2,20}$");
     private static final Pattern MEMBER_ID_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])[a-zA-Z0-9_]{6,16}$");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9!@#\\$%\\^&\\*_]{8,16}$");
+    private static final Pattern SEQUENTIAL_PATTERN = Pattern.compile("(abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz|123|234|345|456|567|678|789|890|012)");
     private static final Pattern URL_PATTERN = Pattern.compile("^(https?|ftp)://[^\s/$.?#].[^\s]*$", Pattern.CASE_INSENSITIVE);
     private static final Pattern BASE64_PATTERN = Pattern.compile("^data:image/(png|jpg|jpeg|gif|webp);base64,[a-zA-Z0-9+/]+={0,2}$");
     private static final Pattern IMAGE_FILE_PATTERN = Pattern.compile("^.*\\.(png|jpg|jpeg|gif|webp)$", Pattern.CASE_INSENSITIVE);
@@ -241,7 +242,28 @@ public class MemberScanner {
             throw new IllegalServiceCallException("비밀번호는 8자 이상 16자 이하여야 합니다.", new Problems(Map.of("password", password)));
         }
     }
+    public void imoPwdNotSequentialPatternO(String password) {
+        if (SEQUENTIAL_PATTERN.matcher(password).find()) {
+            throw new IllegalServiceCallException("비밀번호에 연속된 문자나 숫자가 포함되어 있습니다.", new Problems(Map.of("password", password)));
+        }
+    }
+    public void imoPwdNotHasRepeatedCharacters(String password){
+        if(hasRepeatedCharacters(password.toLowerCase())){
+            throw new IllegalServiceCallException("비밀번호에 반복된 문자가 포함되어 있습니다.", new Problems(Map.of("password", password)));
 
+        }
+    }
+    private static boolean hasRepeatedCharacters(String password) {
+        for (int i = 0; i < password.length() - 2; i++) {
+            char c1 = password.charAt(i);
+            char c2 = password.charAt(i + 1);
+            char c3 = password.charAt(i + 2);
+            if (c1 == c2 && c2 == c3) {
+                return true;
+            }
+        }
+        return false;
+    }
     public void imoDajungScorePatternO(int dajungScore) {
         if (dajungScore < 0 || dajungScore > 100) {
             throw new IllegalServiceCallException("다정 점수는 0 이상 100이하 이어야 합니다.", new Problems(Map.of("dajungScore", dajungScore)));

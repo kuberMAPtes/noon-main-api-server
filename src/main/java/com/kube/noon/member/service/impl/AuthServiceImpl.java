@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class AuthServiceImpl implements AuthService {
 
-    //private final SmsCertification smsCertification;
 
     @Value("${coolsms.apikey}")
     private String apiKey;
