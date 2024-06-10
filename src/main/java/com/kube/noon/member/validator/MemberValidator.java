@@ -2,7 +2,11 @@ package com.kube.noon.member.validator;
 
 import com.kube.noon.common.validator.IllegalServiceCallException;
 import com.kube.noon.common.validator.Validator;
-import com.kube.noon.member.dto.*;
+import com.kube.noon.member.dto.member.*;
+import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
+import com.kube.noon.member.dto.memberRelationship.DeleteMemberRelationshipDto;
+import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
+import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import com.kube.noon.member.repository.MemberRepository;
 import com.kube.noon.member.service.impl.MemberServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -53,48 +57,52 @@ public class MemberValidator {
         memberScanner.imoMemberIdExist(fromId);
         memberScanner.imoMemberNicknameExist(nickname);
     }
-    public void findMemberByPhoneNumberByAdmin(String fromId, String phoneNumber) {
-        memberScanner.imoDataNotNull(fromId);
-        memberScanner.imoMemberIsAdmin(fromId);
+    public void findMemberByPhoneNumber(String phoneNumber) {
         memberScanner.imoDataNotNull(phoneNumber);
-        memberScanner.imoMemberIdExist(fromId);
+        memberScanner.imoMemberPhoneNumberExist(phoneNumber);
     }
-    public void findMemberListByCriteria(String fromId, MemberSearchCriteriaDto searchDto) {
+    public void findMemberListByCriteria(String fromId, MemberSearchCriteriaDto dto, int page, int size) {
         memberScanner.imoDataNotNull(fromId);
-        memberScanner.imoDataNotNull(searchDto);
+        memberScanner.imoDataNotNull(dto);
 
-    }
-    public void findMemberRelationshipListByCriteria(String fromId, MemberRelationshipSearchCriteriaDto searchDto) {
-        memberScanner.imoDataNotNull(fromId);
-        memberScanner.imoDataNotNull(searchDto);
     }
     public void findMemberRelationship(String fromId, String toId) {
         memberScanner.imoDataNotNull(fromId);
         memberScanner.imoDataNotNull(toId);
     }
-    public void updateMember(UpdateMemberDto updateMemberDto) {
-        memberScanner.imoDtoFieldO(updateMemberDto);
+    public void findMemberRelationshipListByCriteria(String fromId, MemberRelationshipSearchCriteriaDto dto, int page, int size) {
+        memberScanner.imoDataNotNull(fromId);
+        memberScanner.imoDataNotNull(dto);
     }
-    public void updatePassword(String memberId, String newPassword) {
-        memberRepository.findMemberById(memberId).orElseThrow(() -> new IllegalServiceCallException("존재하지 않는 회원입니다."));
-        memberScanner.imoDataNotNull(memberId);
-        memberScanner.imoDataNotNull(newPassword);
+    public void updateMember(UpdateMemberDto dto) {
+        memberScanner.imoDataNotNull(dto);
+        memberScanner.imoDtoFieldO(dto);
     }
-
-    public void updatePhoneNumber(String memberId, String newPhoneNumber) {
-        memberRepository.findMemberById(memberId).orElseThrow(() -> new IllegalServiceCallException("존재하지 않는 회원입니다."));
-        memberScanner.imoDataNotNull(memberId);
-        memberScanner.imoDataNotNull(newPhoneNumber);
-        memberScanner.imoPhoneNumberPatternO(newPhoneNumber);
+    public void updatePassword(UpdatePasswordDto dto) {
+        memberScanner.imoDataNotNull(dto);
+        memberScanner.imoDtoFieldO(dto);
     }
 
-    public void updateMemberProfilePhoto(String memberId, String newProfilePhotoUrl) {
-        memberRepository.findMemberById(memberId).orElseThrow(() -> new IllegalServiceCallException("존재하지 않는 회원입니다."));
-        memberScanner.imoDataNotNull(memberId);
-        //프로필사진Url은 null이 가능하다.
-        memberScanner.imoProfilePhotoUrlPatternO(newProfilePhotoUrl);
-
+    public void updatePhoneNumber(UpdatePhoneNumberDto dto) {
+        memberScanner.imoDataNotNull(dto);
+        memberScanner.imoDtoFieldO(dto);
     }
+
+    public void updateMemberProfilePhotoUrl(UpdateMemberProfilePhotoUrlDto dto) {
+        memberScanner.imoDataNotNull(dto);
+        memberScanner.imoDtoFieldO(dto);
+    }
+    public void updateMemberProfileIntro(UpdateMemberProfileIntroDto dto) {
+        memberScanner.imoDataNotNull(dto);
+        memberScanner.imoDtoFieldO(dto);
+    }
+
+    public void updateMemberDajunScore(UpdateMemberDajungScoreDto dto) {
+        memberScanner.imoDataNotNull(dto);
+        memberScanner.imoDtoFieldO(dto);
+    }
+
+
 
     public void updateDajungScore(String memberId, int dajungScore) {
         memberRepository.findMemberById(memberId).orElseThrow(() -> new IllegalServiceCallException("존재하지 않는 회원입니다."));
@@ -118,16 +126,18 @@ public class MemberValidator {
         memberScanner.imoDataNotNull(nickname);
         memberScanner.imoNicknamePatternO(nickname);
         memberScanner.imoMemberNicknameNotExist(nickname);
+        memberScanner.imoNotBadWord(nickname);
     }
 
     public void checkMemberId(String memberId) {
         memberScanner.imoDataNotNull(memberId);
         memberScanner.imoMemberIdPatternO(memberId);
         memberScanner.imoMemberIdNotExist(memberId);
+        memberScanner.imoNotBadWord(memberId);
     }
 
-    public void checkPassword(String email, String password) {
-        memberScanner.imoDataNotNull(email);
+    public void checkPassword(String memberId, String password) {
+        memberScanner.imoDataNotNull(memberId);
         memberScanner.imoDataNotNull(password);
         memberScanner.imoPwdPatternO(password);
     }
@@ -140,5 +150,12 @@ public class MemberValidator {
 
     public void checkBadWord(String word) {
         memberScanner.imoDataNotNull(word);
+        memberScanner.imoNotBadWord(word);
+    }
+
+    public void sendAuthentificationNumber(String phoneNumber) {
+        memberScanner.imoDataNotNull(phoneNumber);
+        memberScanner.imoPhoneNumberPatternO(phoneNumber);
+//        memberScanner.imoMemberPhoneNumberNotExist(phoneNumber); 이건 findMemberByPhoneNumber할 때 이미 체크되므로 필요X
     }
 }

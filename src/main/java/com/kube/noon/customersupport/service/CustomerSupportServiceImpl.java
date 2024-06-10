@@ -16,7 +16,7 @@ import com.kube.noon.feed.domain.FeedAttachment;
 import com.kube.noon.feed.dto.FeedAttachmentDto;
 import com.kube.noon.feed.repository.FeedAttachmentRepository;
 import com.kube.noon.member.domain.Member;
-import com.kube.noon.member.dto.UpdateMemberDto;
+import com.kube.noon.member.dto.member.UpdateMemberDto;
 import com.kube.noon.member.service.MemberService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;

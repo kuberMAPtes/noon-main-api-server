@@ -4,8 +4,8 @@ package com.kube.noon.member.repository;
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
-import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
-import com.kube.noon.member.dto.MemberSearchCriteriaDto;
+import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
+import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.enums.Role;
 import jakarta.transaction.Transactional;
@@ -19,7 +19,6 @@ import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Optional;
 
 import static com.kube.noon.member.enums.RelationshipType.BLOCK;
