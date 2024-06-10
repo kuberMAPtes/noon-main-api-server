@@ -20,7 +20,7 @@ public interface FeedService {
     List<FeedSummaryDto> getFeedListByBuilding(String memberId, int buildingId);
 
     // 건물별 피드 목록을 가져온다.
-    List<FeedSummaryDto> getFeedListByBuilding(Integer buildingId);
+    List<FeedSummaryDto> getFeedListByBuilding(int buildingId);
 
     // 회원이 좋아요를 누른 피드 목록을 가져온다.
     List<FeedSummaryDto> getFeedListByMemberLike(String memberId);

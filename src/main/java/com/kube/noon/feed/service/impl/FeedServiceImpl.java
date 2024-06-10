@@ -68,7 +68,7 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public List<FeedSummaryDto> getFeedListByBuilding(Integer buildingId) {
+    public List<FeedSummaryDto> getFeedListByBuilding(int buildingId) {
         Building building = Building.builder().buildingId(buildingId).build();
         List<Feed> entities = feedRepository.findByBuildingAndActivatedTrue(building);
 
