@@ -8,10 +8,6 @@ import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.member.domain.Member;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -164,8 +160,8 @@ public class TestFeedRepository {
     public void getFeedListByOrderTest() {
         String memberId = "member_1";
         int buildingId = 10001;
-        Member writer = new Member();
-        writer.setMemberId(memberId);
+        Member writer = Member.builder().memberId(memberId).build();
+        Building building = Building.builder().buildingId(buildingId).build();
 
         // 1. 회원별 피드 목록 가져오기
         List<Feed> getFeedListByWriter = feedRepository.findByWriterAndActivatedTrue(writer);
@@ -175,7 +171,7 @@ public class TestFeedRepository {
         }
 
         // 2. 건물별 피드 목록 보기
-        List<Feed> getFeedListByBuildingId = feedRepository.findByBuildingAndActivatedTrue(Building.builder().buildingId(buildingId).build());
+        List<Feed> getFeedListByBuildingId = feedRepository.findByBuildingAndActivatedTrue(building);
         assertThat(getFeedListByBuildingId.size()).isGreaterThan(0);
         for(Feed f : getFeedListByBuildingId) {
             log.info(f.toString());
@@ -199,6 +195,20 @@ public class TestFeedRepository {
         List<Feed> getFeedListByBuildingSubscription = feedRepository.findByMemberBuildingSubscription(writer);
         assertThat(getFeedListByBuildingSubscription.size()).isGreaterThan(0);
         for(Feed f : getFeedListByBuildingSubscription) {
+            log.info(f.toString());
+        }
+
+        // 6. 회원이 한 건물에서 좋아요를 누른 피드 목록을 가져온다.
+        List<Feed> getFeedListByMemberAndBuilding = feedRepository.findByMemberAndBuildingIdLikeFeed(writer, building);
+        assertThat(getFeedListByMemberAndBuilding.size()).isGreaterThan(0);
+        for(Feed f : getFeedListByMemberAndBuilding) {
+            log.info(f.toString());
+        }
+
+        // 7. 한 건물의 피드 중 특정 회원이 좋아요를 누른 피드 목록을 우선 정렬한다.
+        List<Feed> getFeedWithLikesFirst = feedRepository.findFeedWithLikesFirst(writer, building);
+        assertThat(getFeedListByMemberAndBuilding.size()).isGreaterThan(0);
+        for(Feed f : getFeedWithLikesFirst) {
             log.info(f.toString());
         }
     }

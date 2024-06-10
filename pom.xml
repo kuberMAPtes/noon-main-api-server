@@ -141,12 +141,27 @@
             <artifactId>badwordfiltering</artifactId>
             <version>1.0.0</version>
         </dependency>
+<<<<<<< HEAD
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-webp</artifactId>
             <version>3.9.4</version>
         </dependency>
 
+=======
+        <!-- https://mvnrepository.com/artifact/org.apache.mahout/mahout-integration -->
+        <dependency>
+            <groupId>org.apache.mahout</groupId>
+            <artifactId>mahout-integration</artifactId>
+            <version>0.13.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.mahout/mahout-mr -->
+        <dependency>
+            <groupId>org.apache.mahout</groupId>
+            <artifactId>mahout-mr</artifactId>
+            <version>0.13.0</version>
+        </dependency>
+>>>>>>> f609d750831ace938915609e861dfed7b0e499c9
     </dependencies>
 
     <build>
