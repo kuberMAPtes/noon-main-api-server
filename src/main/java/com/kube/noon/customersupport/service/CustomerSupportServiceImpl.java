@@ -1,13 +1,17 @@
 package com.kube.noon.customersupport.service;
 
+import com.kube.noon.common.FeedCategory;
 import com.kube.noon.common.FileType;
 import com.kube.noon.common.ObjectStorageAWS3S;
 import com.kube.noon.customersupport.domain.Report;
+import com.kube.noon.customersupport.dto.notice.NoticeDto;
 import com.kube.noon.customersupport.dto.report.ReportDto;
 import com.kube.noon.customersupport.dto.report.ReportProcessingDto;
 import com.kube.noon.customersupport.enums.UnlockDuration;
 import com.kube.noon.customersupport.repository.AttachmentFilteringRepository;
+import com.kube.noon.customersupport.repository.NoticeRepository;
 import com.kube.noon.customersupport.repository.ReportRepository;
+import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.domain.FeedAttachment;
 import com.kube.noon.feed.dto.FeedAttachmentDto;
 import com.kube.noon.feed.repository.FeedAttachmentRepository;
@@ -18,6 +22,9 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -40,21 +47,69 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
     private final MemberService memberService;
     private final AttachmentFilteringRepository attachmentFilteringRepository;
     private final FeedAttachmentRepository feedAttachmentRepository;
+    private final NoticeRepository noticeRepository;
     private final String bucketName;
     private final ObjectStorageAWS3S objectStorageAWS3S;
 
 
     public CustomerSupportServiceImpl(
             ReportRepository reportRepository,
-            MemberService memberService, AttachmentFilteringRepository attachmentFilteringRepository, FeedAttachmentRepository feedAttachmentRepository,
+            MemberService memberService, AttachmentFilteringRepository attachmentFilteringRepository, FeedAttachmentRepository feedAttachmentRepository, NoticeRepository noticeRepository,
             @Value("${bucket.name}") String bucketName,
             ObjectStorageAWS3S objectStorageAWS3S) {
         this.reportRepository = reportRepository;
         this.memberService = memberService;
         this.attachmentFilteringRepository = attachmentFilteringRepository;
         this.feedAttachmentRepository = feedAttachmentRepository;
+        this.noticeRepository = noticeRepository;
         this.bucketName = bucketName;
         this.objectStorageAWS3S = objectStorageAWS3S;
+    }
+
+
+    /**
+     * 공지사항 목록을 조회
+     *
+     * @return
+     */
+    @Override
+    public List<NoticeDto> getNoticeList() {
+
+        List<Feed> noticeList = noticeRepository.findByFeedCategoryAndActivated(FeedCategory.NOTICE, true);
+
+        return noticeList.stream()
+                .map(NoticeDto::fromEntity)
+                .collect(Collectors.toList());
+
+    }
+
+
+    /**
+     * 공지사항 목록을 특정 페이지만 조회
+     * 페이지 사이즈(한 페이지의 목록 개수)는 메타데이터로 정의됨.
+     *
+     * @param pageNumber 목록을 얻으려는 페이지
+     * @return
+     */
+    @Override
+    public List<NoticeDto> getNoticeListByPageable(int pageNumber) {
+
+        //pageSize 메타데이터화 논의 필요. 임의로 5
+        Pageable pageable = PageRequest.of(pageNumber, 5);
+
+        Page<Feed> noticePage = noticeRepository.findByFeedCategoryAndActivated(FeedCategory.NOTICE, true, pageable);
+
+        return noticePage.getContent().stream()
+                .map(NoticeDto::fromEntity)
+                .collect(Collectors.toList());
+
+    }
+
+    @Override
+    public ReportDto getLatestReport() {
+
+        return ReportDto.fromEntity(reportRepository.findLatestReport());
+
     }
 
 
@@ -69,6 +124,22 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
         List<Report> reports = reportRepository.findAll();
 
         return reports.stream()
+                .map(ReportDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 신고 목록을 목록을 특정 페이지만 조회
+     *
+     * @return 신고 목록 Dto
+     */
+    @Override
+    public List<ReportDto> getReportListByPageable(int pageNumber) {
+
+        Pageable pageable = PageRequest.of(pageNumber, 5);
+        Page<Report> reportPage = reportRepository.findAll(pageable);
+
+        return reportPage.getContent().stream()
                 .map(ReportDto::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -164,6 +235,21 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
         List<FeedAttachmentDto> filteredList = attachmentFilteringRepository.findBadImageListByAI(feedAttachmentList).stream()
                 .map(FeedAttachmentDto::toDto)
                 .collect(Collectors.toList());
+
+        return filteredList;
+    }
+
+    @Override
+    public List<FeedAttachmentDto> getFilteredListByAIAndPageable(int pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber, 2);
+
+        List<FeedAttachment> feedAttachmentList = feedAttachmentRepository.findByFileType(FileType.PHOTO);
+        Page<FeedAttachment> feedAttachmentPage = attachmentFilteringRepository.findBadImageListByAI(feedAttachmentList, pageable);
+
+        List<FeedAttachmentDto> filteredList = feedAttachmentPage.getContent().stream()
+                .map(FeedAttachmentDto::toDto)
+                .collect(Collectors.toList());
+
 
         return filteredList;
     }

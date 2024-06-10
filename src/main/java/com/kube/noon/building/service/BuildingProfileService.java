@@ -9,7 +9,7 @@ public interface BuildingProfileService {
     BuildingZzimDto addSubscription(String memberId, int buildingId);
     BuildingZzimDto deleteSubscription(String memberId, int buildingId);
     List<BuildingDto> addSubscriptionFromSomeone(String memberId, String someoneId);
-    List<BuildingDto> getUserBuildingSubscriptionList(String memberId);
+    List<BuildingDto> getMemberBuildingSubscriptionList(String memberId);
     BuildingDto getBuildingProfile(int buildingId);
     List<BuildingDto> getBuildingSubscriptionListByMemberId(String memberId);
 
