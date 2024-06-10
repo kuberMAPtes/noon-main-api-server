@@ -19,14 +19,14 @@ public class FeedRestController {
     private final FeedStatisticsService feedStatisticsService;
     private final FeedSubService feedSubService;
 
-    @GetMapping("/memberFeedList")
+    @GetMapping("/getFeedListByMember")
     public List<FeedSummaryDto> getMemberFeedList(@RequestParam String memberId) {
         List<FeedSummaryDto> feedListByMember = feedService.getFeedListByMember(memberId);
 
         return feedListByMember;
     }
 
-    @GetMapping("/buildingFeedList")
+    @GetMapping("/getFeedListByBuilding")
     public List<FeedSummaryDto> getBuildingFeedList(
             @RequestParam String memberId,
             @RequestParam int buildingId) {
@@ -35,21 +35,21 @@ public class FeedRestController {
         return feedListByBuilding;
     }
 
-    @GetMapping("/memberLikeFeedList")
+    @GetMapping("/getFeedListByMemberLike")
     public List<FeedSummaryDto> getMemberLikeFeedList(@RequestParam String memberId) {
         List<FeedSummaryDto> feedListByMemberLike = feedService.getFeedListByMemberLike(memberId);
 
         return feedListByMemberLike;
     }
 
-    @GetMapping("/bookmarkFeedList")
+    @GetMapping("/getFeedListByMemberBookmark")
     public List<FeedSummaryDto> getBookmarkFeedList(@RequestParam String memberId) {
         List<FeedSummaryDto> feedListByMemberBookmark = feedService.getFeedListByMemberBookmark(memberId);
 
         return feedListByMemberBookmark;
     }
 
-    @GetMapping("/buildingSubscriptionFeedList")
+    @GetMapping("/getFeedListByMemberSubscription")
     public List<FeedSummaryDto> getBuildingSubscriptionFeedList(@RequestParam String memberId) {
         List<FeedSummaryDto> feedListByBuildingSubscription = feedService.getFeedListByBuildingSubscription(memberId);
 

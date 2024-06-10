@@ -72,7 +72,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
             INNER JOIN Zzim z ON f.feedId = z.feedId 
             WHERE z.zzimType = 'LIKE' 
             AND z.memberId = :#{#member.memberId} 
-            AND f.building.buildingId = :#{#building.buildingId}
+            AND f.building = :#{#building}
             AND f.activated = true 
             AND z.activated = true
           """)
