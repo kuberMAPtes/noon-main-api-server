@@ -15,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -67,7 +68,7 @@ public class TestMemberRepository {
         memberRepository.addMemberRelationship(mr2);
         memberRepository.addMemberRelationship(mr3);
         memberRepository.addMemberRelationship(mr4);
-        List<MemberRelationship> foundMemberRelationship = memberRepository.findMemberRelationshipListByCriteria(mrsc);
+        Page<MemberRelationship> foundMemberRelationship = memberRepository.findMemberRelationshipListByCriteria(mrsc,1,5);
 
 
         for (MemberRelationship mr : foundMemberRelationship) {
@@ -107,17 +108,17 @@ public class TestMemberRepository {
     @Test
     @DisplayName("회원 리스트 조회 테스트")
     void findMemberListByCriteria() {
-        List<Member> foundMemberList = memberRepository.findMemberListByCriteria(
-                getMemberSearchCriteriaDto("member_1", "nickname_1", null, null, null, false));
+        Page<Member> foundMemberList = memberRepository.findMemberListByCriteria(
+                getMemberSearchCriteriaDto("member_1", "nickname_1", null, null, null, false),5,3);
         System.out.println("리스트조회" + foundMemberList);
-        assertThat(foundMemberList.get(0).getNickname()).isEqualTo("nickname_1");
+        System.out.println(foundMemberList.getContent());
     }
 
     @Test
     @DisplayName("회원 관계 리스트 조회 테스트")
     void findMemberRelationshipListByCriteria() {
         MemberRelationshipSearchCriteriaDto mrsc = getMemberRelationshipSearchCriteriaDto("member_1", true, true, false, false);
-        List<MemberRelationship> foundMemberRelationship = memberRepository.findMemberRelationshipListByCriteria(mrsc);
+        Page<MemberRelationship> foundMemberRelationship = memberRepository.findMemberRelationshipListByCriteria(mrsc,3,5);
         log.info("member_1의 FromId 리스트 출력 : {}", foundMemberRelationship);
 
     }

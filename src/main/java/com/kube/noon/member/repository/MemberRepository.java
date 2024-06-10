@@ -4,6 +4,7 @@ import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.MemberSearchCriteriaDto;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,11 +26,13 @@ public interface MemberRepository {
 
     Optional<Member> findMemberByPhoneNumber(String phoneNumber);
 
-    List<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria);
+    Page<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria, int page, int size);
 
     Optional<MemberRelationship> findMemberRelationship(String fromId, String toId);
 
-    List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria);
+    List<MemberRelationship> findAllMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria);
+
+    Page<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria, int page, int size);
 
     void updateMember(Member member);
 

@@ -7,6 +7,9 @@ import com.kube.noon.member.enums.RelationshipType;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -17,15 +20,40 @@ public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelations
 
     private final JPAQueryFactory queryFactory;
 
-
-    /**
-     * 다 선택하면 다 나오고, 하나 선택하면 하나만 나옴
-     *
-     * @param criteria
-     * @return
-     */
     @Override
-    public List<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria) {
+    public Page<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria, Pageable pageable) {
+        QMemberRelationship ms = QMemberRelationship.memberRelationship;
+
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (criteria.getFollowing() != null) {
+            builder.and(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
+        }
+        if (criteria.getFollower() != null) {
+            builder.and(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
+        }
+        if (criteria.getBlocking() != null) {
+            builder.and(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
+        }
+        if (criteria.getBlocker() != null) {
+            builder.and(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
+        }
+
+        List<MemberRelationship> results = queryFactory.selectFrom(ms)
+                .where(builder)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        long total = queryFactory.selectFrom(ms)
+                .where(builder)
+                .fetchCount();
+
+        return new PageImpl<>(results, pageable, total);
+    }
+
+    @Override
+    public List<MemberRelationship> findAllMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria) {
         QMemberRelationship ms = QMemberRelationship.memberRelationship;
 
         BooleanBuilder builder = new BooleanBuilder();
@@ -47,5 +75,6 @@ public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelations
                 .where(builder)
                 .fetch();
     }
+
 
 }

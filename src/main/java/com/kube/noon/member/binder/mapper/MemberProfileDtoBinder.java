@@ -1,13 +1,13 @@
 package com.kube.noon.member.binder.mapper;
 
-import com.kube.noon.member.binder.Binder;
+import com.kube.noon.common.binder.Binder;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.MemberProfileDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
-public interface MemberProfileDtoBinder extends Binder<MemberProfileDto> {
+public interface MemberProfileDtoBinder extends Binder<MemberProfileDto,Member> {
 
     @Override
     @Mapping(target = "memberRole", ignore = true)
@@ -20,8 +20,4 @@ public interface MemberProfileDtoBinder extends Binder<MemberProfileDto> {
     @Override
     MemberProfileDto toDto(Member member);
 
-    @Override
-    default Class<MemberProfileDto> getDtoType() {
-        return MemberProfileDto.class;
-    }
 }
