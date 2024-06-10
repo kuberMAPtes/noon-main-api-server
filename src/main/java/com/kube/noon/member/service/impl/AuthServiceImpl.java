@@ -11,19 +11,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
+@Transactional
 public class AuthServiceImpl implements AuthService {
 
 
-    @Value("${coolsms.apikey}")
+    @Value("${cool-sms.access-key}")
     private String apiKey;
 
-    @Value("${coolsms.apisecret}")
+    @Value("${cool-sms.secret-key}")
     private String apiSecret;
 
-    @Value("${coolsms.fromnumber}")
+    @Value("${cool-sms.from-phone-number}")
     private String fromNumber;
 
     private final AuthRepository authRepository;
@@ -32,7 +34,8 @@ public class AuthServiceImpl implements AuthService {
 
 
 
-    public AuthServiceImpl(@Autowired AuthRepository authRepository, MemberService memberService, NotificationCoolSmsMessageSender notificationCoolSmsMessageSender) {
+    @Autowired
+    public AuthServiceImpl( AuthRepository authRepository, MemberService memberService, NotificationCoolSmsMessageSender notificationCoolSmsMessageSender) {
         this.authRepository = authRepository;
         this.memberService = memberService;
         this.notificationCoolSmsMessageSender = notificationCoolSmsMessageSender;

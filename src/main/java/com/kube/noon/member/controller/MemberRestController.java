@@ -233,7 +233,7 @@ public class MemberRestController {
                             .header(HttpHeaders.LOCATION, "http://127.0.0.1:3000/?access_token="+ ResultJsonObject.get("access_token")+"&memberId="+ memberId,
                                     "Authorization",RequestContext.getAuthorization())
                             .build();
-                });
+                });//end of map
     }
 
     public ResponseEntity<?> naverLogin(@RequestParam String memberId, @RequestParam String password) {
