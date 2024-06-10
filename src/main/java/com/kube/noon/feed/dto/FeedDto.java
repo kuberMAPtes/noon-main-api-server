@@ -12,6 +12,7 @@ import com.kube.noon.member.repository.MemberRepository;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,28 +34,55 @@ public class FeedDto {
     private Long viewCnt;
     private LocalDateTime writtenTime;
     private FeedCategory feedCategory;
-    private boolean isModified;
-    private boolean isMainActivated;
-    private List<FeedComment> comments;
-    private List<TagFeed> tagFeeds;
+    private boolean modified;
+    private boolean mainActivate;
+    private boolean activate;
+    private List<FeedAttachmentDto> attachments;
+    private List<FeedCommentDto> comments;
+    private List<TagFeedDto> tagFeeds;
 
     public static FeedDto toDto(Feed feed) {
+        // NullPointException
+        Building building = feed.getBuilding();
+        if(building == null) {
+            building = Building.builder().build();
+        }
+
+        Member writer = feed.getWriter();
+        if(writer == null) {
+            writer = Member.builder().build();
+        }
+
         return FeedDto.builder()
                 .feedId(feed.getFeedId())
-                .writerId(feed.getWriter().getMemberId())
-                .writerNickname(feed.getWriter().getNickname())
-                .buildingId(feed.getBuilding().getBuildingId())
-                .buildingName(feed.getBuilding().getBuildingName())
+                .writerId(writer.getMemberId())
+                .writerNickname(writer.getNickname())
+                .buildingId(building.getBuildingId())
+                .buildingName(building.getBuildingName())
                 .publicRange(feed.getPublicRange())
                 .title(feed.getTitle())
                 .feedText(feed.getFeedText())
                 .viewCnt(feed.getViewCnt())
                 .writtenTime(feed.getWrittenTime())
                 .feedCategory(feed.getFeedCategory())
-                .isModified(feed.isModified())
-                .isMainActivated(feed.isMainActivated())
-                .comments(feed.getComments())
-                .tagFeeds(feed.getTagFeeds())
+                .modified(feed.isModified())
+                .mainActivate(feed.isMainActivated())
+                .activate(feed.isActivated())
+                .attachments(
+                        feed.getAttachments() == null ?
+                                Collections.emptyList() :
+                                feed.getAttachments().stream().map(FeedAttachmentDto::toDto).collect(Collectors.toList())
+                )
+                .comments(
+                        feed.getComments() == null ?
+                                Collections.emptyList() :
+                                feed.getComments().stream().map(FeedCommentDto::toDto).collect(Collectors.toList())
+                )
+                .tagFeeds(
+                        feed.getTagFeeds() == null ?
+                                Collections.emptyList() :
+                                feed.getTagFeeds().stream().map(TagFeedDto::toDto).collect(Collectors.toList())
+                )
                 .build();
     }
 
@@ -70,9 +98,23 @@ public class FeedDto {
                 .writtenTime(feedDto.getWrittenTime())
                 .feedCategory(feedDto.getFeedCategory())
                 .modified(feedDto.isModified())
-                .mainActivated(feedDto.isMainActivated())
-                .comments(feedDto.getComments())
-                .tagFeeds(feedDto.getTagFeeds())
+                .mainActivated(feedDto.isMainActivate())
+                .activated(feedDto.isActivate())
+                .attachments(
+                        feedDto.getAttachments() == null ?
+                                Collections.emptyList() :
+                                feedDto.getAttachments().stream().map(FeedAttachmentDto::toEntity).collect(Collectors.toList())
+                )
+                .comments(
+                        feedDto.getComments() == null ?
+                                Collections.emptyList() :
+                                feedDto.getComments().stream().map(FeedCommentDto::toEntity).collect(Collectors.toList())
+                )
+                .tagFeeds(
+                        feedDto.getTagFeeds() == null ?
+                                Collections.emptyList() :
+                                feedDto.getTagFeeds().stream().map(TagFeedDto::toEntity).collect(Collectors.toList())
+                )
                 .build();
     }
 

@@ -89,14 +89,14 @@ public class TestFeedServiceImpl {
         FeedDto feedDto = FeedDto.builder()
                 .writerId("member_15")
                 .buildingId(10015)
-                .isMainActivated(false)
+                .mainActivate(false)
                 .publicRange(PublicRange.PUBLIC)
                 .title("WinterHana Test")
                 .feedText("테스트 중입니다.")
                 .viewCnt(9999L)
                 .writtenTime(LocalDateTime.now())
                 .feedCategory(FeedCategory.GENERAL)
-                .isModified(false)
+                .modified(false)
                 .build();
 
         int feedId = feedServiceImpl.addFeed(feedDto);
@@ -183,7 +183,7 @@ public class TestFeedServiceImpl {
         FeedDto getFeedDto = feedServiceImpl.getFeedById(feedId);
 
         assertThat(getFeedDto).isNotNull();
-        assertThat(getFeedDto.isMainActivated()).isTrue();
+        assertThat(getFeedDto.isMainActivate()).isTrue();
     }
 
     /**
