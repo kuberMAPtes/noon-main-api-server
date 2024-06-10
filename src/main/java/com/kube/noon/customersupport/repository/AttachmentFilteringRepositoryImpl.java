@@ -145,6 +145,8 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
     @Override
     public String addBluredFile(String fileUrl) {
 
+        log.info("fileUrl={}",fileUrl);
+
         try {
             //블러 이미지 생성
             String blurredImageLocation = makeBlurredImage(fileUrl);

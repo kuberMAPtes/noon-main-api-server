@@ -183,13 +183,15 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
      * reportId로 조회한 신고를 '처리'한다.
      * 신고 처리에 관한 설명은 NOON 참조 문서 [참조 25]
      *
-     * @param reportProcessingDto 조회했던 report에서 신고상태, 신고처리텍스트가 변경된 reportDto
-     * @param unlockDuration 계정잠금연장일수. Enum UnlockDuration.java 참고
+     * @param reportProcessingDto 조회했던 report에서 신고상태, 신고처리텍스트가 변경되고 unlockDuration(계정잠금연장일수)이 추가된 Dto.
+     *                           unlockDuration은 Enum UnlockDuration.java 참고
+     *
      * @return 신고 처리되어 신고처리텍스트와 변경된 신고 상태를 포함한 Dto
      */
     @Transactional
     @Override
-    public ReportProcessingDto updateReport(ReportProcessingDto reportProcessingDto, String unlockDuration) {
+    public ReportProcessingDto updateReport(ReportProcessingDto reportProcessingDto) {
+
 
         //신고 상태 변경, 신고처리 텍스트 추가
         reportRepository.save(reportProcessingDto.toEntity());
@@ -201,12 +203,18 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
 
         UpdateMemberDto updateMemberDto = new UpdateMemberDto();
         BeanUtils.copyProperties(reportee.orElseThrow(), updateMemberDto);
-        updateMemberDto.setUnlockTime(reportee.orElseThrow().getUnlockTime().plusDays(UnlockDuration.valueOf(unlockDuration).getDays()));
+        updateMemberDto.setUnlockTime(reportee.orElseThrow().getUnlockTime().plusDays(UnlockDuration.valueOf(reportProcessingDto.getUnlockDuration()).getDays()));
 
         memberService.updateMember(updateMemberDto);
 
         return ReportProcessingDto.fromEntity(reportRepository.findReportByReportId(reportProcessingDto.getReportId()));
         
+    }
+
+    @Override
+    public FeedAttachmentDto getImageByAttatchmentId(int attachmentId) {
+
+        return FeedAttachmentDto.toDto(feedAttachmentRepository.findByAttachmentId(attachmentId));
     }
 
     /**

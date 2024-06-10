@@ -26,6 +26,7 @@ public class ReportProcessingDto {
     private String reportText;
     private LocalDateTime reportedTime;
     private String processingText;
+    private String unlockDuration;
 
 
     public static ReportProcessingDto fromEntity(Report report) {
