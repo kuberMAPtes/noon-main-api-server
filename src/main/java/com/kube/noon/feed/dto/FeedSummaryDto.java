@@ -30,7 +30,6 @@ public class FeedSummaryDto {
                 .title(feed.getTitle())
                 .feedText(feed.getFeedText())
                 .buildingId(feed.getBuilding().getBuildingId())
-                .buildingName(feed.getBuilding().getBuildingName())
                 .feedAttachementURL((feed.getAttachments() == null || feed.getAttachments().size() == 0) ? null : feed.getAttachments().get(0).getFileUrl())
                 .build();
     }

@@ -146,7 +146,18 @@
             <artifactId>imageio-webp</artifactId>
             <version>3.9.4</version>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/org.apache.mahout/mahout-integration -->
+        <dependency>
+            <groupId>org.apache.mahout</groupId>
+            <artifactId>mahout-integration</artifactId>
+            <version>0.13.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.mahout/mahout-mr -->
+        <dependency>
+            <groupId>org.apache.mahout</groupId>
+            <artifactId>mahout-mr</artifactId>
+            <version>0.13.0</version>
+        </dependency>
     </dependencies>
 
     <build>

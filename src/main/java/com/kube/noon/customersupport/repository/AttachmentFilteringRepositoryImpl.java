@@ -7,7 +7,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+
 import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.imageio.ImageIO;
@@ -104,9 +109,39 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
     }///end of findFilteredListByAI
 
 
+    /**
+     * 필터링된 유해사진을 페이지로 나누어 제공
+     * Pageable을 사용한 페이징 로직 구현 (JPARepository미사용에 따른)
+     *
+     * @param feedAttachmentList 유해성을 검사할 피드첨부파일 리스트
+     * @param pageable 페이징 정보를 담은 객체
+     * @return 페이징한 결과 Page
+     */
+    @Override
+    public Page<FeedAttachment> findBadImageListByAI(List<FeedAttachment> feedAttachmentList, Pageable pageable) {
+
+        List<FeedAttachment> badImageList = findBadImageListByAI(feedAttachmentList);
+
+        int pageSize = pageable.getPageSize();
+        int currentPage = pageable.getPageNumber();
+        int startItem = currentPage * pageSize;
+        List<FeedAttachment> pagedList;
 
 
-    ///Method
+        // 해당 페이지에 목록 없을때는 빈 리스트
+        if (badImageList.size() < startItem) {
+            pagedList = List.of();
+        } else {
+            int endItem = Math.min(startItem + pageSize, badImageList.size());
+            pagedList = badImageList.subList(startItem, endItem);
+        }
+
+        return new PageImpl<>(pagedList, PageRequest.of(currentPage, pageSize), badImageList.size());
+
+    }/// end of findBadImageListByAI
+
+
+
     @Override
     public String addBluredFile(String fileUrl) {
 

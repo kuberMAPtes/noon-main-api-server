@@ -1,6 +1,7 @@
 package com.kube.noon.customersupport.service;
 import com.kube.noon.common.FileType;
 import com.kube.noon.customersupport.domain.Report;
+import com.kube.noon.customersupport.dto.notice.NoticeDto;
 import com.kube.noon.customersupport.dto.report.ReportDto;
 import com.kube.noon.customersupport.dto.report.ReportProcessingDto;
 import com.kube.noon.feed.domain.Feed;
@@ -30,11 +31,39 @@ public class TestCustomerSupportService {
     private MemberService memberService;
 
 
+    @Test
+    void getNoticeList(){
+        List<NoticeDto> noticeDtoList = customerSupportService.getNoticeList();
+        log.info(noticeDtoList.toString());
+    }
+
+
+    @Test
+    void getNoticeListByPageable(){
+        List<NoticeDto> noticeDtoList = customerSupportService.getNoticeListByPageable(0);
+        log.info(noticeDtoList.toString());
+    }
+
+
+    @Test
+    void getLatestReport(){
+        ReportDto report = customerSupportService.getLatestReport();
+        log.info(report.toString());
+    }
+
 
     @Test
     void getReportList(){
 
         List<ReportDto> reportDtoList = customerSupportService.getReportList();
+        log.info(reportDtoList.toString());
+
+    }
+
+    @Test
+    void getReportListByPageable(){
+
+        List<ReportDto> reportDtoList = customerSupportService.getReportListByPageable(0);
         log.info(reportDtoList.toString());
 
     }
@@ -49,6 +78,7 @@ public class TestCustomerSupportService {
         log.info(reportDto.toString());
 
     }
+
 
     @Test
     void addReport(){
@@ -117,5 +147,11 @@ public class TestCustomerSupportService {
     void getFilteredListByAI(){
         List<FeedAttachmentDto> filteredList = customerSupportService.getFilteredListByAI();
         log.info("유해성 1차 필터링된 첨부파일={}",filteredList);
+    }
+
+    @Test
+    void getFilteredListByAIAndPageable(){
+        List<FeedAttachmentDto> filteredList = customerSupportService.getFilteredListByAIAndPageable(0);
+        log.info("유해성 1차 필터링된 첨부파일 첫 페이지={}",filteredList);
     }
 }

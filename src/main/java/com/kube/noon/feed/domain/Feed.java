@@ -24,9 +24,6 @@ public class Feed {
     @Column(name = "feed_id")
     private int feedId;
 
-//    @Column(name = "writer_id", length = 20, nullable = false)
-//    private String writerId;
-//
 //    @Column(name = "building_id")
 //    private int buildingId;
 
@@ -66,7 +63,7 @@ public class Feed {
     private List<TagFeed> tagFeeds;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "building_id")
+    @JoinColumn(name = "building_id", nullable = true)
     private Building building;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -83,7 +80,8 @@ public class Feed {
                 + " / buildingId : " + building.getBuildingId()
                 + " / feedTitle: " + title
                 + " / feedText: " + feedText
-                + " / activated : " + activated;
+                + " / activated : " + activated
+                + " / comments : " + comments;
     }
 
 }

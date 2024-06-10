@@ -16,6 +16,9 @@ public interface FeedService {
     // 회원별 피드 목록을 가져온다,
     List<FeedSummaryDto> getFeedListByMember(String memberId);
 
+    // 건물별 피드 목록을 가져온다. 필요에 따라 피드를 추천한다.
+    List<FeedSummaryDto> getFeedListByBuilding(String memberId, int buildingId);
+
     // 건물별 피드 목록을 가져온다.
     List<FeedSummaryDto> getFeedListByBuilding(int buildingId);
 
@@ -32,10 +35,10 @@ public interface FeedService {
     int addFeed(FeedDto feedDto);
 
     // 피드를 수정한다.
-    int updateFeed(FeedDto feedSummaryDto);
+    int updateFeed(FeedDto feedDto);
 
     // 피드를 삭제한다.
-    int deleteFeed(FeedDto feedSummaryDto);
+    int deleteFeed(FeedDto feedDto);
 
     // 피드 하나를 상세보기한다.
     FeedDto getFeedById(int feedId);
