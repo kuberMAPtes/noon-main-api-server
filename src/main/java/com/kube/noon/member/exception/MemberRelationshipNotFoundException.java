@@ -1,10 +1,29 @@
 package com.kube.noon.member.exception;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.Getter;
 
-@Slf4j
-public class MemberRelationshipNotFoundException extends RuntimeException{
-    public MemberRelationshipNotFoundException(String message){
+import java.util.Map;
+
+@Getter
+public class MemberRelationshipNotFoundException extends RuntimeException {
+    private Map<String, Object> problems;
+
+    public MemberRelationshipNotFoundException(String message) {
         super(message);
     }
+
+    public MemberRelationshipNotFoundException(String message, Map<String, Object> problems) {
+        super(message);
+        this.problems = problems;
+    }
+
+    public MemberRelationshipNotFoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public MemberRelationshipNotFoundException(String message, Throwable cause, Map<String, Object> problems) {
+        super(message, cause);
+        this.problems = problems;
+    }
+
 }

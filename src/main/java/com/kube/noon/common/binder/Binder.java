@@ -13,7 +13,7 @@ package com.kube.noon.common.binder;
  */
 public interface Binder<D, E> {
     default E toEntity(D dto){throw new UnsupportedOperationException("Not implemented yet");};
-    default E toResponseDto(D dto){throw new UnsupportedOperationException("Not implemented yet");};
+    default E toOtherDto(D dto){throw new UnsupportedOperationException("Not implemented yet");};
     default D toDto(E entity){throw new UnsupportedOperationException("Not implemented yet");};
 
 }

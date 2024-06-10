@@ -1,7 +1,9 @@
 package com.kube.noon.member.validator;
 
 import com.kube.noon.common.validator.ValidationChain;
-import com.kube.noon.member.dto.*;
+import com.kube.noon.member.dto.member.*;
+import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
+import com.kube.noon.member.dto.memberRelationship.DeleteMemberRelationshipDto;
 import com.kube.noon.member.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -36,10 +38,12 @@ public class MemberValidationRule {
             memberScanner.imoDataNotNull(dto.getMemberId());
             memberScanner.imoMemberIdNotExist(dto.getMemberId());
             memberScanner.imoMemberIdPatternO(dto.getMemberId());
+            memberScanner.imoNotBadWord(dto.getMemberId());
 
             memberScanner.imoDataNotNull(dto.getNickname());
             memberScanner.imoNicknameNotAlreadyExist(dto.getNickname());
             memberScanner.imoNicknamePatternO(dto.getNickname());
+            memberScanner.imoNotBadWord(dto.getNickname());
 
             memberScanner.imoDataNotNull(dto.getPhoneNumber());
             memberScanner.imoPhoneNumberNotAlreadyExist(dto.getPhoneNumber());
@@ -67,20 +71,11 @@ public class MemberValidationRule {
 
 
         });
-
-        //비밀번호를 변경 ~~하면 비밀번호변경 안되어야해
-        //일단 회원이 접속하지 않았으면 변경이 안되어야해는 jwt키
-        //본인이 아니라면 변경이 안되어야해
-        //형식이
-        validationChain.addRule(UpdatePasswordDto.class, dto -> {
-            memberScanner.imoDataNotNull(dto.getMemberId());
-            memberScanner.imoDataNotNull(dto.getPwd());
-            memberScanner.imoPwdPatternO(dto.getPwd());
-        });
-
         //둘중하나
         validationChain.addRule(UpdateMemberDto.class, dto -> {
             memberScanner.imoTwoDataNotNullSimul(dto.getMemberId(), dto.getNickname());
+            memberScanner.imoNotBadWord(dto.getMemberId());
+            memberScanner.imoNotBadWord(dto.getNickname());
 
             if(dto.getMemberId()!=null) {
                 memberScanner.imoMemberIdPatternO(dto.getMemberId());
@@ -95,12 +90,48 @@ public class MemberValidationRule {
                 memberScanner.imoProfileIntroPatternO(dto.getProfileIntro());
             }
             if(dto.getUnlockTime()!=null){
-                memberScanner.imoUnlockTImePatternO(dto.getUnlockTime());
+                memberScanner.imoUnlockTimePatternO(dto.getUnlockTime());
             }
             //레인지는 정할 룰이 없다.
             //알람설정은 정할 룰이 없다.
 
         });
+
+        //비밀번호를 변경 ~~하면 비밀번호변경 안되어야해
+        //일단 회원이 접속하지 않았으면 변경이 안되어야해는 jwt키
+        //본인이 아니라면 변경이 안되어야해
+        //형식이
+        validationChain.addRule(UpdatePasswordDto.class, dto -> {
+            memberScanner.imoDataNotNull(dto.getMemberId());
+            memberScanner.imoDataNotNull(dto.getPwd());
+            memberScanner.imoMemberIdExist(dto.getMemberId());
+            memberScanner.imoPwdPatternO(dto.getPwd());
+        });
+        validationChain.addRule(UpdatePhoneNumberDto.class, dto -> {
+            memberScanner.imoDataNotNull(dto.getMemberId());
+            memberScanner.imoDataNotNull(dto.getPhoneNumber());
+            memberScanner.imoMemberIdExist(dto.getMemberId());
+            memberScanner.imoPhoneNumberPatternO(dto.getPhoneNumber());
+        });
+        validationChain.addRule(UpdateMemberProfilePhotoUrlDto.class, dto -> {
+            memberScanner.imoDataNotNull(dto.getMemberId());
+            memberScanner.imoDataNotNull(dto.getProfilePhotoUrl());
+            memberScanner.imoMemberIdExist(dto.getMemberId());
+            memberScanner.imoProfilePhotoUrlPatternO(dto.getProfilePhotoUrl());
+        });
+        validationChain.addRule(UpdateMemberProfileIntroDto.class, dto -> {
+            memberScanner.imoDataNotNull(dto.getMemberId());
+            memberScanner.imoDataNotNull(dto.getProfileIntro());
+            memberScanner.imoMemberIdExist(dto.getMemberId());
+            memberScanner.imoProfileIntroPatternO(dto.getProfileIntro());
+        });
+        validationChain.addRule(UpdateMemberDajungScoreDto.class, dto -> {
+            memberScanner.imoDataNotNull(dto.getMemberId());
+            memberScanner.imoDataNotNull(dto.getDajungScore());
+            memberScanner.imoMemberIdExist(dto.getMemberId());
+            memberScanner.imoDajungScorePatternO(dto.getDajungScore());
+        });
+
 
         validationChain.addRule(DeleteMemberRelationshipDto.class, dto -> {
             memberScanner.imoDataNotNull(dto.getFromId());
@@ -108,8 +139,6 @@ public class MemberValidationRule {
             memberScanner.imoDataNotNull(dto.getRelationshipType());
             memberScanner.imoMemberNotSame(dto.getFromId(), dto.getToId());
             memberScanner.imoMemberRelationshipExist(dto.getFromId(),dto.getToId());
-
-
         });
 
 

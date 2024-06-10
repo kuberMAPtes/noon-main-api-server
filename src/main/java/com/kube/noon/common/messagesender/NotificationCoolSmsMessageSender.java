@@ -24,7 +24,6 @@ import java.util.UUID;
 
 @Slf4j
 @Component
-@Profile("prod")
 public class NotificationCoolSmsMessageSender implements NotificationMessageSender {
     private static final String URL = "https://api.coolsms.co.kr/messages/v4/send-many/detail";
     private static final String KOREA_COUNTRY_CODE = "82";

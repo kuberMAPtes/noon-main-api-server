@@ -60,12 +60,12 @@ public class DtoEntityConverter {
         return converter.toEntity(dto);
     }
     @SuppressWarnings("unchecked")
-    public <D, E> E toResponseDto(D dto) {
+    public <D, E> E toOtherDto(D dto) {
         Binder<D, E> converter = (Binder<D, E>) converters.get(dto.getClass());
         if (converter == null) {
             throw new IllegalArgumentException("지원되지 않는 DTO 타입입니다: " + dto.getClass());
         }
-        return converter.toResponseDto(dto);
+        return converter.toOtherDto(dto);
     }
 
     @SuppressWarnings("unchecked")
