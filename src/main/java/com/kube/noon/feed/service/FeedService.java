@@ -35,10 +35,10 @@ public interface FeedService {
     int addFeed(FeedDto feedDto);
 
     // 피드를 수정한다.
-    int updateFeed(FeedDto feedSummaryDto);
+    int updateFeed(FeedDto feedDto);
 
     // 피드를 삭제한다.
-    int deleteFeed(FeedDto feedSummaryDto);
+    int deleteFeed(FeedDto feedDto);
 
     // 피드 하나를 상세보기한다.
     FeedDto getFeedById(int feedId);

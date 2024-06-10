@@ -118,6 +118,7 @@ public class FeedServiceImpl implements FeedService {
     @Override
     public int addFeed(FeedDto feedDto) {
         Feed addFeed = FeedDto.toEntity(feedDto);
+        addFeed.setActivated(true);
         return feedRepository.save(addFeed).getFeedId();
     }
 
