@@ -18,10 +18,12 @@ public interface CustomerSupportService {
     List<ReportDto> getReportListByPageable(int pageNumber);
     ReportDto getReportByReportId(int reportId);
     ReportDto addReport(ReportDto reportDto);
-    ReportProcessingDto updateReport(ReportProcessingDto reportProcessingDto, String unlockDuration);
+    ReportProcessingDto updateReport(ReportProcessingDto reportProcessingDto);
 
+    FeedAttachmentDto getImageByAttatchmentId(int attachmentId);
     FeedAttachmentDto addBluredImage(FeedAttachmentDto attachmentDto) throws IOException;
     List<FeedAttachmentDto> getFilteredListByAI();
     List<FeedAttachmentDto> getFilteredListByAIAndPageable(int pageNumber);
+
 
 }
