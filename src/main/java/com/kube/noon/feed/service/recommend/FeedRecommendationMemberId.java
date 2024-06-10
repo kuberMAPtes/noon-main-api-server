@@ -20,7 +20,7 @@ import java.util.List;
 public class FeedRecommendationMemberId {
     private static HashMap<Long, String> members;
     private static HashMap<Long, String> tagTexts;
-    private static final String filePath = "src/main/java/com/kube/noon/feed/service/recommend/member_like_tags.csv";
+    private static final String FILE_PATH = "src/main/java/com/kube/noon/feed/service/recommend/member_like_tags.csv";
 
     public static void initData(List<MemberLikeTagDto> memberLikeTagDtoList) {
         // Hash -> String으로 변환하기 위한 데이터값 삽입
@@ -29,7 +29,7 @@ public class FeedRecommendationMemberId {
 
         memberLikeTagDtoList = MinMaxScaler.tagCountScaler(memberLikeTagDtoList);
 
-        try (FileWriter writer = new FileWriter(filePath)) {
+        try (FileWriter writer = new FileWriter(FILE_PATH)) {
             for (MemberLikeTagDto data : memberLikeTagDtoList) {
                 String memberId = data.getMemberId();
                 String tagText = data.getTagText();
@@ -54,7 +54,7 @@ public class FeedRecommendationMemberId {
         List<String> memberIdList = new ArrayList<>();
 
         try {
-            DataModel model = new FileDataModel(new File(filePath));
+            DataModel model = new FileDataModel(new File(FILE_PATH));
 
             UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
             UserNeighborhood neighborhood = new NearestNUserNeighborhood(2, similarity, model);

@@ -57,13 +57,22 @@ public class FeedServiceImpl implements FeedService {
         } else {
             Random rand = new Random();
             String recommandMemberId = memberIdList.get(rand.nextInt(memberIdList.size()));
+            Member recommandMember = Member.builder().memberId(recommandMemberId).build();
 
-            entities = feedRepository.findFeedWithLikesFirst(member, building);
+            entities = feedRepository.findFeedWithLikesFirst(recommandMember, building);
         }
 
         List<FeedSummaryDto> feedListByBuilding = FeedSummaryDto.toDtoList(entities);
 
         return feedListByBuilding;
+    }
+
+    @Override
+    public List<FeedSummaryDto> getFeedListByBuilding(int buildingId) {
+        Building building = Building.builder().buildingId(buildingId).build();
+        List<Feed> entities = feedRepository.findByBuildingAndActivatedTrue(building);
+
+        return FeedSummaryDto.toDtoList(entities);
     }
 
     @Override
