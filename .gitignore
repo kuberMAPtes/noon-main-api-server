@@ -37,3 +37,6 @@ application-priv*
 
 ColoredMessageConverter.java
 LogbackConfig.java
+
+## CSV
+member_like_tags.csv
