@@ -54,7 +54,7 @@ public class BuildingProfileRestController {
      */
     @PostMapping("/addSubscriptionFromSomeone")
     public List<BuildingDto> addSubscriptionFromSomeone(@RequestBody MemberRelationshipDto memberRelationshipDto ) {
-        return buildingProfileService.addSubscriptionFromSomeone(memberRelationshipDto.getFromId(), memberRelationshipDto.getToId());
+        return buildingProfileService.addSubscriptionFromSomeone(memberRelationshipDto.getFromMember().getMemberId(), memberRelationshipDto.getToMember().getMemberId());
     }
 
     /**
