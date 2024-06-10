@@ -11,7 +11,7 @@ import org.springframework.web.context.request.WebRequest;
 import java.util.HashMap;
 import java.util.Map;
 
-@ControllerAdvice
+@ControllerAdvice(basePackages = "com.kube.noon.member.controller")
 public class GlobalExceptionHandler {
 
     @ExceptionHandler({
