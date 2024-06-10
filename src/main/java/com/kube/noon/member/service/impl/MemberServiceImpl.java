@@ -1,8 +1,8 @@
 package com.kube.noon.member.service.impl;
 
 import com.kube.noon.common.PublicRange;
-import com.kube.noon.common.badwordfiltering.BadWordFilterAgent;
 import com.kube.noon.common.binder.DtoEntityBinder;
+import com.kube.noon.common.messagesender.NotificationCoolSmsMessageSender;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
@@ -17,6 +17,7 @@ import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.exception.*;
 import com.kube.noon.member.repository.MemberRepository;
+import com.kube.noon.member.repository.impl.SmsCertificationRepository;
 import com.kube.noon.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,8 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final FeedService feedService;
-    private final BadWordFilterAgent badWordFilterAgent;
+    private final SmsCertificationRepository smsCertificationRepository;
+    private final NotificationCoolSmsMessageSender notificationCoolSmsMessageSender;
 
 //    private final SettingService settingService;
 
@@ -406,37 +408,31 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public boolean checkNickname(String nickname) {
-        log.info("회원 닉네임 중복 확인 완료 : {}", nickname);
-        return false;
+    public void checkNickname(String nickname) {
+            log.info("회원 닉네임 중복 확인 완료 : {}", nickname);
     }
 
     @Override
-    public boolean checkMemberId(String memberId) {
+    public void checkMemberId(String memberId) {
         log.info("회원 아이디 중복 확인 완료 : {}", memberId);
-        return false;
     }
 
     @Override
-    public boolean checkPassword(String memberId, String password) {
+    public void checkPassword(String memberId, String password) {
         log.info("회원 비밀번호 확인 완료 : {}", memberId);
-        return false;
     }
 
     @Override
-    public boolean checkPhoneNumber(String phoneNumber) {
+    public void checkPhoneNumber(String phoneNumber) {
         log.info("회원 전화번호 중복 확인 완료 : {}", phoneNumber);
-        return false;
+
     }
 
     @Override
-    public boolean checkBadWord(String word) {
-        return badWordFilterAgent.change(
-                        word.replace("*", "")
-                        , badWordFilterAgent.getBadWordSeparator()
-                )
-                .contains("*");
+    public void checkBadWord(String word) {
+        log.info("회원 단어 확인 완료 : {}", word);
     }
+
 
     private void setMemberInitializer(String memberId) {
 

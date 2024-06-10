@@ -38,10 +38,12 @@ public class MemberValidationRule {
             memberScanner.imoDataNotNull(dto.getMemberId());
             memberScanner.imoMemberIdNotExist(dto.getMemberId());
             memberScanner.imoMemberIdPatternO(dto.getMemberId());
+            memberScanner.imoNotBadWord(dto.getMemberId());
 
             memberScanner.imoDataNotNull(dto.getNickname());
             memberScanner.imoNicknameNotAlreadyExist(dto.getNickname());
             memberScanner.imoNicknamePatternO(dto.getNickname());
+            memberScanner.imoNotBadWord(dto.getNickname());
 
             memberScanner.imoDataNotNull(dto.getPhoneNumber());
             memberScanner.imoPhoneNumberNotAlreadyExist(dto.getPhoneNumber());
@@ -72,6 +74,8 @@ public class MemberValidationRule {
         //둘중하나
         validationChain.addRule(UpdateMemberDto.class, dto -> {
             memberScanner.imoTwoDataNotNullSimul(dto.getMemberId(), dto.getNickname());
+            memberScanner.imoNotBadWord(dto.getMemberId());
+            memberScanner.imoNotBadWord(dto.getNickname());
 
             if(dto.getMemberId()!=null) {
                 memberScanner.imoMemberIdPatternO(dto.getMemberId());

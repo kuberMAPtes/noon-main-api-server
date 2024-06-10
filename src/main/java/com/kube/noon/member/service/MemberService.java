@@ -50,13 +50,14 @@ public interface MemberService {
 
     void deleteMember(String memberId);
 
-    boolean checkNickname(String nickname);
+    void checkNickname(String nickname);
 
-    boolean checkMemberId(String memberId);
+    void checkMemberId(String memberId);
 
-    boolean checkPassword(String email, String password);
+    void checkPassword(String email, String password);
 
-    boolean checkPhoneNumber(String phoneNumber);
+    void checkPhoneNumber(String phoneNumber);
 
-    boolean checkBadWord(String word);
+    void checkBadWord(String word);
+
 }

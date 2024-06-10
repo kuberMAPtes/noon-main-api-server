@@ -1,4 +1,4 @@
-package com.kube.noon.member.repository;
+package com.kube.noon.member.repository.impl;
 
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.domain.Member;
@@ -7,6 +7,9 @@ import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.exception.*;
+import com.kube.noon.member.repository.MemberJpaRepository;
+import com.kube.noon.member.repository.MemberRelationshipJpaRepository;
+import com.kube.noon.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;

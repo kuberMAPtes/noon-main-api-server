@@ -64,8 +64,8 @@ public class KakaoServiceImpl implements KakaoService {
 
     }
 
-    public Mono<String> getUserInformation(String access_token) throws Exception {
-        System.out.println("getUserInformation() 호출 :: 카카오서비스");
+    public Mono<String> getMemberInformation(String access_token) throws Exception {
+        System.out.println("getMemberInformation() 호출 :: 카카오서비스");
         String path = "/v2/user/me";
         System.out.println(path);
 

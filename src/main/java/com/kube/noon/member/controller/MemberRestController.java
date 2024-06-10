@@ -3,8 +3,6 @@ package com.kube.noon.member.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kube.noon.common.binder.DtoEntityBinder;
-import com.kube.noon.common.messagesender.NotificationCoolSmsMessageSender;
-import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.RequestDto.LoginRequestDto;
 import com.kube.noon.member.dto.RequestDto.MemberRelationshipSearchCriteriaRequestDto;
 import com.kube.noon.member.dto.RequestDto.MemberSearchCriteriaRequestDto;
@@ -18,18 +16,16 @@ import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import com.kube.noon.member.dto.util.RandomData;
 import com.kube.noon.member.enums.LoginFlag;
 import com.kube.noon.member.enums.RelationshipType;
+import com.kube.noon.member.service.AuthService;
 import com.kube.noon.member.service.KakaoService;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
-import com.kube.noon.member.validator.MemberScanner;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +39,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * 음? 왜 바로 ok만 내보내지? -> GlobalExceptionHandler에서 검증하고 있음
+ * 음? 왜 memberService 에서 그냥 ok만 내보내지? ->memberValidator, memberValidationRule,memberScanner 에서 검증하고 있음
+ *
+ * 잘못된 설계가 하나 있음 RequestDto로 쓰이는 Dto중에 FromId가 존재하는 것들이 있음. RequestDto에서 FromId를 꺼내서 쓰면 절대 안됨 비었음.
+ */
 @Slf4j
 @RestController
 @RequestMapping("/member")
@@ -54,7 +56,7 @@ public class MemberRestController {
 
     private final KakaoService kakaoService;
 
-    private final NotificationCoolSmsMessageSender notificationCoolSmsMessageSender;
+    private final AuthService authService;
 
     @Value("${pageUnit}")
     int pageUnit;
@@ -62,44 +64,29 @@ public class MemberRestController {
     @Value("${pageSize}")
     int pageSize;
 
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    private MemberScanner memberScanner;
 
     // Constructor
     public MemberRestController(@Qualifier("memberServiceImpl") MemberService memberService
             , @Qualifier("loginAttemptCheckerAgent") LoginAttemptCheckerAgent loginAttemptCheckerAgent
             , KakaoService kakaoService
-            , NotificationCoolSmsMessageSender notificationCoolSmsMessageSender) {
+            , AuthService authService) {
+        this.authService = authService;
         System.out.println("생성자 :: " + this.getClass());
-        this.notificationCoolSmsMessageSender = notificationCoolSmsMessageSender;
         this.kakaoService = kakaoService;
         this.memberService = memberService;
         this.loginAttemptCheckerAgent = loginAttemptCheckerAgent;
     }
 
-    // Common
-    private void checkBadWord(String word) {
-        if (memberService.checkBadWord(word)) {
-            String bodyString = "비속어는 사용할 수 없습니다.";
-            ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(bodyString);
-        }
-    }
-    // Method
 
     @GetMapping("/sendAuthentificationNumber")
     public ResponseEntity<ApiResponse<Void>> sendAuthentificationNumber(@RequestParam String phoneNumber) {
-        MemberDto dto = memberService.findMemberByPhoneNumber(phoneNumber);
-        String messageFormat = "인증번호 : ";
-        String authNumber = RandomData.getRandomAuthNumber();
-        notificationCoolSmsMessageSender.send(DtoEntityBinder.INSTANCE.toEntity(dto), messageFormat);
+        authService.sendAuthentificationNumber(phoneNumber);
         return ResponseEntity.ok(ApiResponseFactory.createResponse(phoneNumber + "로 인증 번호가 전송되었습니다.", null));
     }
 
     @GetMapping("/confirmAuthentificationNumber")
     public ResponseEntity<ApiResponse<Void>> confirmAuthentificationNumber(@RequestParam String phoneNumber, @RequestParam String authNumber) {
-        boolean isConfirmed = memberService.confirmAuthenticationNumber(phoneNumber, authNumber);
+        boolean isConfirmed = authService.confirmAuthenticationNumber(phoneNumber, authNumber);
         if (isConfirmed) {
             return ResponseEntity.ok(ApiResponseFactory.createResponse("인증이 확인되었습니다.", null));
         } else {
@@ -109,34 +96,28 @@ public class MemberRestController {
 
     @GetMapping("/checkMemberId")
     public ResponseEntity<ApiResponse<String>> checkMemberId(@RequestParam String memberId) {
-        boolean isOk = memberService.checkMemberId(memberId);
-        checkBadWord(memberId);
-        return ResponseEntity.ok(ApiResponseFactory.createResponse(isOk ? "회원 ID가 중복됩니다." : "회원 ID를 사용할 수 있습니다.", null));
+        memberService.checkMemberId(memberId);
+        memberService.checkBadWord(memberId);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 ID를 사용할 수 있습니다.", null));
     }
 
     @GetMapping("/checkNickname")
     public ResponseEntity<ApiResponse<String>> checkNickname(@RequestParam String nickname) {
-        boolean isOk = memberService.checkNickname(nickname);
-        checkBadWord(nickname);
-        return ResponseEntity.ok(ApiResponseFactory.createResponse(isOk ? "닉네임이 중복됩니다." : "닉네임을 사용할 수 있습니다.", null));
+        memberService.checkNickname(nickname);
+        memberService.checkBadWord(nickname);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("닉네임을 사용할 수 있습니다.", null));
     }
 
     @GetMapping("/checkPhoneNumber")
     public ResponseEntity<ApiResponse<String>> checkPhoneNumber(@RequestParam String phoneNumber) {
-        boolean isOk = memberService.checkPhoneNumber(phoneNumber);
-        checkBadWord(phoneNumber);
-        return ResponseEntity.ok(ApiResponseFactory.createResponse(isOk ? "전화번호가 중복됩니다." : "전화번호를 사용할 수 있습니다.", null));
+        memberService.checkPhoneNumber(phoneNumber);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("전화번호를 사용할 수 있습니다.", null));
     }
 
     @GetMapping("/checkPassword")
     public ResponseEntity<ApiResponse<String>> checkPassword(@RequestParam String memberId, @RequestParam String password) {
-        boolean isOk = memberService.checkPassword(memberId, password);
-        checkBadWord(password);
-        if (isOk) {
-            return ResponseEntity.ok(ApiResponseFactory.createResponse("패스워드를 사용할 수 있습니다.", null));
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponseFactory.createErrorResponse("부적합한 패스워드입니다."));
-        }
+        memberService.checkPassword(memberId, password);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("패스워드를 사용할 수 있습니다.", null));
     }
 
     @PostMapping("/login")
@@ -156,9 +137,10 @@ public class MemberRestController {
         }
 
         if (isCorrect.get().equals(LoginFlag.SUCCESS)) {
-            String jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0IiwiaWF0IjoxNjI5MzQwNjYwLCJleHAiOjE2MjkzNDA2NjB9.1";
             loginAttemptCheckerAgent.loginSucceeded(id);
-            return ResponseEntity.status(HttpStatus.OK).body(ApiResponseFactory.createResponse("로그인 성공", jwt));
+            return ResponseEntity.ok()
+                    .header("Authorization", RequestContext.getAuthorization())
+                    .body(ApiResponseFactory.createResponse("로그인 성공", null));
         } else if (isCorrect.get().equals(LoginFlag.INCORRECT_ID)) {
             loginAttemptCheckerAgent.loginFailed(id);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponseFactory.createErrorResponse("존재하지 않는 아이디입니다."));
@@ -184,23 +166,24 @@ public class MemberRestController {
      *                 "refresh_token_expires_in":5184000,
      *                 "scope":"account_email profile"
      *             }
-     * @param authorize_code
-     * @return
-     * @throws Exception
+     *             1. 토큰얻기 서비스 사용(사용자가 카카오로그인인증을 마쳤다는거임)
+     *             2. 얻은 토큰으로 멤버정보얻기
+     *             3. 얻은 정보로 처음이면 회원가입시키기, 있으면 로그인
      */
     @RequestMapping(value = "kakaoLogin", method = RequestMethod.GET)
-    public Mono<ResponseEntity<?>> kakaoLogin(@RequestParam(value = "code") String authorize_code) throws Exception {
+    public Mono<ResponseEntity<ApiResponse<String>>> kakaoLogin(@RequestParam(value = "code") String authorize_code) throws Exception {
         System.out.println("code : " + authorize_code);
         return kakaoService.getAccessToken(authorize_code)
                 .publishOn(Schedulers.boundedElastic())
                 //여기서 받은건 body를  Mono<String>으로 변환한걸 받고 Mono<ResponseEntity<?>>로 변환
                 .map(result -> {
+                    //액세스토큰 받은거로 kakaoService.getMemberInformation
                     System.out.println("result : " + result);
                     JSONObject ResultJsonObject = new JSONObject(result);
                     AtomicReference<String> memberId= new AtomicReference<>("");
 
                     try {
-                        kakaoService.getUserInformation(ResultJsonObject.get("access_token")+"")
+                        kakaoService.getMemberInformation(ResultJsonObject.get("access_token")+"")
                                 .doOnSubscribe(subscription -> System.out.println("Request subscribed"))
                                 .doOnNext(response -> System.out.println("Received response: " + response))
                                 .doOnError(error -> System.out.println("Error occurred: " + error.getMessage()))
@@ -240,9 +223,6 @@ public class MemberRestController {
                                     } catch (Exception e) {
                                         throw new RuntimeException(e);
                                     }
-
-                                    session.setAttribute("user", user);
-
                                     return response;
                                 }).block();
                     } catch (Exception e) {
@@ -250,7 +230,8 @@ public class MemberRestController {
                     }
 //                    return ResponseEntity.status(HttpStatus.OK).body(result);
                     return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
-                            .header(HttpHeaders.LOCATION, "http://127.0.0.1:3000/?access_token="+ ResultJsonObject.get("access_token")+"&memberId="+ memberId)
+                            .header(HttpHeaders.LOCATION, "http://127.0.0.1:3000/?access_token="+ ResultJsonObject.get("access_token")+"&memberId="+ memberId,
+                                    "Authorization",RequestContext.getAuthorization())
                             .build();
                 });
     }
@@ -319,8 +300,6 @@ public class MemberRestController {
 
     /**
      * 관리자가 사용
-     * @param memberId
-     * @return
      */
     @GetMapping("/getMember/{fromId}/{memberId}/")
     public ResponseEntity<ApiResponse<MemberDto>> getMember(@PathVariable String fromId, @PathVariable String memberId) {
@@ -330,9 +309,7 @@ public class MemberRestController {
 
     @GetMapping("/getMemberProfile/{fromId}/{toId}")
     public ResponseEntity<ApiResponse<MemberProfileDto>> getMemberProfile(@PathVariable String fromId, @PathVariable String toId) {
-        MemberProfileDto dto = null;
-        MemberDto fromMemberDto = memberService.findMemberById(fromId, toId);
-        MemberRelationshipDto memberRelationshipDto = memberService.findMemberRelationship(fromId, toId);
+        MemberProfileDto dto = memberService.findMemberProfileById(fromId, toId);
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 프로필 조회 성공", dto));
     }
 
@@ -374,6 +351,7 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse(message, null));
     }
 
+    //이게
     private String validateJwtToken(String token) {
         // JWT 토큰 검증 로직 구현
         // 유효한 토큰이면 사용자 ID를 반환하고, 그렇지 않으면 예외를 던집니다.

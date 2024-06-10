@@ -1,8 +1,9 @@
-package com.kube.noon.member.repository;
+package com.kube.noon.member.repository.impl;
 
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.QMember;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
+import com.kube.noon.member.repository.MemberJpaRepositoryQuery;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;

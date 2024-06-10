@@ -1,5 +1,6 @@
 package com.kube.noon.member.validator;
 
+import com.kube.noon.common.badwordfiltering.BadWordFilterAgent;
 import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.common.validator.IllegalServiceCallException;
 import com.kube.noon.common.validator.Problems;
@@ -39,10 +40,12 @@ public class MemberScanner {
     private final WebClient webClient;
     private final ValidationChain validationChain;
     private final MemberRepository memberRepository;
+    private final BadWordFilterAgent badWordFilterAgent;
 
-    public MemberScanner(ValidationChain validationChain, MemberRepository memberRepository) {
+    public MemberScanner(ValidationChain validationChain, MemberRepository memberRepository, BadWordFilterAgent badWordFilterAgent) {
         this.validationChain = validationChain;
         this.memberRepository = memberRepository;
+        this.badWordFilterAgent = badWordFilterAgent;
         this.webClient = WebClient.builder().build();
     }
 
@@ -255,6 +258,15 @@ public class MemberScanner {
         LocalDateTime exceptionalTime = LocalDateTime.of(1, 1, 1, 1, 1, 1);
         if (!unlockTime.equals(exceptionalTime) && unlockTime.isBefore(LocalDateTime.now())) {
             throw new IllegalServiceCallException("잠금 해제 시간은 현재 시간 이후이여야 합니다. 아니면 디폴트 시간 이어야 합니다.", new Problems(Map.of("unlockTime", unlockTime)));
+        }
+    }
+    public void imoNotBadWord(String word) {
+        if(badWordFilterAgent.change(
+                        word.replace("*", "")
+                        , badWordFilterAgent.getBadWordSeparator()
+                )
+                .contains("*")){
+            throw new IllegalServiceCallException("금지어가 포함되어 있습니다.", new Problems(Map.of("word", word)));
         }
     }
 

@@ -126,12 +126,14 @@ public class MemberValidator {
         memberScanner.imoDataNotNull(nickname);
         memberScanner.imoNicknamePatternO(nickname);
         memberScanner.imoMemberNicknameNotExist(nickname);
+        memberScanner.imoNotBadWord(nickname);
     }
 
     public void checkMemberId(String memberId) {
         memberScanner.imoDataNotNull(memberId);
         memberScanner.imoMemberIdPatternO(memberId);
         memberScanner.imoMemberIdNotExist(memberId);
+        memberScanner.imoNotBadWord(memberId);
     }
 
     public void checkPassword(String memberId, String password) {
@@ -148,5 +150,12 @@ public class MemberValidator {
 
     public void checkBadWord(String word) {
         memberScanner.imoDataNotNull(word);
+        memberScanner.imoNotBadWord(word);
+    }
+
+    public void sendAuthentificationNumber(String phoneNumber) {
+        memberScanner.imoDataNotNull(phoneNumber);
+        memberScanner.imoPhoneNumberPatternO(phoneNumber);
+//        memberScanner.imoMemberPhoneNumberNotExist(phoneNumber); 이건 findMemberByPhoneNumber할 때 이미 체크되므로 필요X
     }
 }
