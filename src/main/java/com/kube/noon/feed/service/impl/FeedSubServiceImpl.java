@@ -12,7 +12,6 @@ import com.kube.noon.feed.dto.TagDto;
 import com.kube.noon.feed.repository.*;
 import com.kube.noon.feed.service.FeedSubService;
 import com.kube.noon.member.domain.Member;
-import com.kube.noon.member.dto.MemberProfileDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;

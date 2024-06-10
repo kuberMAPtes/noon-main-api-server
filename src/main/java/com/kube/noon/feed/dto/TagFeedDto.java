@@ -16,22 +16,22 @@ import java.util.stream.Collectors;
 @ToString
 public class TagFeedDto {
     private int tagFeedId;
-    private Feed feed;
-    private Tag tag;
+    private int feedId;
+    private int tagId;
 
     public static TagFeedDto toDto(TagFeed tagFeed) {
         return TagFeedDto.builder()
                 .tagFeedId(tagFeed.getTagFeedId())
-                .feed(tagFeed.getFeed())
-                .tag(tagFeed.getTag())
+                .feedId(tagFeed.getFeed().getFeedId())
+                .tagId(tagFeed.getTag().getTagId())
                 .build();
     }
 
     public static TagFeed toEntity(TagFeedDto tagFeedDto) {
         return TagFeed.builder()
                 .tagFeedId(tagFeedDto.getTagFeedId())
-                .feed(tagFeedDto.getFeed())
-                .tag(tagFeedDto.getTag())
+                .feed(Feed.builder().feedId(tagFeedDto.getFeedId()).build())
+                .tag(Tag.builder().tagId(tagFeedDto.getTagId()).build())
                 .build();
     }
 
