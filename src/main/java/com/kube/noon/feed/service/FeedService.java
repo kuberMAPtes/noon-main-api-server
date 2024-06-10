@@ -16,6 +16,9 @@ public interface FeedService {
     // 회원별 피드 목록을 가져온다,
     List<FeedSummaryDto> getFeedListByMember(String memberId);
 
+    // 건물별 피드 목록을 가져온다. 필요에 따라 피드를 추천한다.
+    List<FeedSummaryDto> getFeedListByBuilding(String memberId, int buildingId);
+
     // 건물별 피드 목록을 가져온다.
     List<FeedSummaryDto> getFeedListByBuilding(int buildingId);
 

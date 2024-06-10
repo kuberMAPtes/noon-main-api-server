@@ -4,6 +4,7 @@ import com.kube.noon.feed.dto.FeedCntByTagDto;
 import com.kube.noon.feed.dto.FeedPopularityDto;
 import com.kube.noon.feed.dto.FeedViewCntByBuildingDto;
 import com.kube.noon.feed.service.impl.FeedStatisticsServiceImpl;
+import com.kube.noon.feed.service.recommend.FeedRecommendationMemberId;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -334,5 +334,7 @@ public class TestFeedSubServiceImpl {
         int result = feedSubServiceImpl.deleteFeedTag(10000, "행복");
 
         assertThat(result).isEqualTo(1);
+
+
     }
 }
