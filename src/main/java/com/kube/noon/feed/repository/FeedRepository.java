@@ -3,6 +3,7 @@ package com.kube.noon.feed.repository;
 import com.kube.noon.building.domain.Building;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.member.domain.Member;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,6 +25,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
      * @return List<Feed>
      */
     List<Feed> findByActivatedTrue();
+    List<Feed> findByActivatedTrue(Pageable pageable);
 
     /**
      * 회원별로 작성한 피드를 가져온다. 단, 활성화가 된 피드만 가져온다.
@@ -32,13 +34,14 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
      * @return List<Feed>
      */
     List<Feed> findByWriterAndActivatedTrue(Member writer);
-
+    List<Feed> findByWriterAndActivatedTrue(Member writer, Pageable pageable);
     /**
      * 건물별로 작성된 피드를 가져온다. 단, 활성화가 된 피드만 가져온다.
      *
      * @return List<Feed>
      */
     List<Feed> findByBuildingAndActivatedTrue(Building building);
+    List<Feed> findByBuildingAndActivatedTrue(Building building, Pageable pageable);
 
     /**
      * 회원의 메인 피드를 가져온다.
@@ -47,6 +50,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
      * @return Feed 회원의 메인 피드를 가져온다.
      */
     List<Feed> findByWriterAndMainActivatedTrue(Member writer);
+    List<Feed> findByWriterAndMainActivatedTrue(Member writer, Pageable pageable);
 
     /**
      * 회원이 좋아요를 누른 피드 목록을 가져온다. 단, 활성화가 된 피드만 가져온다.
@@ -60,6 +64,13 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
             WHERE z.zzimType = 'LIKE' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true
            """)
     List<Feed> findByMemberLikeFeed(@Param("member") Member member);
+
+    @Query("""
+            SELECT f FROM Feed f 
+            INNER JOIN Zzim z ON f.feedId = z.feedId 
+            WHERE z.zzimType = 'LIKE' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true
+           """)
+    List<Feed> findByMemberLikeFeed(@Param("member") Member member, Pageable pageable);
 
     /**
      * 하나의 빌딩 내에서 회원이 좋아요를 누른 피드 목록을 가져온다.
@@ -76,12 +87,23 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
             AND f.activated = true 
             AND z.activated = true
           """)
-    List<Feed> findByMemberAndBuildingIdLikeFeed(@Param("member") Member member , @Param("building") Building building);
+    List<Feed> findByMemberAndBuildingIdLikeFeed(@Param("member") Member member, @Param("building") Building building);
+
+    @Query("""
+            SELECT f FROM Feed f 
+            INNER JOIN Zzim z ON f.feedId = z.feedId 
+            WHERE z.zzimType = 'LIKE' 
+            AND z.memberId = :#{#member.memberId} 
+            AND f.building = :#{#building}
+            AND f.activated = true 
+            AND z.activated = true
+          """)
+    List<Feed> findByMemberAndBuildingIdLikeFeed(@Param("member") Member member, @Param("building") Building building, Pageable pageable);
 
     /**
      * 회원이 북마크를 한 피드 목록을 가져온다. 단, 활성화가 된 피드만 가져온다.
      *
-     * @param member Member 객체를 받는다.
+     * @param writer Member 객체를 받는다.
      * @return List<Feed>
      */
     @Query("""
@@ -90,6 +112,13 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
             WHERE z.zzimType = 'BOOKMARK' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true 
            """)
     List<Feed> findByMemberBookmarkFeed(@Param("member") Member member);
+
+    @Query("""
+            SELECT f FROM Feed f 
+            INNER JOIN Zzim z ON f.feedId = z.feedId 
+            WHERE z.zzimType = 'BOOKMARK' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true 
+           """)
+    List<Feed> findByMemberBookmarkFeed(@Param("member") Member member, Pageable pageable);
 
     /**
      * 회원이 구독한 건물에 대한 피드 목록을 가져온다. 단, 활성화가 된 피드만 가져온다.
@@ -103,6 +132,13 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
             WHERE z.zzimType = 'SUBSCRIPTION' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true
            """)
     List<Feed> findByMemberBuildingSubscription(@Param("member") Member member);
+
+    @Query("""
+            SELECT f FROM Feed f 
+            INNER JOIN Zzim z ON f.building.buildingId = z.buildingId 
+            WHERE z.zzimType = 'SUBSCRIPTION' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true
+           """)
+    List<Feed> findByMemberBuildingSubscription(@Param("member") Member member, Pageable pageable);
 
     /**
      * 피드에 좋아요를 누른 맴버의 목록을 가져옵니다.
@@ -140,6 +176,22 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
            """, nativeQuery = true)
     List<Feed> findFeedWithLikesFirst(@Param("member") Member member, @Param("building") Building building);
 
+    @Query(value = """
+            SELECT f.*
+            FROM feed f
+            LEFT JOIN (
+                SELECT z.feed_id
+                FROM zzim z
+                WHERE z.zzim_type = 'LIKE'
+                  AND z.member_id = :#{#member.memberId}
+                  AND z.activated = true
+            ) liked_feeds
+            ON f.feed_id = liked_feeds.feed_id
+            WHERE f.building_id = :#{#building.buildingId}
+              AND f.activated = true
+            ORDER BY liked_feeds.feed_id IS NULL, f.written_time;
+           """, nativeQuery = true)
+    List<Feed> findFeedWithLikesFirst(@Param("member") Member member, @Param("building") Building building, Pageable pageable);
 
     /**
      * 제목이나 내용을 통해 피드를 검색할 수 있도록 합니다.

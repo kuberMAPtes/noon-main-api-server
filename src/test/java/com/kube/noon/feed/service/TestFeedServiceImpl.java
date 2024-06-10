@@ -42,35 +42,35 @@ public class TestFeedServiceImpl {
     @Transactional
     @Test
     public void getListTest() {
-        List<FeedSummaryDto> feedListByMember = feedServiceImpl.getFeedListByMember("member_1");
+        List<FeedSummaryDto> feedListByMember = feedServiceImpl.getFeedListByMember("member_1", 0, 10);
         assertThat(feedListByMember).isNotNull();
         assertThat(feedListByMember.size()).isGreaterThan(0);
         for (FeedSummaryDto feedSummaryDto : feedListByMember) {
             log.info(feedSummaryDto);
         }
 
-        List<FeedSummaryDto> feedListByBuilding = feedServiceImpl.getFeedListByBuilding("member_3", 10001);
+        List<FeedSummaryDto> feedListByBuilding = feedServiceImpl.getFeedListByBuilding("member_3", 10001, 0, 10);
         assertThat(feedListByBuilding).isNotNull();
         assertThat(feedListByBuilding.size()).isGreaterThan(0);
         for (FeedSummaryDto feedSummaryDto : feedListByBuilding) {
             log.info(feedSummaryDto);
         }
 
-        List<FeedSummaryDto> feedListByMemberLike = feedServiceImpl.getFeedListByMemberLike("member_1");
+        List<FeedSummaryDto> feedListByMemberLike = feedServiceImpl.getFeedListByMemberLike("member_1", 0, 10);
         assertThat(feedListByMemberLike).isNotNull();
         assertThat(feedListByMemberLike.size()).isGreaterThan(0);
         for (FeedSummaryDto feedSummaryDto : feedListByMemberLike) {
             log.info(feedSummaryDto);
         }
 
-        List<FeedSummaryDto> feedListByMemberBookmark = feedServiceImpl.getFeedListByMemberBookmark("member_1");
+        List<FeedSummaryDto> feedListByMemberBookmark = feedServiceImpl.getFeedListByMemberBookmark("member_1", 0, 10);
         assertThat(feedListByMemberBookmark).isNotNull();
         assertThat(feedListByMemberBookmark.size()).isGreaterThan(0);
         for (FeedSummaryDto feedSummaryDto : feedListByMemberBookmark) {
             log.info(feedSummaryDto);
         }
 
-        List<FeedSummaryDto> feedListByBuildingSubscription = feedServiceImpl.getFeedListByBuildingSubscription("member_1");
+        List<FeedSummaryDto> feedListByBuildingSubscription = feedServiceImpl.getFeedListByBuildingSubscription("member_1", 0, 10);
         assertThat(feedListByBuildingSubscription).isNotNull();
         assertThat(feedListByBuildingSubscription.size()).isGreaterThan(0);
         for (FeedSummaryDto feedSummaryDto : feedListByBuildingSubscription) {

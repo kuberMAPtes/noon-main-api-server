@@ -10,18 +10,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface TagRepository extends JpaRepository<Tag, Long> {
-//    /**
-//     * 각 피드에 붙어있는 피드의 내용을 가져온다.
-//     * @param feed
-//     * @return
-//     */
-//    @Query("""
-//        SELECT t
-//        FROM TagFeed f
-//                 INNER JOIN Tag t ON f.tag.tagId = t.tagId
-//        WHERE f.feed.feedId = :#{#feed.feedId}
-//        """)
-//    List<Tag> getTagByFeedId(@Param("feed") Feed feed);
 
      /**
       * 각 피드에 붙어있는 피드의 내용을 가져온다.
