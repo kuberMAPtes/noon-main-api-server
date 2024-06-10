@@ -150,7 +150,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
 
     @Override
-    public List<BuildingDto> getUserBuildingSubscriptionList(String memberId) {
+    public List<BuildingDto> getMemberBuildingSubscriptionList(String memberId) {
         List<Building> buildings = buildingProfileMapper.findBuildingSubscriptionListByMemberId(memberId);
 
         return buildings.stream()
