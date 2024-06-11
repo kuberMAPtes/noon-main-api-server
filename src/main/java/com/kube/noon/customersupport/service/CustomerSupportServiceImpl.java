@@ -2,7 +2,6 @@ package com.kube.noon.customersupport.service;
 
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.common.FileType;
-import com.kube.noon.common.ObjectStorageAWS3S;
 import com.kube.noon.customersupport.domain.Report;
 import com.kube.noon.customersupport.dto.notice.NoticeDto;
 import com.kube.noon.customersupport.dto.report.ReportDto;
@@ -18,10 +17,13 @@ import com.kube.noon.feed.repository.FeedAttachmentRepository;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.member.UpdateMemberDto;
 import com.kube.noon.member.service.MemberService;
+import com.kube.noon.notification.domain.NotificationType;
+import com.kube.noon.notification.dto.NotificationDto;
+import com.kube.noon.notification.service.NotificationServiceImpl;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +41,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class CustomerSupportServiceImpl implements CustomerSupportService{
 
 
@@ -48,23 +51,7 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
     private final AttachmentFilteringRepository attachmentFilteringRepository;
     private final FeedAttachmentRepository feedAttachmentRepository;
     private final NoticeRepository noticeRepository;
-    private final String bucketName;
-    private final ObjectStorageAWS3S objectStorageAWS3S;
-
-
-    public CustomerSupportServiceImpl(
-            ReportRepository reportRepository,
-            MemberService memberService, AttachmentFilteringRepository attachmentFilteringRepository, FeedAttachmentRepository feedAttachmentRepository, NoticeRepository noticeRepository,
-            @Value("${bucket.name}") String bucketName,
-            ObjectStorageAWS3S objectStorageAWS3S) {
-        this.reportRepository = reportRepository;
-        this.memberService = memberService;
-        this.attachmentFilteringRepository = attachmentFilteringRepository;
-        this.feedAttachmentRepository = feedAttachmentRepository;
-        this.noticeRepository = noticeRepository;
-        this.bucketName = bucketName;
-        this.objectStorageAWS3S = objectStorageAWS3S;
-    }
+    private final NotificationServiceImpl notificationService;
 
 
     /**
@@ -183,13 +170,15 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
      * reportId로 조회한 신고를 '처리'한다.
      * 신고 처리에 관한 설명은 NOON 참조 문서 [참조 25]
      *
-     * @param reportProcessingDto 조회했던 report에서 신고상태, 신고처리텍스트가 변경된 reportDto
-     * @param unlockDuration 계정잠금연장일수. Enum UnlockDuration.java 참고
+     * @param reportProcessingDto 조회했던 report에서 신고상태, 신고처리텍스트가 변경되고 unlockDuration(계정잠금연장일수)이 추가된 Dto.
+     *                           unlockDuration은 Enum UnlockDuration.java 참고
+     *
      * @return 신고 처리되어 신고처리텍스트와 변경된 신고 상태를 포함한 Dto
      */
     @Transactional
     @Override
-    public ReportProcessingDto updateReport(ReportProcessingDto reportProcessingDto, String unlockDuration) {
+    public ReportProcessingDto updateReport(ReportProcessingDto reportProcessingDto) {
+
 
         //신고 상태 변경, 신고처리 텍스트 추가
         reportRepository.save(reportProcessingDto.toEntity());
@@ -201,12 +190,41 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
 
         UpdateMemberDto updateMemberDto = new UpdateMemberDto();
         BeanUtils.copyProperties(reportee.orElseThrow(), updateMemberDto);
-        updateMemberDto.setUnlockTime(reportee.orElseThrow().getUnlockTime().plusDays(UnlockDuration.valueOf(unlockDuration).getDays()));
+        updateMemberDto.setUnlockTime(reportee.orElseThrow().getUnlockTime().plusDays(UnlockDuration.valueOf(reportProcessingDto.getUnlockDuration()).getDays()));
 
         memberService.updateMember(updateMemberDto);
 
         return ReportProcessingDto.fromEntity(reportRepository.findReportByReportId(reportProcessingDto.getReportId()));
         
+    }
+
+    @Override
+    public List<FeedAttachmentDto> getImageList() {
+
+        return feedAttachmentRepository.findByFileType(FileType.PHOTO).stream()
+                .map(FeedAttachmentDto::toDto)
+                .collect(Collectors.toList());
+
+    }
+
+    /**
+     * 모든 피드의 이미지 목록 가져오기
+     */
+    @Override
+    public List<FeedAttachmentDto> getImageListByPageable(int pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber, 2);
+        return feedAttachmentRepository.findByFileType(FileType.PHOTO, pageable).stream()
+                .map(FeedAttachmentDto::toDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 페이지별로 모든 피드의 이미지 목록 가져오기
+     */
+    @Override
+    public FeedAttachmentDto getImageByAttatchmentId(int attachmentId) {
+
+        return FeedAttachmentDto.toDto(feedAttachmentRepository.findByAttachmentId(attachmentId));
     }
 
     /**
@@ -252,6 +270,17 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
 
 
         return filteredList;
+    }
+
+    @Override
+    public void sendReportNotification(ReportProcessingDto reportProcessingDto) {
+
+        NotificationDto notificationDto = new NotificationDto();
+        notificationDto.setReceiverId(reportProcessingDto.getReporterId());
+        notificationDto.setNotificationType(NotificationType.REPORT);
+        notificationDto.setNotificationText(reportProcessingDto.getProcessingText());
+
+        notificationService.sendNotification(notificationDto);
     }
 
 

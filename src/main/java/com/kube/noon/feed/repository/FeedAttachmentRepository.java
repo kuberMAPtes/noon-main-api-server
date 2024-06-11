@@ -3,6 +3,7 @@ package com.kube.noon.feed.repository;
 import com.kube.noon.common.FileType;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.domain.FeedAttachment;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -28,4 +29,5 @@ public interface FeedAttachmentRepository extends JpaRepository<FeedAttachment, 
      * @return List<FeedAttachment>
      */
     List<FeedAttachment> findByFileType(FileType fileType);
+    List<FeedAttachment> findByFileType(FileType fileType, Pageable pageable);
 }

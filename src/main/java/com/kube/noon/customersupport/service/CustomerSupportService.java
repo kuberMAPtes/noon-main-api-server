@@ -1,6 +1,5 @@
 package com.kube.noon.customersupport.service;
 
-import com.kube.noon.customersupport.domain.Report;
 import com.kube.noon.customersupport.dto.notice.NoticeDto;
 import com.kube.noon.customersupport.dto.report.ReportDto;
 import com.kube.noon.customersupport.dto.report.ReportProcessingDto;
@@ -18,10 +17,14 @@ public interface CustomerSupportService {
     List<ReportDto> getReportListByPageable(int pageNumber);
     ReportDto getReportByReportId(int reportId);
     ReportDto addReport(ReportDto reportDto);
-    ReportProcessingDto updateReport(ReportProcessingDto reportProcessingDto, String unlockDuration);
+    ReportProcessingDto updateReport(ReportProcessingDto reportProcessingDto);
 
+    List<FeedAttachmentDto> getImageList();
+    List<FeedAttachmentDto> getImageListByPageable(int pageNumber);
+    FeedAttachmentDto getImageByAttatchmentId(int attachmentId);
     FeedAttachmentDto addBluredImage(FeedAttachmentDto attachmentDto) throws IOException;
     List<FeedAttachmentDto> getFilteredListByAI();
     List<FeedAttachmentDto> getFilteredListByAIAndPageable(int pageNumber);
 
+    void sendReportNotification(ReportProcessingDto reportProcessingDto);
 }

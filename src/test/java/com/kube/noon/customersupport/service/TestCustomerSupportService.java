@@ -13,6 +13,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -114,9 +117,10 @@ public class TestCustomerSupportService {
         ReportProcessingDto reportProcessingDto = new ReportProcessingDto();
         BeanUtils.copyProperties(reportDto, reportProcessingDto);
         reportProcessingDto.setReportStatus(Report.ReportStatus.ACCEPT);
+        reportProcessingDto.setUnlockDuration("SEVEN_DAYS");
         reportProcessingDto.setProcessingText(reportDto.getReporterId()+"님이 접수한"+reportDto.getReporteeId()+"님에 대한 신고가 승인되었습니다.");
 
-        log.info(customerSupportService.updateReport(reportProcessingDto, "SEVEN_DAYS").toString());
+        log.info(customerSupportService.updateReport(reportProcessingDto).toString());
 
     }
 
