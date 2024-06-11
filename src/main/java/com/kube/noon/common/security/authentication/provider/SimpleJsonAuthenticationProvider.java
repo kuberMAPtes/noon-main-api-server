@@ -21,7 +21,7 @@ public class SimpleJsonAuthenticationProvider implements AuthenticationProvider 
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         SimpleJsonAuthenticationToken simpleJson = (SimpleJsonAuthenticationToken)authentication;
 
-        JSONObject token = new JSONObject((String) simpleJson.getPrincipal());
+        JSONObject token = new JSONObject(simpleJson.getToken());
         String memberId = token.getString("memberId");
         try {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(memberId);

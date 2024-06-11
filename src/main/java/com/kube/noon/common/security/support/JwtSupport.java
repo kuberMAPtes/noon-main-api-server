@@ -100,6 +100,11 @@ public class JwtSupport implements BearerTokenSupport {
         return payloads.get(REFRESH_TOKEN_CLAIM, Boolean.class);
     }
 
+    @Override
+    public boolean isRefreshToken(String token) throws JwtException {
+        return getPayloads(token).get(REFRESH_TOKEN_CLAIM, Boolean.class);
+    }
+
     private boolean isRefreshTokenRetrievable(Claims payloads, String token) {
         log.debug("payloads={}", payloads);
         log.debug("token={}", token);

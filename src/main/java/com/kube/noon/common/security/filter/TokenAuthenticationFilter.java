@@ -1,5 +1,6 @@
 package com.kube.noon.common.security.filter;
 
+import com.kube.noon.common.security.authentication.authtoken.JwtAuthenticationToken;
 import com.kube.noon.common.security.authentication.authtoken.SimpleJsonAuthenticationToken;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -29,7 +30,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
         WebAuthenticationDetails webAuthenticationDetails = new WebAuthenticationDetailsSource().buildDetails(request);
         SecurityContextHolder.getContext()
-                .setAuthentication(new SimpleJsonAuthenticationToken(bearerToken, webAuthenticationDetails));
+                .setAuthentication(new JwtAuthenticationToken(bearerToken, webAuthenticationDetails));
         filterChain.doFilter(request, response);
     }
 }

@@ -1,8 +1,10 @@
 package com.kube.noon.config;
 
+import com.kube.noon.common.security.authentication.provider.JwtAuthenticationProvider;
 import com.kube.noon.common.security.authentication.provider.SimpleJsonAuthenticationProvider;
 import com.kube.noon.common.security.filter.AuthFilter;
 import com.kube.noon.common.security.filter.TokenAuthenticationFilter;
+import com.kube.noon.common.security.support.JwtSupport;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +38,12 @@ public class WebSecurityConfig {
     @ConditionalOnMissingBean
     public AuthenticationProvider simpleJsonAuthenticationProvider(UserDetailsService userDetailsService) {
         return new SimpleJsonAuthenticationProvider(userDetailsService);
+    }
+
+    @Bean
+    @Profile("prod")
+    public AuthenticationProvider jwtAuthenticationProvider(JwtSupport jwtSupport, UserDetailsService userDetailsService) {
+        return new JwtAuthenticationProvider(jwtSupport, userDetailsService);
     }
 
     @Bean

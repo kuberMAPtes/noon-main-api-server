@@ -12,6 +12,8 @@ public interface BearerTokenSupport {
 
     boolean isValidRefreshToken(String refreshToken);
 
+    boolean isRefreshToken(String token);
+
     void invalidateRefreshToken(String refreshToken);
 
     void invalidateRefreshTokenByMemberId(String memberId);

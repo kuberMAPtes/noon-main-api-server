@@ -10,6 +10,10 @@ import java.util.Collection;
 public abstract class BearerTokenAuthenticationToken implements Authentication {
     private final String token;
 
+    public String getToken() {
+        return this.token;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         throw new UnsupportedOperationException();
@@ -25,7 +29,7 @@ public abstract class BearerTokenAuthenticationToken implements Authentication {
 
     @Override
     public Object getPrincipal() {
-        return this.token;
+        throw new UnsupportedOperationException();
     }
 
     @Override
