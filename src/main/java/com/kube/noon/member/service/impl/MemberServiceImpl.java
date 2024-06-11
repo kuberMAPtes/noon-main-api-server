@@ -70,7 +70,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void addMemberRelationship(AddMemberRelationshipDto dto) {
         try {
-            log.info("회원 관계 추가 중 : DTO {}", dto);
+            log.info("회원 관계 추가 중: DTO={}", dto);
             dto.setActivated(true);
 
             MemberRelationship memberRelationship = DtoEntityBinder.INSTANCE.toEntity(dto);
@@ -78,18 +78,18 @@ public class MemberServiceImpl implements MemberService {
             memberRepository.findMemberRelationship(dto.getFromId(), dto.getToId())
                     .ifPresentOrElse(
                             mr -> {
-                                log.info("업데이트 합니다");
+                                log.info("기존 회원 관계 업데이트 중: 관계 ID={}", mr);
                                 memberRepository.updateMemberRelationship(memberRelationship);
                             },
                             () -> {
-                                log.info("관계를 추가합니다.");
+                                log.info("새로운 회원 관계 추가 중: FromID={}, ToID={}", dto.getFromId(), dto.getToId());
                                 memberRepository.addMemberRelationship(memberRelationship);
                             }
                     );
 
-            log.info("회원 관계 추가 성공 : DTO {}", memberRelationship);
+            log.info("회원 관계 추가 성공: DTO={}", memberRelationship);
         } catch (MemberRelationshipCreationException e) {
-            log.error("회원 관계 추가 중 오류 발생: {}", dto, e);
+            log.error("회원 관계 추가 중 오류 발생: DTO={}", dto, e);
             throw e;
         }
     }
@@ -97,19 +97,25 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MemberDto findMemberById(String fromId, String memberId) {
         try {
-            log.info("회원 찾는 중 ID: {}", memberId);
+            log.info("회원 조회 중: FromID={}, MemberID={}", fromId, memberId);
 
             return memberRepository.findMemberById(fromId)
-                    .filter(fromMember -> fromMember.getMemberRole().equals(Role.ADMIN) || fromId.equals(memberId))
+                    .filter(fromMember -> {
+                        boolean isAuthorized = fromMember.getMemberRole().equals(Role.ADMIN) || fromId.equals(memberId);
+                        log.info("권한 확인: FromID={}, MemberID={}, IsAuthorized={}", fromId, memberId, isAuthorized);
+                        return isAuthorized;
+                    })
                     .flatMap(fromMember -> memberRepository.findMemberById(memberId)
                             .map(member -> {
+                                log.info("회원 정보 변환 중: MemberID={}", memberId);
                                 MemberDto memberDto = DtoEntityBinder.INSTANCE.toDto(member, MemberDto.class);
+                                log.info("MemberDto: {}", memberDto);
                                 return memberDto;
                             }))
-                    .orElse(null); // 조회된 회원이 없으면 null 반환
+                    .orElseThrow(() -> new MemberNotFoundException("회원이 없습니다."));
 
         } catch (MemberNotFoundException e) {
-            log.error("회원 조회 중 오류 발생 {} {}", fromId,memberId , e);
+            log.error("회원 조회 중 오류 발생: FromID={}, MemberID={}", fromId, memberId, e);
             throw e;
         }
     }
@@ -117,9 +123,10 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Optional<Member> findMemberById(String memberId) {
         try {
+            log.info("회원 조회 중: MemberID={}", memberId);
             return memberRepository.findMemberById(memberId);
         } catch (MemberNotFoundException e) {
-            log.error("회원 조회 중 오류 발생: ID={}", memberId, e);
+            log.error("회원 조회 중 오류 발생: MemberID={}", memberId, e);
             throw e;
         }
     }
@@ -127,37 +134,43 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MemberProfileDto findMemberProfileById(String fromId, String memberId) {
         try {
-            log.info("회원 프로필 찾는 중 ID: {}", memberId);
+            log.info("회원 프로필 조회 중: FromID={}, MemberID={}", fromId, memberId);
 
             // fromId로 조회한 회원 정보를 기반으로 프로필 조회를 처리
             return memberRepository.findMemberById(fromId)
-                    .flatMap(fromMember -> handleProfileRetrieval(fromMember, fromId, memberId))
-                    .orElse(null);  // 조건을 만족하지 않으면 null 반환
+                    .flatMap(fromMember -> {
+                        log.info("회원 프로필 처리 중: FromID={}, MemberID={}", fromId, memberId);
+                        return handleProfileRetrieval(fromMember, fromId, memberId);
+                    })
+                    .orElseThrow(() -> new MemberNotFoundException("회원이 없습니다."));
 
         } catch (MemberNotFoundException e) {
-            log.error("회원 프로필 조회 중 오류 발생: ID={}", memberId, e);
+            log.error("회원 프로필 조회 중 오류 발생: FromID={}, MemberID={}", fromId, memberId, e);
             throw e;
         }
     }
 
     private Optional<MemberProfileDto> handleProfileRetrieval(Member fromMember, String fromId, String memberId) {
+        log.info("프로필 조회 처리 중: FromID={}, MemberID={}", fromId, memberId);
         if (fromMember.getMemberRole().equals(Role.ADMIN)) {
-            // 관리자이면 모든 회원의 프로필 조회 가능
+            log.info("관리자 권한으로 모든 회원의 프로필 조회 중: MemberID={}", memberId);
             return memberRepository.findMemberById(memberId)
                     .map(findedMember -> createMemberProfileDto(findedMember, memberId));
         } else if (fromId.equals(memberId)) {
-            // 자기 자신을 조회하는 경우
+            log.info("자기 자신을 조회 중: MemberID={}", memberId);
             return memberRepository.findMemberById(memberId)
                     .map(findedMember -> createMemberProfileDto(findedMember, memberId));
         } else {
-            // 다른 사람의 프로필을 조회하는 경우
+            log.info("다른 회원의 프로필 조회 중: FromID={}, MemberID={}", fromId, memberId);
             return findOtherMemberProfile(fromId, memberId);
         }
     }
 
     private Optional<MemberProfileDto> findOtherMemberProfile(String fromId, String memberId) {
+        log.info("다른 회원 프로필 조회 중: FromID={}, MemberID={}", fromId, memberId);
         // 차단 여부 확인
         if (fromMemberIsBlocked(memberId, fromId)) {
+            log.info("차단된 회원: FromID={}, MemberID={}", fromId, memberId);
             return Optional.empty();  // 차단된 경우 빈 Optional 반환
         }
 
@@ -166,17 +179,24 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.findMemberById(memberId)
                 .filter(findedMember -> {
                     PublicRange profilePublicRange = findedMember.getMemberProfilePublicRange();
+                    log.info("프로필 공개 범위 확인: MemberID={}, 공개 범위={}", memberId, profilePublicRange);
                     // 프로필 공개 범위에 따른 접근 권한 확인
                     switch (profilePublicRange) {
                         case PUBLIC:
+                            log.info("프로필 공개: 누구나 접근 가능");
                             return true;  // 공개된 프로필은 누구나 접근 가능
                         case PRIVATE:
+                            log.info("프로필 비공개: 접근 불가");
                             return false;  // 비공개 프로필은 접근 불가
                         case FOLLOWER_ONLY:
+                            log.info("팔로워 전용 프로필: 접근 가능 여부={}", memberRelationshipDto.getRelationshipType() == RelationshipType.FOLLOW);
                             return memberRelationshipDto.getRelationshipType() == RelationshipType.FOLLOW;  // 팔로우 관계일 때 접근 가능
                         case MUTUAL_ONLY:
-                            return isMutualFollow(fromId, memberId);  // 상호 팔로우 관계일 때 접근 가능
+                            boolean isMutual = isMutualFollow(fromId, memberId);
+                            log.info("상호 팔로우 전용 프로필: 접근 가능 여부={}", isMutual);
+                            return isMutual;  // 상호 팔로우 관계일 때 접근 가능
                         default:
+                            log.info("기타 경우: 접근 불가");
                             return false;  // 기타 경우 접근 불가
                     }
                 })

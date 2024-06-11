@@ -10,6 +10,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ApiResponse<T> {
     private String message;
-    private T data;
+    private T info;
     private String requestId;
 }
