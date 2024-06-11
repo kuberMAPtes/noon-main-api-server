@@ -1,6 +1,6 @@
 package com.kube.noon.config;
 
-import com.kube.noon.common.security.authentication.manager.SimpleJsonAuthenticationProvider;
+import com.kube.noon.common.security.authentication.provider.SimpleJsonAuthenticationProvider;
 import com.kube.noon.common.security.filter.AuthFilter;
 import com.kube.noon.common.security.filter.TokenAuthenticationFilter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

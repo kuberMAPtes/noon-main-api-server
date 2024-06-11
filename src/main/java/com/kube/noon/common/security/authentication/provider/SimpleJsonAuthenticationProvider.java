@@ -1,4 +1,4 @@
-package com.kube.noon.common.security.authentication.manager;
+package com.kube.noon.common.security.authentication.provider;
 
 import com.kube.noon.common.security.authentication.authtoken.SimpleJsonAuthenticationToken;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
 
 @Slf4j
 @RequiredArgsConstructor
