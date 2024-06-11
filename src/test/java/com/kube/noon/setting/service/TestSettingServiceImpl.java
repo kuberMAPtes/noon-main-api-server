@@ -2,7 +2,7 @@ package com.kube.noon.setting.service;
 
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.domain.Member;
-import com.kube.noon.member.dto.AddMemberDto;
+import com.kube.noon.member.dto.member.AddMemberDto;
 import com.kube.noon.member.service.MemberService;
 import com.kube.noon.setting.dto.SettingDto;
 import lombok.extern.slf4j.Slf4j;

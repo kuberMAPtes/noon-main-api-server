@@ -16,8 +16,8 @@ public enum DtoEntityBinder {
         return service.toEntity(dto);
     }
 
-    public <D, E> E toResponseDto(D dto) {
-        return service.toResponseDto(dto);
+    public <D, E> E toOtherDto(D dto) {
+        return service.toOtherDto(dto);
     }
     public <D, E> D toDto(E entity, Class<D> dtoClass) {
         return service.toDto(entity, dtoClass);

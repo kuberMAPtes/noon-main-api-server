@@ -1,134 +1,134 @@
 package com.kube.noon.member.controller;
 
-import com.kube.noon.member.dto.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kube.noon.common.binder.DtoEntityBinder;
+import com.kube.noon.member.dto.RequestDto.LoginRequestDto;
+import com.kube.noon.member.dto.RequestDto.MemberRelationshipSearchCriteriaRequestDto;
+import com.kube.noon.member.dto.RequestDto.MemberSearchCriteriaRequestDto;
+import com.kube.noon.member.dto.kakao.KakaoResponse;
+import com.kube.noon.member.dto.member.*;
+import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
+import com.kube.noon.member.dto.memberRelationship.DeleteMemberRelationshipDto;
+import com.kube.noon.member.dto.memberRelationship.MemberRelationshipDto;
+import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
+import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
+import com.kube.noon.member.dto.util.RandomData;
 import com.kube.noon.member.enums.LoginFlag;
+import com.kube.noon.member.enums.RelationshipType;
+import com.kube.noon.member.service.AuthService;
+import com.kube.noon.member.service.KakaoService;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+
+
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * 음? 왜 바로 ok만 내보내지? -> GlobalExceptionHandler에서 검증하고 있음
+ * 음? 왜 memberService 에서 그냥 ok만 내보내지? ->memberValidator, memberValidationRule,memberScanner 에서 검증하고 있음
+ *
+ * 잘못된 설계가 하나 있음 RequestDto로 쓰이는 Dto중에 FromId가 존재하는 것들이 있음. RequestDto에서 FromId를 꺼내서 쓰면 절대 안됨 비었음.
+ */
 @Slf4j
 @RestController
 @RequestMapping("/member")
 public class MemberRestController {
 
-    @Autowired
-    @Qualifier("memberServiceImpl")
-    private MemberService memberService;
+    private final MemberService memberService;
 
-//    @Autowired
-//    private SampleService sampleService;
+    private final LoginAttemptCheckerAgent loginAttemptCheckerAgent;
 
-    @Autowired
-    @Qualifier("loginAttemptCheckerAgent")
-    private LoginAttemptCheckerAgent loginAttemptCheckerAgent;
+    private final KakaoService kakaoService;
 
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private final AuthService authService;
+
+    @Value("${pageUnit}")
+    int pageUnit;
+
+    @Value("${pageSize}")
+    int pageSize;
+
 
     // Constructor
-    public MemberRestController() {
+    public MemberRestController(@Qualifier("memberServiceImpl") MemberService memberService
+            , @Qualifier("loginAttemptCheckerAgent") LoginAttemptCheckerAgent loginAttemptCheckerAgent
+            , KakaoService kakaoService
+            , AuthService authService) {
+        this.authService = authService;
         System.out.println("생성자 :: " + this.getClass());
+        this.kakaoService = kakaoService;
+        this.memberService = memberService;
+        this.loginAttemptCheckerAgent = loginAttemptCheckerAgent;
     }
 
-    // Common
-    private void checkBadWord(String word) {
-        if (memberService.checkBadWord(word)) {
-            String bodyString = "비속어는 사용할 수 없습니다.";
-            ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(bodyString);
-        }
-    }
-    // Method
 
-    @PostMapping("/sendAuthentificationNumber")
-    public ResponseEntity<?> sendAuthentificationNumber(@RequestParam String phoneNumber) {
-        try {
-
-//            memberService.sendAuthenticationNumber(phoneNumber);
-            return ResponseEntity.ok("Authentication number sent to " + phoneNumber);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send authentication number");
-        }
+    @GetMapping("/sendAuthentificationNumber")
+    public ResponseEntity<ApiResponse<Void>> sendAuthentificationNumber(@RequestParam String phoneNumber) {
+        authService.sendAuthentificationNumber(phoneNumber);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse(phoneNumber + "로 인증 번호가 전송되었습니다.", null));
     }
 
-    @PostMapping("/confirmAuthentificationNumber")
-    public ResponseEntity<?> confirmAuthentificationNumber(@RequestParam String phoneNumber, @RequestParam String authNumber) {
-
-//        boolean isConfirmed = memberService.confirmAuthenticationNumber(phoneNumber, authNumber);
-        if (true) {
-            return ResponseEntity.ok("Authentication confirmed");
+    @GetMapping("/confirmAuthentificationNumber")
+    public ResponseEntity<ApiResponse<Void>> confirmAuthentificationNumber(@RequestParam String phoneNumber, @RequestParam String authNumber) {
+        boolean isConfirmed = authService.confirmAuthenticationNumber(phoneNumber, authNumber);
+        if (isConfirmed) {
+            return ResponseEntity.ok(ApiResponseFactory.createResponse("인증이 확인되었습니다.", null));
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid authentication number");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponseFactory.createErrorResponse("잘못된 인증 번호입니다."));
         }
     }
 
-    //체크 : 완료
     @GetMapping("/checkMemberId")
-    public ResponseEntity<?> checkMemberId(@RequestParam String memberId) {
-        boolean isOk = memberService.checkMemberId(memberId);
-
-        checkBadWord(memberId);
-
-        return ResponseEntity.ok(isOk ? "Member ID is duplicated" : "Member ID is available");
+    public ResponseEntity<ApiResponse<String>> checkMemberId(@RequestParam String memberId) {
+        memberService.checkMemberId(memberId);
+        memberService.checkBadWord(memberId);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 ID를 사용할 수 있습니다.", null));
     }
 
-    //체크 : 완료
     @GetMapping("/checkNickname")
-    public ResponseEntity<?> checkNickname(@RequestParam String nickname) {
-        boolean isOk = memberService.checkNickname(nickname);
-
-        checkBadWord(nickname);
-
-        return ResponseEntity.ok(isOk ? "Nickname is duplicated" : "Nickname is available");
+    public ResponseEntity<ApiResponse<String>> checkNickname(@RequestParam String nickname) {
+        memberService.checkNickname(nickname);
+        memberService.checkBadWord(nickname);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("닉네임을 사용할 수 있습니다.", null));
     }
 
-    //체크 : 완료
     @GetMapping("/checkPhoneNumber")
-    public ResponseEntity<?> checkPhoneNumber(@RequestParam String phoneNumber) {
-        boolean isOk = memberService.checkPhoneNumber(phoneNumber);
-
-        checkBadWord(phoneNumber);
-
-        return ResponseEntity.ok(isOk ? "Phone number is duplicated" : "Phone number is available");
+    public ResponseEntity<ApiResponse<String>> checkPhoneNumber(@RequestParam String phoneNumber) {
+        memberService.checkPhoneNumber(phoneNumber);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("전화번호를 사용할 수 있습니다.", null));
     }
 
-
-    //체크 : 완료
     @GetMapping("/checkPassword")
-    public ResponseEntity<?> checkPassword(@RequestParam String memberId, @RequestParam String password) {
-        boolean isOk = memberService.checkPassword(memberId, password);
-
-        checkBadWord(password);
-
-        if (isOk) {
-            return ResponseEntity.ok("패스워드 사용 가능");
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("부적합한 패스워드");
-        }
+    public ResponseEntity<ApiResponse<String>> checkPassword(@RequestParam String memberId, @RequestParam String password) {
+        memberService.checkPassword(memberId, password);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("패스워드를 사용할 수 있습니다.", null));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDto dto) {
-
-        //아이디와 비밀번호를 검증한다. 아이디를 검증한다.
+    public ResponseEntity<ApiResponse<String>> login(@RequestBody LoginRequestDto dto) {
         String id = dto.getMemberId();
-
         AtomicReference<LoginFlag> isCorrect = new AtomicReference<>(LoginFlag.FAILURE);
+        MemberDto memberDto = memberService.findMemberById(id, id);
 
-        MemberDto memberDto = memberService.findMemberById(id,id);
-
-        if(memberDto == null) {
+        if (memberDto == null) {
             isCorrect.set(LoginFlag.INCORRECT_ID);
         } else {
             if (memberDto.getPwd().equals(dto.getPwd())) {
@@ -139,27 +139,103 @@ public class MemberRestController {
         }
 
         if (isCorrect.get().equals(LoginFlag.SUCCESS)) {
-
-            String jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0IiwiaWF0IjoxNjI5MzQwNjYwLCJleHAiOjE2MjkzNDA2NjB9.1";
             loginAttemptCheckerAgent.loginSucceeded(id);
-
-            return ResponseEntity.status(HttpStatus.OK).body(jwt);
+            return ResponseEntity.ok()
+                    .header("Authorization", RequestContext.getAuthorization())
+                    .body(ApiResponseFactory.createResponse("로그인 성공", null));
         } else if (isCorrect.get().equals(LoginFlag.INCORRECT_ID)) {
-
             loginAttemptCheckerAgent.loginFailed(id);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("존재하지 않는 아이디입니다.");
-
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponseFactory.createErrorResponse("존재하지 않는 아이디입니다."));
         } else if (isCorrect.get().equals(LoginFlag.INCORRECT_PASSWORD)) {
             loginAttemptCheckerAgent.loginFailed(id);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 틀림");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponseFactory.createErrorResponse("비밀번호가 틀렸습니다."));
         } else {
             loginAttemptCheckerAgent.loginFailed(id);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponseFactory.createErrorResponse("로그인 실패"));
         }
     }
 
-    public ResponseEntity<?> kakaoLogin(@RequestParam String memberId, @RequestParam String password) {
-        return null;
+
+    /**
+     *         /*
+     *         * HTTP/1.1 200 OK
+     *             Content-Type: application/json;charset=UTF-8
+     *             {
+     *                 "token_type":"bearer",
+     *                 "access_token":"${ACCESS_TOKEN}",
+     *                 "expires_in":43199,
+     *                 "refresh_token":"${REFRESH_TOKEN}",
+     *                 "refresh_token_expires_in":5184000,
+     *                 "scope":"account_email profile"
+     *             }
+     *             1. 토큰얻기 서비스 사용(사용자가 카카오로그인인증을 마쳤다는거임)
+     *             2. 얻은 토큰으로 멤버정보얻기
+     *             3. 얻은 정보로 처음이면 회원가입시키기, 있으면 로그인
+     */
+    @RequestMapping(value = "kakaoLogin", method = RequestMethod.GET)
+    public Mono<ResponseEntity<ApiResponse<String>>> kakaoLogin(@RequestParam(value = "code") String authorize_code) throws Exception {
+        System.out.println("code : " + authorize_code);
+        return kakaoService.getAccessToken(authorize_code)
+                .publishOn(Schedulers.boundedElastic())
+                //여기서 받은건 body를  Mono<String>으로 변환한걸 받고 Mono<ResponseEntity<?>>로 변환
+                .map(result -> {
+                    //액세스토큰 받은거로 kakaoService.getMemberInformation
+                    System.out.println("result : " + result);
+                    JSONObject ResultJsonObject = new JSONObject(result);
+                    AtomicReference<String> memberId= new AtomicReference<>("");
+
+                    try {
+                        kakaoService.getMemberInformation(ResultJsonObject.get("access_token")+"")
+                                .doOnSubscribe(subscription -> System.out.println("Request subscribed"))
+                                .doOnNext(response -> System.out.println("Received response: " + response))
+                                .doOnError(error -> System.out.println("Error occurred: " + error.getMessage()))
+                                .log()
+                                .map(response->{
+                                    System.out.println("response : " + response);
+                                    KakaoResponse kakaoResponse = null;
+                                    try {
+                                        kakaoResponse = new ObjectMapper().readValue(response, KakaoResponse.class);
+                                    } catch (JsonProcessingException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                    String nickname = kakaoResponse.getKakao_account().getProfile().getNickname();
+                                    String id = kakaoResponse.getId();
+                                    memberId.set(id);
+                                    AddMemberDto newMember = new AddMemberDto();
+                                    newMember.setMemberId(id);
+                                    newMember.setNickname(nickname);
+                                    newMember.setPwd("socialLogin");
+                                    newMember.setPhoneNumber(RandomData.getRandomPhoneNumber());//카카오에서
+                                    try {
+                                        System.out.println("userService :: " + memberService.findMemberById(id));
+                                    } catch (Exception e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                    try {
+                                        //디비에 있으면 넘어가고 없으면 넣는다.
+                                        Optional.ofNullable(memberService.findMemberById(id)).ifPresentOrElse((user1)->{},()-> {
+                                            try {
+                                                System.out.println("디비에 넣겠다.");
+                                                memberService.addMember(newMember);
+                                            } catch (Exception e) {
+                                                throw new RuntimeException(e);
+                                            }
+                                        });
+
+                                    } catch (Exception e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                    return response;
+                                }).block();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+//                    return ResponseEntity.status(HttpStatus.OK).body(result);
+                    return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
+                            .header(HttpHeaders.LOCATION, "http://127.0.0.1:3000/?access_token="+ ResultJsonObject.get("access_token")+"&memberId="+ memberId,
+                                    "Authorization",RequestContext.getAuthorization())
+                            .build();
+                });//end of map
     }
 
     public ResponseEntity<?> naverLogin(@RequestParam String memberId, @RequestParam String password) {
@@ -177,7 +253,6 @@ public class MemberRestController {
     // 체크 : 완료
     @PostMapping("/addMember")
     public ResponseEntity<?> addMember(@Valid @RequestBody AddMemberDto dto, BindingResult bindingResult) {
-//        try {
             System.out.println("왜 로그가 안찍혀");
             if (bindingResult.hasErrors()) {
                 System.out.println("여기는 머야");
@@ -193,125 +268,96 @@ public class MemberRestController {
             memberService.addMember(dto);
 
             return ResponseEntity.ok("회원가입 성공");
-//        }
-//        catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.CONFLICT).body("회원이 이미 존재합니다.");
-//        }
     }
 
     @PostMapping("/updatePassword")
-    public ResponseEntity<?> updatePassword() {
-
-        System.out.println("샘플서비스실행");
-//        sampleService.func1();
-        System.out.println("샘플서비스실행완료");
-//        memberService.findMemberById("member_1");
-
-//        memberService.updatePassword(memberId, newPassword);
-
-        return null;
+    public ResponseEntity<ApiResponse<Void>> updatePassword(@RequestBody UpdatePasswordDto requestDto) {
+        memberService.updatePassword(requestDto);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("비밀번호 변경 성공", null));
     }
 
-    public ResponseEntity<?> updatePhoneNumber(@RequestParam String memberId, @RequestParam String newPassword) {
-        memberService.updatePhoneNumber(memberId, newPassword);
-        return ResponseEntity.ok("전화번호 변경 성공");
+    @PostMapping("/updatePhoneNumber")
+    public ResponseEntity<ApiResponse<Void>> updatePhoneNumber(@RequestBody UpdatePhoneNumberDto requestDto) {
+        memberService.updatePhoneNumber(requestDto);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("전화번호 변경 성공", null));
     }
 
-    @GetMapping("/updateProfilePhoto")
-    public ResponseEntity<?> updateProfilePhoto() {
-//
-//        MemberProfileDto memberProfileDto = new MemberProfileDto();
-//        memberProfileDto.setMemberId("test");
-//        memberProfileDto.setProfilePhotoUrl("test");
-//        memberProfileDto.setNickname("얍얍얍얍");
-//        redisTemplate.opsForValue().set("abc", memberProfileDto);
-//
-//        MemberProfileDto message = (MemberProfileDto) redisTemplate.opsForValue().get("abc");
-//
-//        System.out.println(message.getProfilePhotoUrl());
-//        System.out.println(message);
-//
-//        Map<String, Object> map = new HashMap<>();
-//
-//        map.put("message", message);
-//
-//        map.put("message2", memberService.findMemberById("member_1"));
-
-        return null;
+    @PostMapping("/updateProfilePhoto")
+    public ResponseEntity<ApiResponse<Void>> updateProfilePhoto(@RequestBody UpdateMemberProfilePhotoUrlDto requestDto) {
+        memberService.updateMemberProfilePhotoUrl(requestDto);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("프로필 사진 변경 성공", null));
     }
 
-    public ResponseEntity<?> updateProfileIntro(@RequestParam String memberId, @RequestParam String newProfileIntro) {
-
-//        memberService.updateMember(
-//                memberService.findMemberById(memberId).map(
-//                        (member)->{
-//                            member.setProfileIntro(newProfileIntro);
-//
-//                            return MemberBinder.INSTANCE.toDto(member, MemberProfileDto.class);
-//                        }).orElseGet(()->{
-//                            return null;
-//                        })
-//        );
-        return null;
+    @PostMapping("/updateProfileIntro")
+    public ResponseEntity<ApiResponse<Void>> updateProfileIntro(@RequestBody UpdateMemberProfileIntroDto requestDto) {
+        memberService.updateMemberProfileIntro(requestDto);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("프로필 소개 변경 성공", null));
     }
 
-    public ResponseEntity<?> updateDajungScore(@RequestParam String memberId, @RequestParam int newDajungScore) {
-        memberService.updateDajungScore(memberId, newDajungScore);
-        return ResponseEntity.ok("다정점수 변경 성공");
+    @PostMapping("/updateDajungScore")
+    public ResponseEntity<ApiResponse<Void>> updateDajungScore(@RequestBody UpdateMemberDajungScoreDto requestDto) {
+        memberService.updateDajungScore(requestDto);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("다정점수 변경 성공", null));
     }
 
     /**
      * 관리자가 사용
-     * @param memberId
-     * @return
      */
     @GetMapping("/getMember/{fromId}/{memberId}/")
-    public ResponseEntity<?> getMember(@PathVariable String fromId, @PathVariable String memberId) {
-
-        MemberDto dto = null;
-        MemberDto fromMemberDto = memberService.findMemberById(fromId,memberId);
-
-
-
-        return ResponseEntity.ok(dto);
+    public ResponseEntity<ApiResponse<MemberDto>> getMember(@PathVariable String fromId, @PathVariable String memberId) {
+        MemberDto dto = memberService.findMemberById(fromId,memberId);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 조회 성공", dto));
     }
 
-    @GetMapping("/getMemberProfile/{fromId}/{memberId}")
-    public ResponseEntity<MemberProfileDto> getMemberProfile(@PathVariable String fromId, @PathVariable String memberId) {
-
-        MemberProfileDto dto = null;
-        MemberDto fromMemberDto = memberService.findMemberById(fromId,memberId);
-        MemberRelationshipDto memberRelationshipDto = memberService.findMemberRelationship(fromId, memberId);
-        return ResponseEntity.ok(dto);
+    @GetMapping("/getMemberProfile/{fromId}/{toId}")
+    public ResponseEntity<ApiResponse<MemberProfileDto>> getMemberProfile(@PathVariable String fromId, @PathVariable String toId) {
+        MemberProfileDto dto = memberService.findMemberProfileById(fromId, toId);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 프로필 조회 성공", dto));
     }
 
-    @GetMapping("/listMember/{memberId}")
-    public ResponseEntity<?> ListMember(@PathVariable String memberId) {
-
-        MemberSearchCriteriaDto memberSearchCriteriaDto = MemberSearchCriteriaDto.builder().memberId(memberId).build();
-
-//        memberService.findMemberListByCriteria(null, 0, 0);
-        return null;
+    @PostMapping("/listMember")
+    public ResponseEntity<Page<MemberDto>> listMember(@RequestBody MemberSearchCriteriaRequestDto requestDto) {
+        MemberSearchCriteriaDto memberSearchCriteriaDto = DtoEntityBinder.INSTANCE.toOtherDto(requestDto);
+        Page<MemberDto> members = memberService.findMemberListByCriteria(requestDto.getMemberId(), memberSearchCriteriaDto, pageUnit, pageSize);
+        return ResponseEntity.ok(members);
     }
 
-    public ResponseEntity<?> updateMember(@RequestParam String memberId) {
-        return null;
+    @PostMapping("/deleteMember/{memberId}")
+    public ResponseEntity<ApiResponse<Void>> deleteMember(@PathVariable String memberId) {
+        memberService.deleteMember(memberId);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원이 성공적으로 삭제되었습니다.", null));
     }
 
-    public ResponseEntity<?> deleteMember(@RequestParam String memberId) {
-        return null;
+    @PostMapping("/addMemberRelationship")
+    public ResponseEntity<ApiResponse<String>> addMemberRelationship(@RequestBody AddMemberRelationshipDto dto) {
+        memberService.addMemberRelationship(dto);
+        return ResponseEntity.ok(
+                ApiResponseFactory.createResponse("관계가 성공적으로 추가되었습니다.", null)
+        );
     }
 
-    public ResponseEntity<?> addMemberRelationship(@RequestParam String memberId) {
-        return null;
+    @PostMapping("/getMemberRelationshipList")
+    public ResponseEntity<Page<MemberRelationshipDto>> getMemberRelationshipList(@RequestBody MemberRelationshipSearchCriteriaRequestDto requestDto) {
+        MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto = DtoEntityBinder.INSTANCE.toOtherDto(requestDto);
+        Page<MemberRelationshipDto> relationships = memberService.findMemberRelationshipListByCriteria(requestDto.getFromId(), memberRelationshipSearchCriteriaDto, pageUnit, pageSize);
+        return ResponseEntity.ok(relationships);
     }
 
-    public ResponseEntity<?> getMemberRelationshipList(@RequestParam String memberId) {
-        return null;
+    @PostMapping("/deleteMemberRelationship/{fromId}/{toId}")
+    public ResponseEntity<ApiResponse<Void>> deleteMemberRelationship(@RequestBody DeleteMemberRelationshipDto requestDto) {
+        // JWT 토큰 검증
+        String fromId = validateJwtToken(RequestContext.getAuthorization());
+        requestDto.setFromId(fromId);
+        memberService.deleteMemberRelationship(requestDto);
+        String message = requestDto.getRelationshipType() == RelationshipType.FOLLOW ? "팔로우가 해제되었습니다." : "차단이 해제되었습니다.";
+        return ResponseEntity.ok(ApiResponseFactory.createResponse(message, null));
     }
 
-    public ResponseEntity<?> deleteMemberRelationship(@RequestParam String memberId) {
-        return null;
+    //이게
+    private String validateJwtToken(String token) {
+        // JWT 토큰 검증 로직 구현
+        // 유효한 토큰이면 사용자 ID를 반환하고, 그렇지 않으면 예외를 던집니다.
+        return "member_100"; // 예시로 사용자 ID 반환
     }
 
 

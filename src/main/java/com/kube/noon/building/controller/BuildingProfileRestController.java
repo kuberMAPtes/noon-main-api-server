@@ -9,7 +9,7 @@ import com.kube.noon.chat.service.ChatroomService;
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.service.FeedService;
-import com.kube.noon.member.dto.MemberRelationshipDto;
+import com.kube.noon.member.dto.memberRelationship.MemberRelationshipDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
