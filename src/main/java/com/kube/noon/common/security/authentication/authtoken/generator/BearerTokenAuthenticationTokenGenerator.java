@@ -6,6 +6,15 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 import java.util.Map;
 
+/**
+ * BearerToken Generator 인터페이스
+ *
+ * @author PGD
+ * @see BearerTokenAuthenticationToken
+ * @see JwtAuthenticationTokenGenerator
+ * @see NoAuthenticationTokenGenerator
+ * @see SimpleJsonAuthenticationTokenGenerator
+ */
 public interface BearerTokenAuthenticationTokenGenerator {
     Map<TokenType, BearerTokenAuthenticationTokenGenerator> instances = Map.of(
             TokenType.NATIVE_TOKEN, new JwtAuthenticationTokenGenerator()

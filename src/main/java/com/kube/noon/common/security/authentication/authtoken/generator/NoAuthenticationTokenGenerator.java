@@ -5,6 +5,13 @@ import com.kube.noon.common.security.authentication.authtoken.NoAuthenticationTo
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
+/**
+ * 어떤 Authenticaiton, Authorization도 필요하지 않을 때 사용하는 BearerTokenAuthenticationTokenGenerator
+ *
+ * @author PGD
+ * @see BearerTokenAuthenticationTokenGenerator
+ * @see NoAuthenticationToken
+ */
 public class NoAuthenticationTokenGenerator implements BearerTokenAuthenticationTokenGenerator {
 
     @Override

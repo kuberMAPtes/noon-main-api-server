@@ -5,6 +5,14 @@ import com.kube.noon.common.security.authentication.authtoken.SimpleJsonAuthenti
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
+/**
+ * 개발용 BearerTokenAuthenticationTokenGenerator
+ * 암호화되지 않은 JSON 기반 AuthenticationToken 생성
+ *
+ * @author PGD
+ * @see BearerTokenAuthenticationTokenGenerator
+ * @see SimpleJsonAuthenticationToken
+ */
 public class SimpleJsonAuthenticationTokenGenerator implements BearerTokenAuthenticationTokenGenerator{
 
     @Override

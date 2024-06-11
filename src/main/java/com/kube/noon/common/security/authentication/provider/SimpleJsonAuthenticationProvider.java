@@ -12,6 +12,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+/**
+ * 암호화하지 않은 JSON 토큰 기반 인증 로직을 수행하는 AuthenticationProvider.
+ *
+ * @author PGD
+ * @see SimpleJsonAuthenticationToken
+ * @see com.kube.noon.common.security.filter.AuthFilter
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class SimpleJsonAuthenticationProvider implements AuthenticationProvider {

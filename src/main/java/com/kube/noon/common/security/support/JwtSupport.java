@@ -10,6 +10,14 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
+/**
+ * JWT를 지원하는 BearerTokenSupport 구현체.
+ * JWT Access Token, Refresh Token 생성,
+ * JWT 검증을 담당한다.
+ *
+ * @author PGD
+ * @see BearerTokenSupport
+ */
 @Slf4j
 @Component
 @Primary

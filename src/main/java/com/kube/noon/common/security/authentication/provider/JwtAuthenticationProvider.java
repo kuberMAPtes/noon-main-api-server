@@ -12,6 +12,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+/**
+ * JWT 기반 인증 로직을 수행하는 AuthenticationProvider
+ * AuthFilter에서 인증이 이루어진다.
+ * JWT 토큰을 파싱하여 회원 ID를 가져오고, 회원 ID를 통해 DB에서 회원 정보를 가져와
+ * UsernamePasswordAuthenticationToken에 담는다.
+ *
+ * @author PGD
+ * @see com.kube.noon.common.security.filter.AuthFilter
+ * @see JwtAuthenticationToken
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationProvider implements AuthenticationProvider {

@@ -5,6 +5,14 @@ import com.kube.noon.common.security.authentication.authtoken.JwtAuthenticationT
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
+/**
+ * JwtAuthenticationToken을 생성하는 객체
+ *
+ * @author PGD
+ * @see BearerTokenAuthenticationTokenGenerator
+ * @see BearerTokenAuthenticationToken
+ * @see JwtAuthenticationToken
+ */
 public class JwtAuthenticationTokenGenerator implements BearerTokenAuthenticationTokenGenerator {
 
     @Override

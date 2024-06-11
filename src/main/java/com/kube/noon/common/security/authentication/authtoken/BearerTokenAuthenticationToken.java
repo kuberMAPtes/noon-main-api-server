@@ -6,6 +6,14 @@ import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
+/**
+ * 인증에 사용되는 BearerToken을 저장하는 AuthenticationToken abstract class.
+ *
+ * @author PGD
+ * @see JwtAuthenticationToken
+ * @see NoAuthenticationToken
+ * @see SimpleJsonAuthenticationToken
+ */
 @RequiredArgsConstructor
 public abstract class BearerTokenAuthenticationToken implements Authentication {
     private final String token;

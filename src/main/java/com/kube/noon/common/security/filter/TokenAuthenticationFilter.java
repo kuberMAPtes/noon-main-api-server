@@ -20,6 +20,18 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Request에 담긴 Cookie에서 Access Token과 Token Type 정보를 추출해 BearerTokenAuthenticationToken에 담고
+ * SecurityContext에 BearerTokenAuthenticationToken 인스턴스를 담아 AuthFilter에 전달해 인증 로직을 위임한다.
+ *
+ * @author PGD
+ * @see com.kube.noon.common.security.authentication.authtoken.BearerTokenAuthenticationToken
+ * @see BearerTokenAuthenticationTokenGenerator
+ * @see AuthFilter
+ * @see SecurityContextHolder
+ * @see org.springframework.security.core.context.SecurityContext
+ * @see org.springframework.security.core.Authentication
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class TokenAuthenticationFilter extends OncePerRequestFilter {

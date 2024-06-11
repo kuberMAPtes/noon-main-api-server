@@ -31,6 +31,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.util.List;
 
+/**
+ * Spring Security Configuration class.
+ *
+ * @author PGD
+ */
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {

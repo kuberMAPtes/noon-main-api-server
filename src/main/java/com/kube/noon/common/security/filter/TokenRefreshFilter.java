@@ -16,6 +16,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * 해당 요청에 대한 Authentication, Authorization이 성공한 경우, Access Token과 Refresh Token을 새로 발급한다.
+ *
+ * @author PGD
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class TokenRefreshFilter extends OncePerRequestFilter {
