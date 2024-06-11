@@ -15,7 +15,6 @@ import com.kube.noon.feed.dto.FeedAttachmentDto;
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.service.FeedService;
-import com.kube.noon.member.dto.MemberRelationshipDto;
 import com.kube.noon.notification.domain.NotificationType;
 import com.kube.noon.notification.dto.NotificationDto;
 import lombok.RequiredArgsConstructor;
@@ -95,7 +94,7 @@ public class CustomerSupportRestController {
 
         log.info("feedDto={}",feedDto);
 
-        int noticeId = feedService.deleteFeed(feedDto);
+        int noticeId = feedService.deleteFeed(feedDto.getFeedId());
         return feedService.getFeedById(noticeId);
     }
 
@@ -240,7 +239,7 @@ public class CustomerSupportRestController {
 
         log.info("feedDto={}",feedDto);
         
-        int feedId = feedService.deleteFeed(feedDto);
+        int feedId = feedService.deleteFeed(feedDto.getFeedId());
         return feedService.getFeedById(feedId);
     }
 
