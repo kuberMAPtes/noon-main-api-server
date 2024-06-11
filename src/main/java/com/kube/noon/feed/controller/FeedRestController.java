@@ -19,39 +19,51 @@ public class FeedRestController {
     private final FeedStatisticsService feedStatisticsService;
     private final FeedSubService feedSubService;
 
+    private static final int PAGE_SIZE = 10;        // 일단 static final로 설정, 나중에 메타데이터로 뺄 예정
+
     @GetMapping("/getFeedListByMember")
-    public List<FeedSummaryDto> getMemberFeedList(@RequestParam String memberId) {
-        List<FeedSummaryDto> feedListByMember = feedService.getFeedListByMember(memberId);
+    public List<FeedSummaryDto> getMemberFeedList(
+            @RequestParam String memberId,
+            @RequestParam(required = false, defaultValue = "1") int page) {
+        List<FeedSummaryDto> feedListByMember = feedService.getFeedListByMember(memberId, page - 1, PAGE_SIZE);
 
         return feedListByMember;
     }
 
+
     @GetMapping("/getFeedListByBuilding")
     public List<FeedSummaryDto> getBuildingFeedList(
             @RequestParam String memberId,
-            @RequestParam int buildingId) {
-        List<FeedSummaryDto> feedListByBuilding = feedService.getFeedListByBuilding(memberId, buildingId);
+            @RequestParam int buildingId,
+            @RequestParam(required = false, defaultValue = "1") int page) {
+        List<FeedSummaryDto> feedListByBuilding = feedService.getFeedListByBuilding(memberId, buildingId, page - 1, PAGE_SIZE);
 
         return feedListByBuilding;
     }
 
     @GetMapping("/getFeedListByMemberLike")
-    public List<FeedSummaryDto> getMemberLikeFeedList(@RequestParam String memberId) {
-        List<FeedSummaryDto> feedListByMemberLike = feedService.getFeedListByMemberLike(memberId);
+    public List<FeedSummaryDto> getMemberLikeFeedList(
+            @RequestParam String memberId,
+            @RequestParam(required = false, defaultValue = "1") int page) {
+        List<FeedSummaryDto> feedListByMemberLike = feedService.getFeedListByMemberLike(memberId, page - 1, PAGE_SIZE);
 
         return feedListByMemberLike;
     }
 
     @GetMapping("/getFeedListByMemberBookmark")
-    public List<FeedSummaryDto> getBookmarkFeedList(@RequestParam String memberId) {
-        List<FeedSummaryDto> feedListByMemberBookmark = feedService.getFeedListByMemberBookmark(memberId);
+    public List<FeedSummaryDto> getBookmarkFeedList(
+            @RequestParam String memberId,
+            @RequestParam(required = false, defaultValue = "1") int page) {
+        List<FeedSummaryDto> feedListByMemberBookmark = feedService.getFeedListByMemberBookmark(memberId, page - 1, PAGE_SIZE);
 
         return feedListByMemberBookmark;
     }
 
     @GetMapping("/getFeedListByMemberSubscription")
-    public List<FeedSummaryDto> getBuildingSubscriptionFeedList(@RequestParam String memberId) {
-        List<FeedSummaryDto> feedListByBuildingSubscription = feedService.getFeedListByBuildingSubscription(memberId);
+    public List<FeedSummaryDto> getBuildingSubscriptionFeedList(
+            @RequestParam String memberId,
+            @RequestParam(required = false, defaultValue = "1") int page) {
+        List<FeedSummaryDto> feedListByBuildingSubscription = feedService.getFeedListByBuildingSubscription(memberId, page - 1, PAGE_SIZE);
 
         return feedListByBuildingSubscription;
     }
@@ -77,8 +89,8 @@ public class FeedRestController {
         return deleteFeedId;
     }
 
-    @GetMapping("/detail/{feedId}")
-    public FeedDto getFeed(@PathVariable int feedId) {
+    @GetMapping("/detail")
+    public FeedDto getFeed(@RequestParam int feedId) {
         FeedDto getFeedDto = feedService.getFeedById(feedId);
 
         return getFeedDto;
@@ -106,8 +118,8 @@ public class FeedRestController {
         return cntUpFeedId;
     }
 
-    @GetMapping("/getFeedAttachmentList/{feedId}")
-    public List<FeedAttachmentDto> getFeedAttachmentList(@PathVariable("feedId") int feedId) {
+    @GetMapping("/getFeedAttachmentList")
+    public List<FeedAttachmentDto> getFeedAttachmentList(@RequestParam int feedId) {
         List<FeedAttachmentDto> result = feedSubService.getFeedAttachmentList(feedId);
 
         return result;
@@ -163,8 +175,8 @@ public class FeedRestController {
         return zzimId;
     }
 
-    @GetMapping("/getFeedLikeList/{feedId}")
-    public List<FeedLIkeMemberDto> getFeedLikeList(@PathVariable("feedId") int feedId) {
+    @GetMapping("/getFeedLikeList")
+    public List<FeedLIkeMemberDto> getFeedLikeList(@RequestParam int feedId) {
         return feedSubService.getFeedLikeList(feedId);
     }
 
@@ -183,8 +195,8 @@ public class FeedRestController {
         return feedSubService.updateFeedCommnet(feedCommentDto);
     }
 
-    @GetMapping("/feedTagList/{feedId}")
-    public List<TagDto> getFeedTagList(@PathVariable("feedId") int feedId) {
+    @GetMapping("/feedTagList")
+    public List<TagDto> getFeedTagList(@RequestParam int feedId) {
         return feedSubService.getFeedTagList(feedId);
     }
 
@@ -198,8 +210,8 @@ public class FeedRestController {
         return feedSubService.addFeedTag(addTagDto.getFeedId(), addTagDto.getTagText());
     }
 
-    @GetMapping("/feedViewCuntByBuilding/{buildingId}")
-    public List<FeedViewCntByBuildingDto> getFeedViewCntByBuilding(@PathVariable("buildingId") int buildingId) {
+    @GetMapping("/feedViewCuntByBuilding")
+    public List<FeedViewCntByBuildingDto> getFeedViewCntByBuilding(@RequestParam int buildingId) {
         return feedStatisticsService.getFeedViewCntByBuilding(buildingId);
     }
 
@@ -208,8 +220,8 @@ public class FeedRestController {
         return feedStatisticsService.getFeedCntByTag();
     }
 
-    @GetMapping("/FeedPopularity/{buildingId}")
-    public List<FeedPopularityDto> getFeedPopularity(@PathVariable("buildingId") int buildingId) {
+    @GetMapping("/FeedPopularity")
+    public List<FeedPopularityDto> getFeedPopularity(@RequestParam int buildingId) {
         return feedStatisticsService.getFeedPopularity(buildingId);
     }
 }
