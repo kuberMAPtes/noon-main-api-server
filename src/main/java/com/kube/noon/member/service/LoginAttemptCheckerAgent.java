@@ -1,5 +1,6 @@
 package com.kube.noon.member.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
  * 로그인 성공,실패 시 호출되는 함수
  */
 @Component
+@Slf4j
 public class LoginAttemptCheckerAgent {
 
     private static final int MAX_ATTEMPTS = 5;
