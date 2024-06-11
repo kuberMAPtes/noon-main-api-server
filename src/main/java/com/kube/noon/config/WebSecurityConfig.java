@@ -12,8 +12,11 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.List;
 
@@ -24,9 +27,9 @@ public class WebSecurityConfig {
     @Bean
     @Profile("dev")
     public SecurityFilterChain defaultFilterChain(HttpSecurity http) throws Exception {
-        return http.authorizeHttpRequests((registry) -> {
-            registry.anyRequest().permitAll();
-        }).build();
+        return http.csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests((registry) -> registry.anyRequest().permitAll())
+                .build();
     }
 
     @Bean
@@ -48,5 +51,20 @@ public class WebSecurityConfig {
     @Bean
     public AuthFilter authFilter(AuthenticationManager authenticationManager) {
         return new AuthFilter(authenticationManager);
+    }
+
+    @Bean
+    @Profile("prod")
+    public SecurityFilterChain tokenBasedFilterChain(
+            HttpSecurity http,
+            AuthFilter authFilter,
+            TokenAuthenticationFilter tokenAuthenticationFilter
+    ) throws Exception {
+        return http.csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests((registry) -> registry.anyRequest().authenticated()) // TODO
+                .sessionManagement((config) -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(tokenAuthenticationFilter, AuthFilter.class)
+                .build();
     }
 }
