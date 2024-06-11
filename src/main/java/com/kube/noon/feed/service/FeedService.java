@@ -15,21 +15,27 @@ import java.util.List;
 public interface FeedService {
     // 회원별 피드 목록을 가져온다,
     List<FeedSummaryDto> getFeedListByMember(String memberId);
+    List<FeedSummaryDto> getFeedListByMember(String memberId, int page, int pageSize);
 
     // 건물별 피드 목록을 가져온다. 필요에 따라 피드를 추천한다.
     List<FeedSummaryDto> getFeedListByBuilding(String memberId, int buildingId);
+    List<FeedSummaryDto> getFeedListByBuilding(String memberId, int buildingId, int page, int pageSize);
 
     // 건물별 피드 목록을 가져온다.
     List<FeedSummaryDto> getFeedListByBuilding(int buildingId);
+    List<FeedSummaryDto> getFeedListByBuilding(int buildingId, int page, int pageSize);
 
     // 회원이 좋아요를 누른 피드 목록을 가져온다.
     List<FeedSummaryDto> getFeedListByMemberLike(String memberId);
+    List<FeedSummaryDto> getFeedListByMemberLike(String memberId, int page, int pageSize);
 
     // 회원이 북마크를 누른 피드 목록을 가져온다.
     List<FeedSummaryDto> getFeedListByMemberBookmark(String memberId);
+    List<FeedSummaryDto> getFeedListByMemberBookmark(String memberId, int page, int pageSize);
 
     // 회원이 건물을 구독한 피드 목록을 가져온다.
     List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId);
+    List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId, int page, int pageSize);
 
     // 피드를 추가한다.
     int addFeed(FeedDto feedDto);
@@ -38,7 +44,7 @@ public interface FeedService {
     int updateFeed(FeedDto feedDto);
 
     // 피드를 삭제한다.
-    int deleteFeed(FeedDto feedDto);
+    int deleteFeed(int feedId);
 
     // 피드 하나를 상세보기한다.
     FeedDto getFeedById(int feedId);

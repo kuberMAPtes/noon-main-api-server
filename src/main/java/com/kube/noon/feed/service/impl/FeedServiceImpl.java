@@ -12,6 +12,8 @@ import com.kube.noon.feed.service.recommend.FeedRecommendationMemberId;
 import com.kube.noon.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,20 @@ public class FeedServiceImpl implements FeedService {
                 Member.builder()
                         .memberId(memberId)
                         .build()
+        );
+
+        List<FeedSummaryDto> feedListByMember = FeedSummaryDto.toDtoList(entities);
+
+        return feedListByMember;
+    }
+
+    @Override
+    public List<FeedSummaryDto> getFeedListByMember(String memberId, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+
+        List<Feed> entities = feedRepository.findByWriterAndActivatedTrue(
+                Member.builder().memberId(memberId).build(),
+                pageable
         );
 
         List<FeedSummaryDto> feedListByMember = FeedSummaryDto.toDtoList(entities);
@@ -65,9 +81,45 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
+    public List<FeedSummaryDto> getFeedListByBuilding(String memberId, int buildingId, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+
+        Building building = Building.builder().buildingId(buildingId).build();
+        List<Feed> entities = new ArrayList<>();
+
+        FeedRecommendationMemberId.initData(feedMyBatisRepository.getMemberLikeTag());
+        List<String> memberIdList = FeedRecommendationMemberId.getMemberLikeTagsRecommendation(memberId);
+
+        // 추천 맴버가 없다면 빌딩 그대로 보여주기
+        if(memberIdList == null || memberIdList.isEmpty()) {
+            entities = feedRepository.findByBuildingAndActivatedTrue(building, pageable);
+        } else {
+            Random rand = new Random();
+            String recommandMemberId = memberIdList.get(rand.nextInt(memberIdList.size()));
+            Member recommandMember = Member.builder().memberId(recommandMemberId).build();
+
+            entities = feedRepository.findFeedWithLikesFirst(recommandMember, building, pageable);
+        }
+
+        List<FeedSummaryDto> feedListByBuilding = FeedSummaryDto.toDtoList(entities);
+
+        return feedListByBuilding;
+    }
+
+    @Override
     public List<FeedSummaryDto> getFeedListByBuilding(int buildingId) {
         Building building = Building.builder().buildingId(buildingId).build();
         List<Feed> entities = feedRepository.findByBuildingAndActivatedTrue(building);
+
+        return FeedSummaryDto.toDtoList(entities);
+    }
+
+    @Override
+    public List<FeedSummaryDto> getFeedListByBuilding(int buildingId, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+
+        Building building = Building.builder().buildingId(buildingId).build();
+        List<Feed> entities = feedRepository.findByBuildingAndActivatedTrue(building, pageable);
 
         return FeedSummaryDto.toDtoList(entities);
     }
@@ -78,6 +130,19 @@ public class FeedServiceImpl implements FeedService {
                 Member.builder()
                         .memberId(memberId)
                         .build()
+        );
+
+        List<FeedSummaryDto> feedListByMemberLike = FeedSummaryDto.toDtoList(entites);
+
+        return feedListByMemberLike;
+    }
+
+    @Override
+    public List<FeedSummaryDto> getFeedListByMemberLike(String memberId, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+
+        List<Feed> entites = feedRepository.findByMemberLikeFeed(
+                Member.builder().memberId(memberId).build(), pageable
         );
 
         List<FeedSummaryDto> feedListByMemberLike = FeedSummaryDto.toDtoList(entites);
@@ -99,11 +164,37 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
+    public List<FeedSummaryDto> getFeedListByMemberBookmark(String memberId, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+
+        List<Feed> entites = feedRepository.findByMemberBookmarkFeed(
+                Member.builder().memberId(memberId).build(), pageable
+        );
+
+        List<FeedSummaryDto> feedListByMemberBookmark = FeedSummaryDto.toDtoList(entites);
+
+        return feedListByMemberBookmark;
+    }
+
+    @Override
     public List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId) {
         List<Feed> entites = feedRepository.findByMemberBuildingSubscription(
                 Member.builder()
                         .memberId(memberId)
                         .build()
+        );
+
+        List<FeedSummaryDto> feedListByBuildingSubscription = FeedSummaryDto.toDtoList(entites);
+
+        return feedListByBuildingSubscription;
+    }
+
+    @Override
+    public List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+
+        List<Feed> entites = feedRepository.findByMemberBuildingSubscription(
+                Member.builder().memberId(memberId).build(), pageable
         );
 
         List<FeedSummaryDto> feedListByBuildingSubscription = FeedSummaryDto.toDtoList(entites);
@@ -139,8 +230,8 @@ public class FeedServiceImpl implements FeedService {
 
     @Transactional
     @Override
-    public int deleteFeed(FeedDto feedDto) {
-        Feed deleteFeed = feedRepository.findByFeedId(feedDto.getFeedId());
+    public int deleteFeed(int feedId) {
+        Feed deleteFeed = feedRepository.findByFeedId(feedId);
 
         deleteFeed.setActivated(false);
         return feedRepository.save(deleteFeed).getFeedId();
@@ -176,6 +267,12 @@ public class FeedServiceImpl implements FeedService {
 
         // 2. 새로운 대표 피드 등록
         Feed setMainFeed = feedRepository.findByFeedId(feedDto.getFeedId());
+
+        // 만약 피드가 없거나 자신의 피드가 아니라면 -1 반환
+        if(setMainFeed == null || !setMainFeed.getWriter().equals(feedDto.getWriterId())) {
+            return -1;
+        }
+
         setMainFeed.setMainActivated(true);
         return feedRepository.save(setMainFeed).getFeedId();
     }
