@@ -4,8 +4,13 @@ import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Getter
@@ -14,7 +19,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Member {
+public class Member implements UserDetails {
 
     private static final String ANSI_RESET = "\u001B[0m";
     private static final String ANSI_RED = "\u001B[31m";
@@ -93,5 +98,40 @@ public class Member {
                 + this.getReceivingAllNotificationAllowed()
                 + ")"
                 + ANSI_RESET;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(this.memberRole.name()));
+    }
+
+    @Override
+    public String getPassword() {
+        return this.pwd;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.memberId;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return !this.signedOff;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return this.unlockTime.isBefore(LocalDateTime.now());
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return isAccountNonLocked() && isAccountNonExpired();
     }
 }
