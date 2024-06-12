@@ -221,7 +221,7 @@ public class FeedRestController {
     }
 
     @Operation(summary = "피드 내 태그 목록 조회", description = "피드에 등록된 태그 목록을 가져옵니다.")
-    @GetMapping("/feedTagList")
+    @GetMapping("/getFeedTagList")
     public List<TagDto> getFeedTagList(@Parameter(description = "피드 목록을 가져올 피드 ID") @RequestParam int feedId) {
         return feedSubService.getFeedTagList(feedId);
     }

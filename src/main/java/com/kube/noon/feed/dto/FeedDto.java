@@ -39,6 +39,7 @@ public class FeedDto {
     private boolean activate;
     private List<FeedAttachmentDto> attachments;
     private List<FeedCommentDto> comments;
+    private List<TagDto> tags;
     private List<TagFeedDto> tagFeeds;
 
     public static FeedDto toDto(Feed feed) {

@@ -3,11 +3,15 @@ package com.kube.noon.feed.service.impl;
 import com.kube.noon.building.domain.Building;
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.feed.domain.Feed;
+import com.kube.noon.feed.domain.Tag;
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
+import com.kube.noon.feed.dto.TagDto;
 import com.kube.noon.feed.repository.FeedRepository;
+import com.kube.noon.feed.repository.TagRepository;
 import com.kube.noon.feed.repository.mybatis.FeedMyBatisRepository;
 import com.kube.noon.feed.service.FeedService;
+import com.kube.noon.feed.service.FeedSubService;
 import com.kube.noon.feed.service.recommend.FeedRecommendationMemberId;
 import com.kube.noon.member.domain.Member;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +32,7 @@ public class FeedServiceImpl implements FeedService {
 
     private final FeedRepository feedRepository;
     private final FeedMyBatisRepository feedMyBatisRepository;
+    private final TagRepository tagRepository;
 
     @Override
     public List<FeedSummaryDto> getFeedListByMember(String memberId) {
@@ -240,7 +245,13 @@ public class FeedServiceImpl implements FeedService {
     @Override
     public FeedDto getFeedById(int feedId) {
         Feed getFeed = feedRepository.findByFeedId(feedId);
-        return FeedDto.toDto(getFeed);
+        FeedDto resultFeed = FeedDto.toDto(getFeed);
+
+        // tag의 목록을 가져온다.
+        List<Tag> tagList = tagRepository.getTagByFeedId(Feed.builder().feedId(feedId).build());
+        resultFeed.setTags(TagDto.toDtoList(tagList));
+
+        return resultFeed;
     }
 
     @Transactional
