@@ -86,8 +86,8 @@ public class FeedRestController {
 
     @Operation(summary = "피드 수정", description = "피드를 하나 수정합니다. 제목과 텍스트, 카테고리만 수정 가능합니다.")
     @PostMapping("/updateFeed")
-    public int updateFeed(@RequestBody FeedDto feedDto) {
-        int feedId = feedService.updateFeed(feedDto);
+    public int updateFeed(@RequestBody UpdateFeedDto updateFeedDto) {
+        int feedId = feedService.updateFeed(updateFeedDto);
 
         return feedId;
     }
