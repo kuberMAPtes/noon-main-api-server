@@ -41,7 +41,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.*;
@@ -228,81 +227,19 @@ public class MemberRestController {
      * 3. 얻은 정보로 처음이면 회원가입시키기, 있으면 로그인
      */
     @RequestMapping(value = "kakaoLogin", method = RequestMethod.GET)
-    public Mono<ResponseEntity<ApiResponse<String>>> kakaoLogin(@RequestParam(value = "code") String authorizeCode,
+    public ResponseEntity<ApiResponse<String>> kakaoLogin(@RequestParam(value = "code") String authorizeCode,
                                                                 HttpServletResponse response) throws Exception {
         log.info("카카오 로그인 요청: code={}", authorizeCode);
 
-        return kakaoService.getAccessToken(authorizeCode)
-                .publishOn(Schedulers.boundedElastic())
-                .map(result -> {
-                    log.info("액세스 토큰 받음: result={}", result);
-                    JSONObject resultJsonObject = new JSONObject(result);
-                    System.out.println("resultJsonObject");
-                    System.out.println(resultJsonObject);
-                    System.out.println(resultJsonObject.get("access_token"));
-                    String accessToken = resultJsonObject.getString("access_token");
-                    String refreshToken = resultJsonObject.getString("refresh_token");
+        TokenPair tokenPair = this.kakaoService.generateTokenPairAndAddMemberIfNotExists(authorizeCode);
+        response.addCookie(wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), tokenPair.getAccessToken()));
+        response.addCookie(wrapWithCookie(SecurityConstants.REFRESH_TOKEN_COOKIE_KEY.get(), tokenPair.getRefreshToken()));
+        response.addCookie(wrapWithCookie(SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get(), TokenType.KAKAO_TOKEN.name()));
 
-                    AtomicReference<String> memberId = new AtomicReference<>("");
-
-                    try {
-                        kakaoService.getMemberInformation(accessToken)
-                                .doOnSubscribe(subscription -> log.info("회원 정보 요청 구독 시작"))
-                                .doOnNext(res -> log.info("회원 정보 응답 수신: {}", res))
-                                .doOnError(error -> log.info("회원 정보 요청 오류: {}", error.getMessage()))
-                                .log()
-                                .map(res -> {
-                                    log.info("회원 정보 처리 중: res={}", res);
-                                    KakaoResponseDto kakaoResponseDto = null;
-                                    try {
-                                        kakaoResponseDto = new ObjectMapper().readValue(res, KakaoResponseDto.class);
-                                        System.out.println("kakaoResponse");
-                                        System.out.println(kakaoResponseDto.toString());
-                                    } catch (JsonProcessingException e) {
-                                        log.error("JSON 처리 오류: {}", e.getMessage(), e);
-                                        throw new RuntimeException(e);
-                                    }
-
-                                    String nickname = kakaoResponseDto.getKakaoAccount().getProfile().getNickname();
-                                    String email = kakaoResponseDto.getKakaoAccount().getEmail();
-                                    System.out.println("email ::: " + email);
-                                    memberId.set(email);
-                                    AddMemberDto newMember = new AddMemberDto();
-                                    newMember.setMemberId(email);
-                                    newMember.setNickname(nickname);
-                                    newMember.setPwd("socialLogin");
-                                    newMember.setPhoneNumber(RandomData.getRandomPhoneNumber());
-//                                    try {
-//                                        log.info("회원 조회 시도: memberId={}", id);
-//                                        log.info("userService :: {}", memberService.findMemberById(id));
-//                                    } catch (Exception e) {
-//                                        log.error("회원 조회 중 오류: {}", e.getMessage(), e);
-//                                        throw new RuntimeException(e);
-//                                    }
-                                    log.info("회원 정보 있는지 검증하고 없으면 추가 시도: id={}", email);
-                                    Optional.ofNullable(memberService.findMemberById(email)).ifPresentOrElse(member -> {
-                                            },
-                                            () -> {//없으면...
-                                                log.info("회원 정보 추가: Id={}", email);
-                                                memberService.addMember(newMember);
-                                            });
-                                    return res;
-                                }).block();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-//                    String Url = "http://127.0.0.1:3000/member/kakaoNav?loginWay=" + "kakao";
-                    String Url = "http://127.0.0.1:3000/";
-                    System.out.println(Url);
-
-                    response.addCookie(wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), accessToken));
-                    response.addCookie(wrapWithCookie(SecurityConstants.REFRESH_TOKEN_COOKIE_KEY.get(), refreshToken));
-                    response.addCookie(wrapWithCookie(SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get(), TokenType.KAKAO_TOKEN.name()));
-
-                    return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
-                            .header(HttpHeaders.LOCATION, Url)
-                            .build();
-                });
+        final String redirectClientUrl = "http://127.0.0.1:3000/member/kakaoNav?loginWay=" + "kakao";
+        return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
+                .header(HttpHeaders.LOCATION, redirectClientUrl)
+                .build();
     }
 
     @PostMapping("/googleLogin")

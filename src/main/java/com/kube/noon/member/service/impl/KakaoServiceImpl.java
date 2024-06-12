@@ -1,23 +1,33 @@
 package com.kube.noon.member.service.impl;
 
+import com.kube.noon.common.security.TokenPair;
+import com.kube.noon.common.security.support.KakaoTokenSupport;
+import com.kube.noon.member.domain.Member;
+import com.kube.noon.member.dto.member.AddMemberDto;
+import com.kube.noon.member.dto.member.UpdateMemberDto;
+import com.kube.noon.member.exception.MemberNotFoundException;
 import com.kube.noon.member.service.KakaoService;
+import com.kube.noon.member.service.MemberService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
-
+@Slf4j
 @Service("kakaoServiceImpl")
 public class KakaoServiceImpl implements KakaoService {
 
     private final WebClient webClientAuth;
     private final WebClient webClientApi;
+    private final KakaoTokenSupport tokenSupport;
+    private final MemberService memberService;
 
     @Value("${kakao.api.key}")
     private String apiKey;
@@ -31,53 +41,40 @@ public class KakaoServiceImpl implements KakaoService {
 
 
 
-    public KakaoServiceImpl(){
+    public KakaoServiceImpl(KakaoTokenSupport kakaoTokenSupport, MemberService memberService){
         HttpClient httpClient = HttpClient.create();
         ClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
         this.webClientAuth = WebClient.builder().clientConnector(connector).baseUrl("https://kauth.kakao.com").build();
         this.webClientApi = WebClient.builder().clientConnector(connector).baseUrl("https://kapi.kakao.com").build();
+        this.tokenSupport = kakaoTokenSupport;
+        this.memberService = memberService;
     }
 
-
     @Override
-    public Mono<String> getAccessToken(String authorize_code){
-        System.out.println("getAccessToken() 호출 :: 카카오서비스");
-        System.out.println("authorize_code: "+authorize_code);
-        String REDIRECT_URI = this.mainServerHost + KAKAO_LOGIN_ROUTE_PATH;
-        System.out.println("redirect_uri: "+REDIRECT_URI);
-        /*
-        -H는 헤더 -d는 바디
-        * curl -v -X POST "https://kauth.kakao.com/oauth/token" \
-                 -H "Content-Type: application/x-www-form-urlencoded" \
-                 -d "grant_type=authorization_code" \
-                 -d "client_id=${REST_API_KEY}" \
-                 --data-urlencode "redirect_uri=${REDIRECT_URI}" \
-                 -d "code=${AUTHORIZE_CODE}"
-        *라고 webClient가 보내야 해.
-        * */
-        return webClientAuth.post()
-                .uri(KAKAO_OAUTH_TOKEN_PATH)
-                .header(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=utf-8")
-                .body(BodyInserters.fromFormData("grant_type", "authorization_code")
-                        .with("client_id", apiKey)
-                        .with("redirect_uri", REDIRECT_URI)
-                        .with("code", authorize_code))
-                .exchangeToMono(response -> {
-                    if (response.statusCode().is2xxSuccessful()) {
-                        return response.bodyToMono(String.class)
-                                .doOnNext(body -> System.out.println("응답 본문: " + body));
-                    } else {
-                        return response.createException()
-                                .flatMap(Mono::error);
-                    }
-                })
-                .doOnError(WebClientResponseException.class, ex -> {
-                    System.err.println("응답 상태 코드: " + ex.getStatusCode());
-                    System.err.println("응답 본문: " + ex.getResponseBodyAsString());
-                })
-                .doOnSuccess(response -> System.out.println("요청 성공"));
+    public TokenPair generateTokenPairAndAddMemberIfNotExists(String authorizeCode){
+        TokenPair tokenPair = this.tokenSupport.generateToken(authorizeCode);
+        Member kakaoMember = this.tokenSupport.getMemberInformation(tokenPair.getAccessToken());
+        try {
+            this.memberService.findMemberById(kakaoMember.getMemberId(), kakaoMember.getMemberId());
+        } catch (MemberNotFoundException e) {
+            addKakaoMember(kakaoMember);
+        }
+        return tokenPair;
+    }
 
-
+    @Transactional
+    public void addKakaoMember(Member infoToAdd) {
+        AddMemberDto addDto = new AddMemberDto();
+        BeanUtils.copyProperties(infoToAdd, addDto);
+        addDto.setSocialSignUp(true);
+        this.memberService.addMember(addDto);
+        this.memberService.findMemberById(addDto.getMemberId())
+                .ifPresent((found) -> {
+                    UpdateMemberDto updateMemberDto = new UpdateMemberDto();
+                    BeanUtils.copyProperties(infoToAdd, updateMemberDto);
+                    log.info("update to={}", updateMemberDto);
+                    this.memberService.updateMember(updateMemberDto);
+                });
     }
 
     @Override
