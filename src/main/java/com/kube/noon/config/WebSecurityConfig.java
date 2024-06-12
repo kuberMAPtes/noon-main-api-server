@@ -11,6 +11,7 @@ import com.kube.noon.common.security.filter.TokenAuthenticationFilter;
 import com.kube.noon.common.security.filter.TokenRefreshFilter;
 import com.kube.noon.common.security.support.BearerTokenSupport;
 import com.kube.noon.common.security.support.JwtSupport;
+import com.kube.noon.common.security.support.KakaoTokenSupport;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -77,8 +78,8 @@ public class WebSecurityConfig {
 
     @Bean
     @Profile("prod")
-    public KakaoTokenAuthenticationProvider kakaoTokenAuthenticationProvider() {
-        return new KakaoTokenAuthenticationProvider();
+    public KakaoTokenAuthenticationProvider kakaoTokenAuthenticationProvider(UserDetailsService userDetailsService) {
+        return new KakaoTokenAuthenticationProvider(userDetailsService);
     }
 
     @Bean
