@@ -4,6 +4,7 @@ import com.kube.noon.chat.domain.ChatEntrance;
 import com.kube.noon.chat.domain.Chatroom;
 import com.kube.noon.chat.dto.ChatEntranceDto;
 import com.kube.noon.chat.dto.ChatroomDto;
+import com.kube.noon.chat.service.ChatroomSearchService;
 import com.kube.noon.chat.service.ChatroomService;
 import com.kube.noon.member.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +20,12 @@ import java.util.Map;
 public class ChatroomRestController {
 
     private final ChatroomService chatroomService;
+    private final ChatroomSearchService chatroomSearchService;
 
     @Autowired
-    public ChatroomRestController(ChatroomService chatroomService) {
+    public ChatroomRestController(ChatroomService chatroomService, ChatroomSearchService chatroomSearchService) {
         this.chatroomService = chatroomService;
+        this.chatroomSearchService = chatroomSearchService;
     }
 
     // 채팅방 생성
@@ -69,8 +72,8 @@ public class ChatroomRestController {
     @GetMapping("getMyChatrooms")
     public List<ChatroomDto> getChatrooms(@RequestParam("memberId") String memberId) throws Exception {
         System.out.println("        🐬[Controller] (memberId) => " + memberId);
-        System.out.println("        🐬[Controller] getMyChatroms return => " + chatroomService.getChatroomListByMemberId(memberId));
-        return chatroomService.getChatroomListByMemberId(memberId);
+        System.out.println("        🐬[Controller] getMyChatroms return => " + chatroomSearchService.getChatroomListByMemberId(memberId));
+        return chatroomSearchService.getChatroomListByMemberId(memberId);
     }
 
     /**
