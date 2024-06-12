@@ -17,7 +17,11 @@ public interface ChatroomService {
 
     /**
      * 채팅방 삭제 (관리자 기능)
+     * @param chatroomId
+     * @return
+     * @throws Exception
      */
+    public String deleteChatroom(int chatroomId) throws Exception;
 
     /**
      * 채팅방에 참여한 멤버 리스트를 채팅방으로 조회

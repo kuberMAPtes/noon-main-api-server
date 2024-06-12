@@ -43,5 +43,5 @@ public interface ChatroomSearchService {
      * @return
      * @throws Exception
      */
-    public List<ChatroomDto> getLivelistChatroomList() throws Exception;
+    public List<ChatroomDto> getLivelistChatroomList(int buildingId) throws Exception;
 }
