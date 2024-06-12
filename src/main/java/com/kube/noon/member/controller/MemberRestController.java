@@ -136,25 +136,6 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("패스워드를 사용할 수 있습니다.", null));
     }
 
-    @GetMapping("/checkCookies")
-    public ResponseEntity<ApiResponse<Boolean>> checkCookies(HttpServletRequest request) {
-        Optional<String> authorizationCookie = Arrays.stream(request.getCookies())
-                .filter(cookie -> "Authorization".equals(cookie.getName()))
-                .map(cookie -> cookie.getValue())
-                .findFirst();
-
-        Optional<String> refreshTokenCookie = Arrays.stream(request.getCookies())
-                .filter(cookie -> "Refresh-Token".equals(cookie.getName()))
-                .map(cookie -> cookie.getValue())
-                .findFirst();
-
-        boolean isExist = authorizationCookie.isPresent() && refreshTokenCookie.isPresent();
-
-        String message = isExist ? "쿠키가 존재합니다." : "쿠키가 존재하지 않습니다.";
-
-        return ResponseEntity.ok(ApiResponseFactory.createResponse(message, isExist));
-    }
-
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<MemberDto>> login(@RequestBody LoginRequestDto dto, HttpServletResponse response) {
         log.info("로그인 요청: {}", dto);

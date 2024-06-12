@@ -1,6 +1,6 @@
 package com.kube.noon.config;
 
-import com.kube.noon.common.security.authentication.authtoken.BearerTokenAuthentication;
+import com.kube.noon.common.security.AccessDefinition;
 import com.kube.noon.common.security.authentication.authtoken.generator.*;
 import com.kube.noon.common.security.authentication.provider.JwtAuthenticationProvider;
 import com.kube.noon.common.security.authentication.provider.KakaoTokenAuthenticationProvider;
@@ -11,7 +11,7 @@ import com.kube.noon.common.security.filter.TokenAuthenticationFilter;
 import com.kube.noon.common.security.filter.TokenRefreshFilter;
 import com.kube.noon.common.security.support.BearerTokenSupport;
 import com.kube.noon.common.security.support.JwtSupport;
-import com.kube.noon.common.security.support.KakaoTokenSupport;
+import com.kube.noon.member.enums.Role;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -25,9 +25,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.List;
 
@@ -112,6 +115,28 @@ public class WebSecurityConfig {
     }
 
     @Bean
+    @Profile("prod")
+    public PasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder(); // TODO: Should replace with Argon2PasswordEncoder someday
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(PasswordEncoder.class)
+    public PasswordEncoder noneEncryptionPasswordEncoder() {
+        return new PasswordEncoder() {
+            @Override
+            public String encode(CharSequence rawPassword) {
+                return String.valueOf(rawPassword);
+            }
+
+            @Override
+            public boolean matches(CharSequence rawPassword, String encodedPassword) {
+                return String.valueOf(rawPassword).equals(encodedPassword);
+            }
+        };
+    }
+
+    @Bean
     @Profile({"dev", "prod"})
     public SecurityFilterChain tokenBasedFilterChainDev(
             HttpSecurity http,
@@ -120,7 +145,14 @@ public class WebSecurityConfig {
             TokenRefreshFilter tokenRefreshFilter
     ) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests((registry) -> registry.anyRequest().authenticated()) // TODO
+                .authorizeHttpRequests((registry) -> {
+                    AccessDefinition.WHITE_LIST.forEach((uri) ->
+                            registry.requestMatchers(new AntPathRequestMatcher(uri)).permitAll());
+
+                    AccessDefinition.ALLOWED_TO_MEMBER.forEach((uri) ->
+                            registry.requestMatchers(new AntPathRequestMatcher(uri))
+                                    .hasAnyAuthority(Role.MEMBER.name(), Role.ADMIN.name()));
+                })
                 .sessionManagement((config) -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(tokenAuthenticationFilter, AuthFilter.class)
