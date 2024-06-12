@@ -3,6 +3,7 @@ package com.kube.noon.feed.dto;
 import com.kube.noon.feed.domain.Feed;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,7 @@ public class FeedSummaryDto {
     private String feedText;
     private int buildingId;
     private String buildingName;
+    private LocalDateTime writtenTime;
     private String feedAttachementURL;
 
     public static FeedSummaryDto toDto(Feed feed) {
@@ -31,6 +33,7 @@ public class FeedSummaryDto {
                 .feedText(feed.getFeedText())
                 .buildingId(feed.getBuilding().getBuildingId())
                 .buildingName(feed.getBuilding().getBuildingName())
+                .writtenTime(feed.getWrittenTime())
                 .feedAttachementURL((feed.getAttachments() == null || feed.getAttachments().size() == 0) ? null : feed.getAttachments().get(0).getFileUrl())
                 .build();
     }
