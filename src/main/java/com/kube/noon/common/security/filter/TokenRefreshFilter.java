@@ -1,5 +1,6 @@
 package com.kube.noon.common.security.filter;
 
+import com.kube.noon.common.security.TokenPair;
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.common.security.support.BearerTokenSupport;
 import jakarta.servlet.FilterChain;
@@ -34,10 +35,9 @@ public class TokenRefreshFilter extends OncePerRequestFilter {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && authentication instanceof UsernamePasswordAuthenticationToken) {
             String memberId = (String)authentication.getPrincipal();
-            String accessToken = this.tokenSupport.generateAccessToken(memberId);
-            String refreshToken = this.tokenSupport.generateRefreshToken(memberId);
-            response.addCookie(new Cookie(ACCESS_TOKEN_COOKIE_KEY.get(), accessToken));
-            response.addCookie(new Cookie(REFRESH_TOKEN_COOKIE_KEY.get(), refreshToken));
+            TokenPair tokenPair = this.tokenSupport.generateToken(memberId);
+            response.addCookie(new Cookie(ACCESS_TOKEN_COOKIE_KEY.get(), tokenPair.getAccessToken()));
+            response.addCookie(new Cookie(REFRESH_TOKEN_COOKIE_KEY.get(), tokenPair.getRefreshToken()));
             response.addCookie(new Cookie(TOKEN_TYPE_COOKIE_KEY.get(), String.valueOf(TokenType.NATIVE_TOKEN)));
             log.info("New JWT Token in Cookie");
         } else {

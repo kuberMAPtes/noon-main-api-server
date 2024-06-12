@@ -1,5 +1,8 @@
 package com.kube.noon.common.security.support;
 
+import com.kube.noon.common.security.TokenPair;
+import com.kube.noon.common.security.authentication.authtoken.TokenType;
+
 /**
  * Bearer Token에 대한 operation을 정의한 인터페이스.
  *
@@ -8,9 +11,7 @@ package com.kube.noon.common.security.support;
  */
 public interface BearerTokenSupport {
 
-    String generateAccessToken(String memberId);
-
-    String generateRefreshToken(String memberId);
+    TokenPair generateToken(String memberId);
 
     String extractMemberId(String token);
 
@@ -23,4 +24,6 @@ public interface BearerTokenSupport {
     void invalidateRefreshToken(String refreshToken);
 
     void invalidateRefreshTokenByMemberId(String memberId);
+
+    boolean supports(TokenType tokenType);
 }

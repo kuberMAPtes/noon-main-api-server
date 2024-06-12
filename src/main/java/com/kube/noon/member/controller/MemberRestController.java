@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.common.security.SecurityConstants;
+import com.kube.noon.common.security.TokenPair;
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.common.security.support.BearerTokenSupport;
 import com.kube.noon.member.dto.RequestDto.LoginRequestDto;
@@ -43,16 +44,13 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 음? 왜 바로 ok만 내보내지? -> GlobalExceptionHandler에서 검증하고 있음
  * 음? 왜 memberService 에서 그냥 ok만 내보내지? ->memberValidator, memberValidationRule,memberScanner 에서 검증하고 있음
- *
+ * <p>
  * 잘못된 설계가 하나 있음 RequestDto로 쓰이는 Dto중에 FromId가 존재하는 것들이 있음. RequestDto에서 FromId를 꺼내서 쓰면 절대 안됨 비었음.
  */
 @Slf4j
@@ -67,7 +65,7 @@ public class MemberRestController {
     private final KakaoService kakaoService;
 
     private final AuthService authService;
-    private final BearerTokenSupport tokenSupport;
+    private final List<BearerTokenSupport> tokenSupport;
 
     @Value("${pageUnit}")
     int pageUnit;
@@ -81,7 +79,7 @@ public class MemberRestController {
                                 @Qualifier("loginAttemptCheckerAgent") LoginAttemptCheckerAgent loginAttemptCheckerAgent,
                                 KakaoService kakaoService,
                                 AuthService authService,
-                                BearerTokenSupport tokenSupport) {
+                                List<BearerTokenSupport> tokenSupport) {
         this.authService = authService;
         log.info("생성자 :: " + this.getClass());
         this.kakaoService = kakaoService;
@@ -138,6 +136,7 @@ public class MemberRestController {
         memberService.checkPassword(memberId, password);
         return ResponseEntity.ok(ApiResponseFactory.createResponse("패스워드를 사용할 수 있습니다.", null));
     }
+
     @GetMapping("/checkCookies")
     public ResponseEntity<ApiResponse<Boolean>> checkCookies(HttpServletRequest request) {
         Optional<String> authorizationCookie = Arrays.stream(request.getCookies())
@@ -152,7 +151,7 @@ public class MemberRestController {
 
         boolean isExist = authorizationCookie.isPresent() && refreshTokenCookie.isPresent();
 
-        String message =  isExist ? "쿠키가 존재합니다." : "쿠키가 존재하지 않습니다.";
+        String message = isExist ? "쿠키가 존재합니다." : "쿠키가 존재하지 않습니다.";
 
         return ResponseEntity.ok(ApiResponseFactory.createResponse(message, isExist));
     }
@@ -182,8 +181,15 @@ public class MemberRestController {
             case SUCCESS:
                 this.loginAttemptCheckerAgent.loginSucceeded(memberId);
                 log.info("로그인 성공 처리 완료: {}", memberId);
-                response.addCookie(getAccessTokenCookie(memberId));
-                response.addCookie(getRefreshTokenCookie(memberId));
+
+
+                TokenPair tokenPair = this.tokenSupport.stream()
+                        .filter((tokenSupport) -> tokenSupport.supports(TokenType.NATIVE_TOKEN))
+                        .findAny()
+                        .orElseThrow()
+                        .generateToken(memberId);
+                response.addCookie(wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), tokenPair.getAccessToken()));
+                response.addCookie(wrapWithCookie(SecurityConstants.REFRESH_TOKEN_COOKIE_KEY.get(), tokenPair.getRefreshToken()));
                 response.addCookie(wrapWithCookie(SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get(), TokenType.NATIVE_TOKEN.name()));
                 return ResponseEntity.ok()
                         .body(ApiResponseFactory.createResponse("로그인 성공", memberDto));
@@ -206,20 +212,20 @@ public class MemberRestController {
     }
 
     /**
-     *         /*
-     *         * HTTP/1.1 200 OK
-     *             Content-Type: application/json;charset=UTF-8
-     *             {
-     *                 "token_type":"bearer",
-     *                 "access_token":"${ACCESS_TOKEN}",
-     *                 "expires_in":43199,
-     *                 "refresh_token":"${REFRESH_TOKEN}",
-     *                 "refresh_token_expires_in":5184000,
-     *                 "scope":"account_email profile"
-     *             }
-     *             1. 토큰얻기 서비스 사용(사용자가 카카오로그인인증을 마쳤다는거임)
-     *             2. 얻은 토큰으로 멤버정보얻기
-     *             3. 얻은 정보로 처음이면 회원가입시키기, 있으면 로그인
+     * /*
+     * * HTTP/1.1 200 OK
+     * Content-Type: application/json;charset=UTF-8
+     * {
+     * "token_type":"bearer",
+     * "access_token":"${ACCESS_TOKEN}",
+     * "expires_in":43199,
+     * "refresh_token":"${REFRESH_TOKEN}",
+     * "refresh_token_expires_in":5184000,
+     * "scope":"account_email profile"
+     * }
+     * 1. 토큰얻기 서비스 사용(사용자가 카카오로그인인증을 마쳤다는거임)
+     * 2. 얻은 토큰으로 멤버정보얻기
+     * 3. 얻은 정보로 처음이면 회원가입시키기, 있으면 로그인
      */
     @RequestMapping(value = "kakaoLogin", method = RequestMethod.GET)
     public Mono<ResponseEntity<ApiResponse<String>>> kakaoLogin(@RequestParam(value = "code") String authorizeCode,
@@ -282,10 +288,10 @@ public class MemberRestController {
                                             });
                                     return res;
                                 }).block();
-                    }catch (Exception e) {
+                    } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                    String Url = "http://127.0.0.1:3000/member/kakaoNav?loginWay="+ "kakao";
+                    String Url = "http://127.0.0.1:3000/member/kakaoNav?loginWay=" + "kakao";
                     System.out.println(Url);
 
                     response.addCookie(wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), accessToken));
@@ -303,6 +309,7 @@ public class MemberRestController {
 //        log.info("googleLogin" + memberId + " " + authorizeCode);
         return null;
     }
+
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(@RequestBody LoginRequestDto dto) {
         // 토큰을 블랙리스트에 추가
@@ -319,21 +326,21 @@ public class MemberRestController {
     @PostMapping("/addMember")
     public ResponseEntity<ApiResponse<?>> addMember(@Valid @RequestBody AddMemberDto dto, BindingResult bindingResult) {
         log.info("addMember" + dto + " " + bindingResult);
-            log.info("왜 로그가 안찍혀");
-            if (bindingResult.hasErrors()) {
-                log.info("여기는 머야");
-                Map<String, String> errors = new HashMap<>();
-                bindingResult.getFieldErrors().forEach(fieldError -> {
-                    errors.put(fieldError.getField(), fieldError.getDefaultMessage());
-                });
-                log.info(errors.toString());
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponseFactory.createErrorResponse("회원가입 실패", errors.toString()));
-            }
+        log.info("왜 로그가 안찍혀");
+        if (bindingResult.hasErrors()) {
+            log.info("여기는 머야");
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(fieldError -> {
+                errors.put(fieldError.getField(), fieldError.getDefaultMessage());
+            });
+            log.info(errors.toString());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponseFactory.createErrorResponse("회원가입 실패", errors.toString()));
+        }
 
-            log.info("왜 로그가 안찍혀");
-            memberService.addMember(dto);
+        log.info("왜 로그가 안찍혀");
+        memberService.addMember(dto);
 
-            return ResponseEntity.ok(ApiResponseFactory.createResponse("회원가입 성공", null));
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원가입 성공", null));
     }
 
     @PostMapping("/updatePassword")
@@ -377,7 +384,7 @@ public class MemberRestController {
     @GetMapping("/getMember/{fromId}/{memberId}/")
     public ResponseEntity<ApiResponse<MemberDto>> getMember(@PathVariable String fromId, @PathVariable String memberId) {
         log.info("getMember" + fromId + " " + memberId);
-        MemberDto dto = memberService.findMemberById(fromId,memberId);
+        MemberDto dto = memberService.findMemberById(fromId, memberId);
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 조회 성공", dto));
     }
 
@@ -436,18 +443,6 @@ public class MemberRestController {
         // JWT 토큰 검증 로직 구현
         // 유효한 토큰이면 사용자 ID를 반환하고, 그렇지 않으면 예외를 던집니다.
         return "member_100"; // 예시로 사용자 ID 반환
-    }
-    private Cookie getRefreshTokenCookie(String memberId) {
-        //  토큰 생성하는 함수 호출
-        String refreshToken = this.tokenSupport.generateRefreshToken(memberId);
-        log.debug("Generated refresh token={}", refreshToken);
-        return wrapWithCookie(SecurityConstants.REFRESH_TOKEN_COOKIE_KEY.get(), refreshToken);
-    }
-    private Cookie getAccessTokenCookie(String memberId) {
-        // 액세스 토큰 생성하는 함수 호출
-        String accessToken = this.tokenSupport.generateAccessToken(memberId);
-        log.debug("Generated access token={}", accessToken);
-        return wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), accessToken);
     }
 
     private Cookie wrapWithCookie(String cookieName, String value) {

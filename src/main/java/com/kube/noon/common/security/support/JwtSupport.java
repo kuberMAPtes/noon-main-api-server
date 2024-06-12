@@ -1,5 +1,7 @@
 package com.kube.noon.common.security.support;
 
+import com.kube.noon.common.security.TokenPair;
+import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.common.security.support.repository.RefreshTokenRepository;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
@@ -43,12 +45,15 @@ public class JwtSupport implements BearerTokenSupport {
     }
 
     @Override
-    public String generateAccessToken(String memberId) {
+    public TokenPair generateToken(String memberId) {
+        return new TokenPair(generateAccessToken(memberId), generateRefreshToken(memberId));
+    }
+
+    private String generateAccessToken(String memberId) {
         return generateToken(memberId, false);
     }
 
-    @Override
-    public String generateRefreshToken(String memberId) {
+    private String generateRefreshToken(String memberId) {
         invalidateRefreshTokenByMemberId(memberId);
         String token = generateToken(memberId, true);
         this.refreshTokenRepository.save(memberId, token);
@@ -128,5 +133,10 @@ public class JwtSupport implements BearerTokenSupport {
     @Override
     public void invalidateRefreshTokenByMemberId(String memberId) {
         this.refreshTokenRepository.remove(memberId);
+    }
+
+    @Override
+    public boolean supports(TokenType tokenType) {
+        return tokenType == TokenType.NATIVE_TOKEN;
     }
 }
