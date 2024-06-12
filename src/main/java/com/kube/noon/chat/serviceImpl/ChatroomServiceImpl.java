@@ -40,7 +40,7 @@ public class ChatroomServiceImpl implements ChatroomService {
         chatroom.setChatroomType(roomType);
         Chatroom savedChatroom = chatroomRepository.save(chatroom);
 
-        // 채팅생성자가 채팅참여멤버 에 안들어갓누
+        // 채팅생성자가 채팅참여멤버에 안들어갓누
         ChatEntrance chatEntrance = new ChatEntrance();
         chatEntrance.setChatroom(savedChatroom);
         chatEntrance.setChatroomMemberId(requestChatroom.getChatroomCreatorId());
@@ -107,23 +107,6 @@ public class ChatroomServiceImpl implements ChatroomService {
         return result;
     }
 
-    // 채팅방 목록을 회원ID로 조회
-    @Override
-    public List<ChatroomDto> getChatroomListByMemberId(String chatroomMemberId) {
-
-        // ChatEntrance 목록을 조회하여 memberID가 입장한 채팅방을 체크
-        List<ChatEntrance> entrances = chatEntranceRepository.getChatEntrancesByChatroomMemberId(chatroomMemberId);
-
-        // 입장한 채팅방을 기준으로 채팅방에 대한 상세한 정보 Chatroom list를 얻음
-        List<Chatroom> chatrooms = entrances.stream()
-                .map(ChatEntrance::getChatroom)
-                .collect(Collectors.toList());
-
-        // ChatroomList 를 Dto 로 변환후 return
-        return chatrooms.stream()
-                .map(this::convertToChatroomDto)
-                .collect(Collectors.toList());
-    }
 /////////////////////////////////////////////////////////////////////////////////////////
 
     // 채팅방에 대한 정보를 채팅방ID로 조회
