@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -50,7 +51,14 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        TokenType tokenType = tokenTypeStr == null ? TokenType.NATIVE_TOKEN : TokenType.valueOf(tokenTypeStr);
+        TokenType tokenType;
+
+        try {
+            tokenType = TokenType.valueOf(tokenTypeStr);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            return;
+        }
 
         WebAuthenticationDetails webAuthenticationDetails = new WebAuthenticationDetailsSource().buildDetails(request);
 

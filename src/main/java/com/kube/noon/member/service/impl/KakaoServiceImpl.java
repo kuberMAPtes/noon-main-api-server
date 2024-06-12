@@ -41,6 +41,7 @@ public class KakaoServiceImpl implements KakaoService {
     }
 
 
+    @Override
     public Mono<String> getAccessToken(String authorize_code){
         System.out.println("getAccessToken() 호출 :: 카카오서비스");
         System.out.println("authorize_code: "+authorize_code);
@@ -81,14 +82,15 @@ public class KakaoServiceImpl implements KakaoService {
 
     }
 
-    public Mono<String> getMemberInformation(String access_token){
+    @Override
+    public Mono<String> getMemberInformation(String accessToken){
         System.out.println("getMemberInformation() 호출 :: 카카오서비스");
         String path = "/v2/user/me";
         System.out.println(path);
 
         return webClientApi.get()
                 .uri(path)
-                .header(HttpHeaders.AUTHORIZATION,"Bearer "+access_token)
+                .header(HttpHeaders.AUTHORIZATION,"Bearer "+accessToken)
                 .header(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=utf-8")
                 .retrieve()
                 .bodyToMono(String.class);

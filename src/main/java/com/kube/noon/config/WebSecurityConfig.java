@@ -1,10 +1,8 @@
 package com.kube.noon.config;
 
-import com.kube.noon.common.security.authentication.authtoken.generator.BearerTokenAuthenticationTokenGenerator;
-import com.kube.noon.common.security.authentication.authtoken.generator.JwtAuthenticationGenerator;
-import com.kube.noon.common.security.authentication.authtoken.generator.NoAuthenticationGenerator;
-import com.kube.noon.common.security.authentication.authtoken.generator.SimpleJsonAuthenticationGenerator;
+import com.kube.noon.common.security.authentication.authtoken.generator.*;
 import com.kube.noon.common.security.authentication.provider.JwtAuthenticationProvider;
+import com.kube.noon.common.security.authentication.provider.KakaoTokenAuthenticationProvider;
 import com.kube.noon.common.security.authentication.provider.NoAuthenticationProvider;
 import com.kube.noon.common.security.authentication.provider.SimpleJsonAuthenticationProvider;
 import com.kube.noon.common.security.filter.AuthFilter;
@@ -74,6 +72,18 @@ public class WebSecurityConfig {
     @ConditionalOnBean(JwtAuthenticationProvider.class)
     public JwtAuthenticationGenerator jwtAuthenticationTokenGenerator() {
         return new JwtAuthenticationGenerator();
+    }
+
+    @Bean
+    @Profile("prod")
+    public KakaoTokenAuthenticationProvider kakaoTokenAuthenticationProvider() {
+        return new KakaoTokenAuthenticationProvider();
+    }
+
+    @Bean
+    @ConditionalOnBean(KakaoTokenAuthenticationProvider.class)
+    public KakaoTokenAuthenticationGenerator kakaoTokenAuthenticationGenerator() {
+        return new KakaoTokenAuthenticationGenerator();
     }
 
     @Bean
