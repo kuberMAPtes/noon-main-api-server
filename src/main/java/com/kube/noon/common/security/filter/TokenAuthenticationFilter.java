@@ -1,8 +1,7 @@
 package com.kube.noon.common.security.filter;
 
 import com.kube.noon.common.security.SecurityConstants;
-import com.kube.noon.common.security.authentication.authtoken.JwtAuthenticationToken;
-import com.kube.noon.common.security.authentication.authtoken.SimpleJsonAuthenticationToken;
+import com.kube.noon.common.security.authentication.authtoken.BearerTokenAuthentication;
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.common.security.authentication.authtoken.generator.BearerTokenAuthenticationTokenGenerator;
 import jakarta.servlet.FilterChain;
@@ -26,7 +25,7 @@ import java.util.List;
  * SecurityContext에 BearerTokenAuthenticationToken 인스턴스를 담아 AuthFilter에 전달해 인증 로직을 위임한다.
  *
  * @author PGD
- * @see com.kube.noon.common.security.authentication.authtoken.BearerTokenAuthenticationToken
+ * @see BearerTokenAuthentication
  * @see BearerTokenAuthenticationTokenGenerator
  * @see AuthFilter
  * @see SecurityContextHolder

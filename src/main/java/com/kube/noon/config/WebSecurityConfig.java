@@ -1,9 +1,9 @@
 package com.kube.noon.config;
 
 import com.kube.noon.common.security.authentication.authtoken.generator.BearerTokenAuthenticationTokenGenerator;
-import com.kube.noon.common.security.authentication.authtoken.generator.JwtAuthenticationTokenGenerator;
-import com.kube.noon.common.security.authentication.authtoken.generator.NoAuthenticationTokenGenerator;
-import com.kube.noon.common.security.authentication.authtoken.generator.SimpleJsonAuthenticationTokenGenerator;
+import com.kube.noon.common.security.authentication.authtoken.generator.JwtAuthenticationGenerator;
+import com.kube.noon.common.security.authentication.authtoken.generator.NoAuthenticationGenerator;
+import com.kube.noon.common.security.authentication.authtoken.generator.SimpleJsonAuthenticationGenerator;
 import com.kube.noon.common.security.authentication.provider.JwtAuthenticationProvider;
 import com.kube.noon.common.security.authentication.provider.NoAuthenticationProvider;
 import com.kube.noon.common.security.authentication.provider.SimpleJsonAuthenticationProvider;
@@ -48,8 +48,8 @@ public class WebSecurityConfig {
 
     @Bean
     @ConditionalOnBean(NoAuthenticationProvider.class)
-    public NoAuthenticationTokenGenerator noAuthenticationTokenGenerator() {
-        return new NoAuthenticationTokenGenerator();
+    public NoAuthenticationGenerator noAuthenticationTokenGenerator() {
+        return new NoAuthenticationGenerator();
     }
 
     @Bean
@@ -60,8 +60,8 @@ public class WebSecurityConfig {
 
     @Bean
     @ConditionalOnBean(SimpleJsonAuthenticationProvider.class)
-    public SimpleJsonAuthenticationTokenGenerator simpleJsonAuthenticationTokenGenerator() {
-        return new SimpleJsonAuthenticationTokenGenerator();
+    public SimpleJsonAuthenticationGenerator simpleJsonAuthenticationTokenGenerator() {
+        return new SimpleJsonAuthenticationGenerator();
     }
 
     @Bean
@@ -72,8 +72,8 @@ public class WebSecurityConfig {
 
     @Bean
     @ConditionalOnBean(JwtAuthenticationProvider.class)
-    public JwtAuthenticationTokenGenerator jwtAuthenticationTokenGenerator() {
-        return new JwtAuthenticationTokenGenerator();
+    public JwtAuthenticationGenerator jwtAuthenticationTokenGenerator() {
+        return new JwtAuthenticationGenerator();
     }
 
     @Bean

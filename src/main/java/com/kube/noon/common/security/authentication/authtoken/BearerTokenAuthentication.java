@@ -10,12 +10,12 @@ import java.util.Collection;
  * 인증에 사용되는 BearerToken을 저장하는 AuthenticationToken abstract class.
  *
  * @author PGD
- * @see JwtAuthenticationToken
- * @see NoAuthenticationToken
- * @see SimpleJsonAuthenticationToken
+ * @see JwtAuthentication
+ * @see NoAuthentication
+ * @see SimpleJsonAuthentication
  */
 @RequiredArgsConstructor
-public abstract class BearerTokenAuthenticationToken implements Authentication {
+public abstract class BearerTokenAuthentication implements Authentication {
     private final String token;
 
     public String getToken() {

@@ -1,6 +1,6 @@
 package com.kube.noon.common.security.authentication.provider;
 
-import com.kube.noon.common.security.authentication.authtoken.JwtAuthenticationToken;
+import com.kube.noon.common.security.authentication.authtoken.JwtAuthentication;
 import com.kube.noon.common.security.support.BearerTokenSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  *
  * @author PGD
  * @see com.kube.noon.common.security.filter.AuthFilter
- * @see JwtAuthenticationToken
+ * @see JwtAuthentication
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -30,7 +30,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        String jwtToken = ((JwtAuthenticationToken) authentication).getToken();
+        String jwtToken = ((JwtAuthentication) authentication).getToken();
 
         if (this.tokenSupport.isTokenExpired(jwtToken) || this.tokenSupport.isRefreshToken(jwtToken)) {
             return null;
@@ -53,6 +53,6 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
     @Override
     public boolean supports(Class<?> authentication) {
         log.debug("authentication={}", authentication);
-        return authentication == JwtAuthenticationToken.class;
+        return authentication == JwtAuthentication.class;
     }
 }

@@ -3,19 +3,18 @@ package com.kube.noon.common.security.authentication.authtoken;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 /**
- * JWT 기반 AuthenticationToken
+ * 암호화되지 않은 JSON 토큰을 가진 AuthenticationToken
  *
  * @author PGD
  */
-public class JwtAuthenticationToken extends BearerTokenAuthenticationToken {
-    private final WebAuthenticationDetails details;
+public class SimpleJsonAuthentication extends BearerTokenAuthentication {
+    private WebAuthenticationDetails details;
 
-    public JwtAuthenticationToken(String token) {
+    public SimpleJsonAuthentication(String token) {
         super(token);
-        this.details = null;
     }
 
-    public JwtAuthenticationToken(String token, WebAuthenticationDetails details) {
+    public SimpleJsonAuthentication(String token, WebAuthenticationDetails details) {
         super(token);
         this.details = details;
     }
