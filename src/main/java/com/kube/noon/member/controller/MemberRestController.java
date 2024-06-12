@@ -22,6 +22,7 @@ import com.kube.noon.member.service.KakaoService;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,9 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.netty.http.server.HttpServerResponse;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -131,9 +135,26 @@ public class MemberRestController {
         memberService.checkPassword(memberId, password);
         return ResponseEntity.ok(ApiResponseFactory.createResponse("패스워드를 사용할 수 있습니다.", null));
     }
+    @GetMapping("/checkCookies")
+    public ResponseEntity<ApiResponse<Boolean>> checkCookies(HttpServletRequest request) {
+        Optional<String> authorizationCookie = Arrays.stream(request.getCookies())
+                .filter(cookie -> "Authorization".equals(cookie.getName()))
+                .map(cookie -> cookie.getValue())
+                .findFirst();
 
+        Optional<String> refreshTokenCookie = Arrays.stream(request.getCookies())
+                .filter(cookie -> "Refresh-Token".equals(cookie.getName()))
+                .map(cookie -> cookie.getValue())
+                .findFirst();
+
+        boolean isExist = authorizationCookie.isPresent() && refreshTokenCookie.isPresent();
+
+        String message =  isExist ? "쿠키가 존재합니다." : "쿠키가 존재하지 않습니다.";
+
+        return ResponseEntity.ok(ApiResponseFactory.createResponse(message, isExist));
+    }
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<MemberDto>> login(@RequestBody LoginRequestDto dto, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<MemberDto>> login(@RequestBody LoginRequestDto dto,HttpServletResponse response) {
         log.info("로그인 요청: {}", dto);
         String id = dto.getMemberId();
         AtomicReference<LoginFlag> isCorrect = new AtomicReference<>(LoginFlag.FAILURE);
@@ -156,9 +177,8 @@ public class MemberRestController {
             loginAttemptCheckerAgent.loginSucceeded(id);
             log.info("로그인 성공 처리 완료: {}", id);
             addRefreshTokenCookie(response);
+            addAccessTokenCookie(response);
             return ResponseEntity.ok()
-                    .header("Authorization", RequestContext.getAuthorization())
-                    .header("Request-ID", RequestContext.getRequestId())
                     .body(ApiResponseFactory.createResponse("로그인 성공", memberDto));
         } else if (isCorrect.get().equals(LoginFlag.INCORRECT_ID)) {
             loginAttemptCheckerAgent.loginFailed(id);
@@ -263,17 +283,7 @@ public class MemberRestController {
                     memberIdCookie.setMaxAge(60 * 60 * 24 * 7);
                     response.addCookie(memberIdCookie);
 
-                    Cookie AccessTokenCookie = new Cookie("Authorization", accessToken);
-                    AccessTokenCookie.setPath("/");
-                    AccessTokenCookie.setMaxAge(60 * 60 * 24 * 7);
-                    response.addCookie(AccessTokenCookie);
-
-                    Cookie RequestIdCookie = new Cookie("Request-ID", RequestContext.getRequestId());
-                    RequestIdCookie.setPath("/");
-                    RequestIdCookie.setMaxAge(60 * 60 * 24 * 7);
-                    response.addCookie(RequestIdCookie);
-
-
+                    addAccessTokenCookie(response); // AccessToken
 
                     return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
                             .header(HttpHeaders.LOCATION, Url)
@@ -281,10 +291,6 @@ public class MemberRestController {
                 });
     }
 
-    public ResponseEntity<?> naverLogin(@RequestParam String memberId, @RequestParam String password) {
-        log.info("naverLogin" + memberId + " " + password);
-        return null;
-    }
     @PostMapping("/googleLogin")
     public ResponseEntity<?> googleLogin(@RequestBody googleLoginRequestDto dto) {
 //        log.info("googleLogin" + memberId + " " + authorizeCode);
@@ -425,13 +431,28 @@ public class MemberRestController {
         return "member_100"; // 예시로 사용자 ID 반환
     }
     private void addRefreshTokenCookie(HttpServletResponse response) {
-        Cookie refreshTokenCookie = new Cookie("Refresh-Token", RequestContext.getRefreshToken());
+        //RequestContext.getRefreshToken() 리프레시 토큰 생성하는 함수 호출
+        System.out.println("RequestContext.getRefreshToken() :: "+ RequestContext.getRefreshToken());
+        String encodedToken = URLEncoder.encode(RequestContext.getRefreshToken(), StandardCharsets.UTF_8);
+
+        Cookie refreshTokenCookie = new Cookie("Refresh-Token", encodedToken);
+        System.out.println("encodedToken :: "+ encodedToken);
         refreshTokenCookie.setHttpOnly(true);
 //            refreshToken.setSecure(true); Https에서만 사용
-        refreshTokenCookie.setPath("/");//이거 잘 모르겠다
+        refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);//7일
         response.addCookie(refreshTokenCookie);
     }
-
-
+    private void addAccessTokenCookie(HttpServletResponse response) {
+        //RequestContext.getAuthorization() 액세스 토큰 생성하는 함수 호출
+        System.out.println("RequestContext.getAuthorization() :: "+ RequestContext.getAuthorization());
+        String encodedToken = URLEncoder.encode(RequestContext.getAuthorization(), StandardCharsets.UTF_8);
+        Cookie accessTokenCookie = new Cookie("Authorization", encodedToken);
+        System.out.println("encodedToken :: "+ encodedToken);
+        accessTokenCookie.setHttpOnly(true);
+//            refreshToken.setSecure(true); Https에서만 사용
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(60 * 60 * 24 * 7);//7일
+        response.addCookie(accessTokenCookie);
+    }
 }

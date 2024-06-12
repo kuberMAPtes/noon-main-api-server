@@ -9,7 +9,7 @@ import lombok.*;
 public class RequestContext {
 //    private static final ThreadLocal<String> requestId = new ThreadLocal<>();
 //    private static final ThreadLocal<String> authorization = new ThreadLocal<>();
-    public static String requestId = "RequestContext에서 온 requestId";
+    public static String requestId = "requestId";
     public static String authorization = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtZW1iZXJfMTAwIiwiaWF0IjoxNjI5MzYwNjYwLCJleHAiOjE2MjkzNjA3NjB9.7J9Z6Q6J9";
     public static String refreshToken = "d1f4f0e3-9f47-4c88-8d9c-7e5c6a7d8b7a";
 
