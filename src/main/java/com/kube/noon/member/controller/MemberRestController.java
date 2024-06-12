@@ -3,6 +3,8 @@ package com.kube.noon.member.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kube.noon.common.binder.DtoEntityBinder;
+import com.kube.noon.common.security.SecurityConstants;
+import com.kube.noon.common.security.support.BearerTokenSupport;
 import com.kube.noon.member.dto.RequestDto.LoginRequestDto;
 import com.kube.noon.member.dto.RequestDto.MemberRelationshipSearchCriteriaRequestDto;
 import com.kube.noon.member.dto.RequestDto.MemberSearchCriteriaRequestDto;
@@ -39,10 +41,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import reactor.netty.http.server.HttpServerResponse;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -67,6 +66,7 @@ public class MemberRestController {
     private final KakaoService kakaoService;
 
     private final AuthService authService;
+    private final BearerTokenSupport tokenSupport;
 
     @Value("${pageUnit}")
     int pageUnit;
@@ -76,15 +76,17 @@ public class MemberRestController {
 
 
     // Constructor
-    public MemberRestController(@Qualifier("memberServiceImpl") MemberService memberService
-            , @Qualifier("loginAttemptCheckerAgent") LoginAttemptCheckerAgent loginAttemptCheckerAgent
-            , KakaoService kakaoService
-            , AuthService authService) {
+    public MemberRestController(@Qualifier("memberServiceImpl") MemberService memberService,
+                                @Qualifier("loginAttemptCheckerAgent") LoginAttemptCheckerAgent loginAttemptCheckerAgent,
+                                KakaoService kakaoService,
+                                AuthService authService,
+                                BearerTokenSupport tokenSupport) {
         this.authService = authService;
         log.info("생성자 :: " + this.getClass());
         this.kakaoService = kakaoService;
         this.memberService = memberService;
         this.loginAttemptCheckerAgent = loginAttemptCheckerAgent;
+        this.tokenSupport = tokenSupport;
     }
 
 
@@ -153,46 +155,52 @@ public class MemberRestController {
 
         return ResponseEntity.ok(ApiResponseFactory.createResponse(message, isExist));
     }
+
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<MemberDto>> login(@RequestBody LoginRequestDto dto,HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<MemberDto>> login(@RequestBody LoginRequestDto dto, HttpServletResponse response) {
         log.info("로그인 요청: {}", dto);
-        String id = dto.getMemberId();
-        AtomicReference<LoginFlag> isCorrect = new AtomicReference<>(LoginFlag.FAILURE);
-        MemberDto memberDto = memberService.findMemberById(id, id);
+        String memberId = dto.getMemberId();
+        LoginFlag loginFlag = LoginFlag.FAILURE;
+        MemberDto memberDto = memberService.findMemberById(memberId, memberId);
 
         if (memberDto == null) {
-            log.info("존재하지 않는 아이디: {}", id);
-            isCorrect.set(LoginFlag.INCORRECT_ID);
+            log.info("존재하지 않는 아이디: {}", memberId);
+            loginFlag = LoginFlag.INCORRECT_ID;
         } else {
             if (memberDto.getPwd().equals(dto.getPwd())) {
-                log.info("로그인 성공: {}", id);
-                isCorrect.set(LoginFlag.SUCCESS);
+                log.info("로그인 성공: {}", memberId);
+                loginFlag = LoginFlag.SUCCESS;
             } else {
-                log.info("비밀번호 불일치: {} {} 원래 아이디 비번 : {} {} ", id, dto.getPwd(), memberDto.getMemberId(), memberDto.getPwd());
-                isCorrect.set(LoginFlag.INCORRECT_PASSWORD);
+                log.info("비밀번호 불일치: {} {} 원래 아이디 비번 : {} {} ", memberId, dto.getPwd(), memberDto.getMemberId(), memberDto.getPwd());
+                loginFlag = LoginFlag.INCORRECT_PASSWORD;
             }
         }
 
-        if (isCorrect.get().equals(LoginFlag.SUCCESS)) {
-            loginAttemptCheckerAgent.loginSucceeded(id);
-            log.info("로그인 성공 처리 완료: {}", id);
-            addRefreshTokenCookie(response);
-            addAccessTokenCookie(response);
-            return ResponseEntity.ok()
-                    .body(ApiResponseFactory.createResponse("로그인 성공", memberDto));
-        } else if (isCorrect.get().equals(LoginFlag.INCORRECT_ID)) {
-            loginAttemptCheckerAgent.loginFailed(id);
-            log.info("로그인 실패 - 존재하지 않는 아이디: {}", id);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponseFactory.createErrorResponse("존재하지 않는 아이디입니다."));
-        } else if (isCorrect.get().equals(LoginFlag.INCORRECT_PASSWORD)) {
-            loginAttemptCheckerAgent.loginFailed(id);
-            log.info("로그인 실패 - 비밀번호 불일치: {}", id);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponseFactory.createErrorResponse("비밀번호가 틀렸습니다."));
-        } else {
-            loginAttemptCheckerAgent.loginFailed(id);
-            log.info("로그인 실패: {}", id);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponseFactory.createErrorResponse("로그인 실패"));
+        String errorMessage = "";
+        switch (loginFlag) {
+            case SUCCESS:
+                this.loginAttemptCheckerAgent.loginSucceeded(memberId);
+                log.info("로그인 성공 처리 완료: {}", memberId);
+                response.addCookie(getAccessTokenCookie(memberId));
+                response.addCookie(getRefreshTokenCookie(memberId));
+                return ResponseEntity.ok()
+                        .body(ApiResponseFactory.createResponse("로그인 성공", memberDto));
+            case INCORRECT_ID:
+                errorMessage = "존재하지 않는 아이디입니다.";
+                log.info("존재하지 않는 아이디: {}", memberId);
+                break;
+            case INCORRECT_PASSWORD:
+                errorMessage = "비밀번호가 일치하지 않습니다.";
+                log.info("비밀번호 불일치: {}", memberId);
+                break;
+            default:
+                errorMessage = "로그인 실패";
+                log.info("로그인 실패: {}", memberId);
         }
+
+        this.loginAttemptCheckerAgent.loginFailed(memberId);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponseFactory.createErrorResponse(errorMessage));
     }
 
     /**
@@ -276,14 +284,14 @@ public class MemberRestController {
                     String Url = "http://127.0.0.1:3000/member/kakaoNav?loginWay="+ "kakao";
                     System.out.println(Url);
 
-                    addRefreshTokenCookie(response); // RefreshToken
+//                    getRefreshTokenCookie(response); // RefreshToken
 
                     Cookie memberIdCookie = new Cookie("Member-ID", memberId.get());
                     memberIdCookie.setPath("/");
                     memberIdCookie.setMaxAge(60 * 60 * 24 * 7);
                     response.addCookie(memberIdCookie);
 
-                    addAccessTokenCookie(response); // AccessToken
+//                    getAccessTokenCookie(response); // AccessToken
 
                     return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
                             .header(HttpHeaders.LOCATION, Url)
@@ -430,29 +438,23 @@ public class MemberRestController {
         // 유효한 토큰이면 사용자 ID를 반환하고, 그렇지 않으면 예외를 던집니다.
         return "member_100"; // 예시로 사용자 ID 반환
     }
-    private void addRefreshTokenCookie(HttpServletResponse response) {
-        //RequestContext.getRefreshToken() 리프레시 토큰 생성하는 함수 호출
-        System.out.println("RequestContext.getRefreshToken() :: "+ RequestContext.getRefreshToken());
-        String encodedToken = URLEncoder.encode(RequestContext.getRefreshToken(), StandardCharsets.UTF_8);
-
-        Cookie refreshTokenCookie = new Cookie("Refresh-Token", encodedToken);
-        System.out.println("encodedToken :: "+ encodedToken);
-        refreshTokenCookie.setHttpOnly(true);
-//            refreshToken.setSecure(true); Https에서만 사용
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);//7일
-        response.addCookie(refreshTokenCookie);
+    private Cookie getRefreshTokenCookie(String memberId) {
+        //  토큰 생성하는 함수 호출
+        String refreshToken = this.tokenSupport.generateRefreshToken(memberId);
+        log.debug("Generated refresh token={}", refreshToken);
+        return wrapWithCookie(SecurityConstants.REFRESH_TOKEN_COOKIE_KEY.get(), refreshToken);
     }
-    private void addAccessTokenCookie(HttpServletResponse response) {
-        //RequestContext.getAuthorization() 액세스 토큰 생성하는 함수 호출
-        System.out.println("RequestContext.getAuthorization() :: "+ RequestContext.getAuthorization());
-        String encodedToken = URLEncoder.encode(RequestContext.getAuthorization(), StandardCharsets.UTF_8);
-        Cookie accessTokenCookie = new Cookie("Authorization", encodedToken);
-        System.out.println("encodedToken :: "+ encodedToken);
-        accessTokenCookie.setHttpOnly(true);
-//            refreshToken.setSecure(true); Https에서만 사용
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(60 * 60 * 24 * 7);//7일
-        response.addCookie(accessTokenCookie);
+    private Cookie getAccessTokenCookie(String memberId) {
+        // 액세스 토큰 생성하는 함수 호출
+        String accessToken = this.tokenSupport.generateAccessToken(memberId);
+        log.debug("Generated access token={}", accessToken);
+        return wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), accessToken);
+    }
+
+    private Cookie wrapWithCookie(String cookieName, String token) {
+        Cookie cookie = new Cookie(cookieName, token);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        return cookie;
     }
 }
