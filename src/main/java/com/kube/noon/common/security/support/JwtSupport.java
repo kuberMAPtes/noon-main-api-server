@@ -6,7 +6,6 @@ import com.kube.noon.common.security.support.repository.RefreshTokenRepository;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -22,7 +21,6 @@ import java.util.Date;
  */
 @Slf4j
 @Component
-@Primary
 public class JwtSupport implements BearerTokenSupport {
     private static final SecretKey SECRET_KEY = Jwts.SIG.HS256.key().build();
     private static final String REFRESH_TOKEN_CLAIM = "refreshToken";
@@ -46,6 +44,15 @@ public class JwtSupport implements BearerTokenSupport {
 
     @Override
     public TokenPair generateToken(String memberId) {
+        return new TokenPair(generateAccessToken(memberId), generateRefreshToken(memberId));
+    }
+
+    @Override
+    public TokenPair refreshToken(String refreshToken) throws InvalidRefreshTokenException {
+        if (!isValidRefreshToken(refreshToken)) {
+            throw new InvalidRefreshTokenException("Invalid refresh token=" + refreshToken);
+        }
+        String memberId = extractMemberId(refreshToken);
         return new TokenPair(generateAccessToken(memberId), generateRefreshToken(memberId));
     }
 

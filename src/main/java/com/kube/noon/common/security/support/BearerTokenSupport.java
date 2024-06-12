@@ -11,7 +11,9 @@ import com.kube.noon.common.security.authentication.authtoken.TokenType;
  */
 public interface BearerTokenSupport {
 
-    TokenPair generateToken(String memberId);
+    TokenPair generateToken(String code);
+
+    TokenPair refreshToken(String refreshToken) throws InvalidRefreshTokenException;
 
     String extractMemberId(String token);
 

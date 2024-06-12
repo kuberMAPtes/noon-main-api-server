@@ -1,5 +1,6 @@
 package com.kube.noon.config;
 
+import com.kube.noon.common.security.authentication.authtoken.BearerTokenAuthentication;
 import com.kube.noon.common.security.authentication.authtoken.generator.*;
 import com.kube.noon.common.security.authentication.provider.JwtAuthenticationProvider;
 import com.kube.noon.common.security.authentication.provider.KakaoTokenAuthenticationProvider;
@@ -64,8 +65,8 @@ public class WebSecurityConfig {
 
     @Bean
     @Profile("prod")
-    public JwtAuthenticationProvider jwtAuthenticationProvider(JwtSupport jwtSupport, UserDetailsService userDetailsService) {
-        return new JwtAuthenticationProvider(jwtSupport, userDetailsService);
+    public JwtAuthenticationProvider jwtAuthenticationProvider(JwtSupport tokenSupportList, UserDetailsService userDetailsService) {
+        return new JwtAuthenticationProvider(tokenSupportList, userDetailsService);
     }
 
     @Bean
@@ -92,17 +93,20 @@ public class WebSecurityConfig {
     }
 
     @Bean
+    @Profile({"dev", "prod"})
     public TokenAuthenticationFilter tokenAuthenticationFilter(List<BearerTokenAuthenticationTokenGenerator> generatorList) {
         return new TokenAuthenticationFilter(generatorList);
     }
 
     @Bean
+    @Profile({"dev", "prod"})
     public AuthFilter authFilter(AuthenticationManager authenticationManager) {
         return new AuthFilter(authenticationManager);
     }
 
     @Bean
-    public TokenRefreshFilter tokenRefreshFilter(BearerTokenSupport tokenSupport) {
+    @Profile({"dev", "prod"})
+    public TokenRefreshFilter tokenRefreshFilter(List<BearerTokenSupport> tokenSupport) {
         return new TokenRefreshFilter(tokenSupport);
     }
 

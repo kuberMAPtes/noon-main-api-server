@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 import static com.kube.noon.common.security.SecurityConstants.*;
 
@@ -27,7 +28,7 @@ import static com.kube.noon.common.security.SecurityConstants.*;
 @Slf4j
 @RequiredArgsConstructor
 public class TokenRefreshFilter extends OncePerRequestFilter {
-    private final BearerTokenSupport tokenSupport;
+    private final List<BearerTokenSupport> tokenSupportList;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -35,7 +36,9 @@ public class TokenRefreshFilter extends OncePerRequestFilter {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && authentication instanceof UsernamePasswordAuthenticationToken) {
             String memberId = (String)authentication.getPrincipal();
-            TokenPair tokenPair = this.tokenSupport.generateToken(memberId);
+
+            BearerTokenSupport tokenSupport = this.tokenSupportList.stream().filter((ts) -> ts.supports(TokenType.NATIVE_TOKEN)).findAny().orElseThrow();
+            TokenPair tokenPair = tokenSupport.generateToken(memberId);
             response.addCookie(new Cookie(ACCESS_TOKEN_COOKIE_KEY.get(), tokenPair.getAccessToken()));
             response.addCookie(new Cookie(REFRESH_TOKEN_COOKIE_KEY.get(), tokenPair.getRefreshToken()));
             response.addCookie(new Cookie(TOKEN_TYPE_COOKIE_KEY.get(), String.valueOf(TokenType.NATIVE_TOKEN)));

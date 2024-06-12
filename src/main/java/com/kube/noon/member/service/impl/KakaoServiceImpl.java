@@ -23,8 +23,6 @@ public class KakaoServiceImpl implements KakaoService {
     private String apiKey;
     @Value("${main.server.host}")
     private String mainServerHost;
-    @Value("${main.server.port}")
-    private String mainServerPort;
 
     private final String KAKAO_LOGIN_ROUTE_PATH = "/member/kakaoLogin";
     // oauth/token
@@ -45,7 +43,7 @@ public class KakaoServiceImpl implements KakaoService {
     public Mono<String> getAccessToken(String authorize_code){
         System.out.println("getAccessToken() 호출 :: 카카오서비스");
         System.out.println("authorize_code: "+authorize_code);
-        String REDIRECT_URI = mainServerHost+":"+mainServerPort+KAKAO_LOGIN_ROUTE_PATH;
+        String REDIRECT_URI = this.mainServerHost + KAKAO_LOGIN_ROUTE_PATH;
         System.out.println("redirect_uri: "+REDIRECT_URI);
         /*
         -H는 헤더 -d는 바디

@@ -291,7 +291,8 @@ public class MemberRestController {
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                    String Url = "http://127.0.0.1:3000/member/kakaoNav?loginWay=" + "kakao";
+//                    String Url = "http://127.0.0.1:3000/member/kakaoNav?loginWay=" + "kakao";
+                    String Url = "http://127.0.0.1:3000/";
                     System.out.println(Url);
 
                     response.addCookie(wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), accessToken));

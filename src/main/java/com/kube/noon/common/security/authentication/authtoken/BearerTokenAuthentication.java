@@ -17,6 +17,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public abstract class BearerTokenAuthentication implements Authentication {
     private final String token;
+    private boolean authenticated = false;
 
     public String getToken() {
         return this.token;
@@ -42,12 +43,12 @@ public abstract class BearerTokenAuthentication implements Authentication {
 
     @Override
     public boolean isAuthenticated() {
-        throw new UnsupportedOperationException();
+        return this.authenticated;
     }
 
     @Override
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
-        throw new UnsupportedOperationException();
+        this.authenticated = isAuthenticated;
     }
 
     @Override
