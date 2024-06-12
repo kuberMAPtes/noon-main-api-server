@@ -16,6 +16,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+import static com.kube.noon.common.security.SecurityConstants.*;
+
 /**
  * 해당 요청에 대한 Authentication, Authorization이 성공한 경우, Access Token과 Refresh Token을 새로 발급한다.
  *
@@ -24,10 +26,6 @@ import java.io.IOException;
 @Slf4j
 @RequiredArgsConstructor
 public class TokenRefreshFilter extends OncePerRequestFilter {
-    public static final String ACCESS_TOKEN_COOKIE_KEY = "token";
-    public static final String REFRESH_TOKEN_COOKIE_KEY = "refresh_token";
-    public static final String TOKEN_TYPE_COOKIE_KEY = "token_type";
-
     private final BearerTokenSupport tokenSupport;
 
     @Override
@@ -38,9 +36,9 @@ public class TokenRefreshFilter extends OncePerRequestFilter {
             String memberId = (String)authentication.getPrincipal();
             String accessToken = this.tokenSupport.generateAccessToken(memberId);
             String refreshToken = this.tokenSupport.generateRefreshToken(memberId);
-            response.addCookie(new Cookie(ACCESS_TOKEN_COOKIE_KEY, accessToken));
-            response.addCookie(new Cookie(REFRESH_TOKEN_COOKIE_KEY, refreshToken));
-            response.addCookie(new Cookie(TOKEN_TYPE_COOKIE_KEY, String.valueOf(TokenType.NATIVE_TOKEN.getCode())));
+            response.addCookie(new Cookie(ACCESS_TOKEN_COOKIE_KEY.get(), accessToken));
+            response.addCookie(new Cookie(REFRESH_TOKEN_COOKIE_KEY.get(), refreshToken));
+            response.addCookie(new Cookie(TOKEN_TYPE_COOKIE_KEY.get(), String.valueOf(TokenType.NATIVE_TOKEN.getCode())));
             log.info("New JWT Token in Cookie");
         } else {
             log.info("Not authenticated");

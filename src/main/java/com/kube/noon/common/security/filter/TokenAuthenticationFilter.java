@@ -1,5 +1,6 @@
 package com.kube.noon.common.security.filter;
 
+import com.kube.noon.common.security.SecurityConstants;
 import com.kube.noon.common.security.authentication.authtoken.JwtAuthenticationToken;
 import com.kube.noon.common.security.authentication.authtoken.SimpleJsonAuthenticationToken;
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
@@ -41,8 +42,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         Cookie[] cookies = request.getCookies() == null ? new Cookie[0] : request.getCookies();
-        String accessToken = getCookieValue(cookies, TokenRefreshFilter.ACCESS_TOKEN_COOKIE_KEY);
-        String tokenTypeStr = getCookieValue(cookies, TokenRefreshFilter.TOKEN_TYPE_COOKIE_KEY);
+        String accessToken = getCookieValue(cookies, SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get());
+        String tokenTypeStr = getCookieValue(cookies, SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get());
 
         if (accessToken == null) {
             log.info("access token is null");
