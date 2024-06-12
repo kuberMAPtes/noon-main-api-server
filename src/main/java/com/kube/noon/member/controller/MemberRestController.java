@@ -6,7 +6,8 @@ import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.member.dto.RequestDto.LoginRequestDto;
 import com.kube.noon.member.dto.RequestDto.MemberRelationshipSearchCriteriaRequestDto;
 import com.kube.noon.member.dto.RequestDto.MemberSearchCriteriaRequestDto;
-import com.kube.noon.member.dto.kakao.KakaoResponse;
+import com.kube.noon.member.dto.auth.KakaoResponseDto;
+import com.kube.noon.member.dto.auth.googleLoginRequestDto;
 import com.kube.noon.member.dto.member.*;
 import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
 import com.kube.noon.member.dto.memberRelationship.DeleteMemberRelationshipDto;
@@ -20,6 +21,8 @@ import com.kube.noon.member.service.AuthService;
 import com.kube.noon.member.service.KakaoService;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,6 +38,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.netty.http.server.HttpServerResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -129,7 +133,7 @@ public class MemberRestController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<MemberDto>> login(@RequestBody LoginRequestDto dto) {
+    public ResponseEntity<ApiResponse<MemberDto>> login(@RequestBody LoginRequestDto dto, HttpServletResponse response) {
         log.info("로그인 요청: {}", dto);
         String id = dto.getMemberId();
         AtomicReference<LoginFlag> isCorrect = new AtomicReference<>(LoginFlag.FAILURE);
@@ -151,8 +155,10 @@ public class MemberRestController {
         if (isCorrect.get().equals(LoginFlag.SUCCESS)) {
             loginAttemptCheckerAgent.loginSucceeded(id);
             log.info("로그인 성공 처리 완료: {}", id);
+            addRefreshTokenCookie(response);
             return ResponseEntity.ok()
                     .header("Authorization", RequestContext.getAuthorization())
+                    .header("Request-ID", RequestContext.getRequestId())
                     .body(ApiResponseFactory.createResponse("로그인 성공", memberDto));
         } else if (isCorrect.get().equals(LoginFlag.INCORRECT_ID)) {
             loginAttemptCheckerAgent.loginFailed(id);
@@ -185,75 +191,92 @@ public class MemberRestController {
      *             2. 얻은 토큰으로 멤버정보얻기
      *             3. 얻은 정보로 처음이면 회원가입시키기, 있으면 로그인
      */
-    @RequestMapping(value = "kakaoLogin", method = RequestMethod.POST)
-    public Mono<ResponseEntity<ApiResponse<String>>> kakaoLogin(@RequestParam(value = "code") String authorize_code) throws Exception {
-        log.info("카카오 로그인 요청: code={}", authorize_code);
+    @RequestMapping(value = "kakaoLogin", method = RequestMethod.GET)
+    public Mono<ResponseEntity<ApiResponse<String>>> kakaoLogin(@RequestParam(value = "code") String authorizeCode,
+                                                                HttpServletResponse response) throws Exception {
+        log.info("카카오 로그인 요청: code={}", authorizeCode);
 
-        return kakaoService.getAccessToken(authorize_code)
+        return kakaoService.getAccessToken(authorizeCode)
                 .publishOn(Schedulers.boundedElastic())
                 .map(result -> {
                     log.info("액세스 토큰 받음: result={}", result);
                     JSONObject resultJsonObject = new JSONObject(result);
+                    System.out.println("resultJsonObject");
+                    System.out.println(resultJsonObject);
+                    System.out.println(resultJsonObject.get("access_token"));
+                    String accessToken = resultJsonObject.get("access_token").toString();///////////////////////////////////////
                     AtomicReference<String> memberId = new AtomicReference<>("");
 
                     try {
-                        kakaoService.getMemberInformation(resultJsonObject.get("access_token").toString())
+                        kakaoService.getMemberInformation(accessToken)
                                 .doOnSubscribe(subscription -> log.info("회원 정보 요청 구독 시작"))
-                                .doOnNext(response -> log.info("회원 정보 응답 수신: {}", response))
+                                .doOnNext(res -> log.info("회원 정보 응답 수신: {}", res))
                                 .doOnError(error -> log.info("회원 정보 요청 오류: {}", error.getMessage()))
                                 .log()
-                                .map(response -> {
-                                    log.info("회원 정보 처리 중: response={}", response);
-                                    KakaoResponse kakaoResponse = null;
+                                .map(res -> {
+                                    log.info("회원 정보 처리 중: res={}", res);
+                                    KakaoResponseDto kakaoResponseDto = null;
                                     try {
-                                        kakaoResponse = new ObjectMapper().readValue(response, KakaoResponse.class);
+                                        kakaoResponseDto = new ObjectMapper().readValue(res, KakaoResponseDto.class);
+                                        System.out.println("kakaoResponse");
+                                        System.out.println(kakaoResponseDto.toString());
                                     } catch (JsonProcessingException e) {
                                         log.error("JSON 처리 오류: {}", e.getMessage(), e);
                                         throw new RuntimeException(e);
                                     }
 
-                                    String nickname = kakaoResponse.getKakao_account().getProfile().getNickname();
-                                    String id = kakaoResponse.getId();
-                                    memberId.set(id);
+                                    String nickname = kakaoResponseDto.getKakaoAccount().getProfile().getNickname();
+                                    String email = kakaoResponseDto.getKakaoAccount().getEmail();
+                                    System.out.println("email ::: " + email);
+                                    memberId.set(email);
                                     AddMemberDto newMember = new AddMemberDto();
-                                    newMember.setMemberId(id);
+                                    newMember.setMemberId(email);
                                     newMember.setNickname(nickname);
                                     newMember.setPwd("socialLogin");
                                     newMember.setPhoneNumber(RandomData.getRandomPhoneNumber());
-                                    try {
-                                        log.info("회원 조회 시도: memberId={}", id);
-                                        log.info("userService :: {}", memberService.findMemberById(id));
-                                    } catch (Exception e) {
-                                        log.error("회원 조회 중 오류: {}", e.getMessage(), e);
-                                        throw new RuntimeException(e);
-                                    }
-                                    try {
-                                        log.info("회원 정보 추가 또는 업데이트 시도: memberId={}", id);
-                                        Optional.ofNullable(memberService.findMemberById(id)).ifPresentOrElse(user1 -> {
-                                            log.info("회원 정보 업데이트: memberId={}", id);
-                                        }, () -> {
-                                            try {
-                                                log.info("회원 정보 추가: memberId={}", id);
+//                                    try {
+//                                        log.info("회원 조회 시도: memberId={}", id);
+//                                        log.info("userService :: {}", memberService.findMemberById(id));
+//                                    } catch (Exception e) {
+//                                        log.error("회원 조회 중 오류: {}", e.getMessage(), e);
+//                                        throw new RuntimeException(e);
+//                                    }
+                                    log.info("회원 정보 있는지 검증하고 없으면 추가 시도: id={}", email);
+                                    Optional.ofNullable(memberService.findMemberById(email)).ifPresentOrElse(member -> {
+                                            },
+                                            () -> {//없으면...
+                                                log.info("회원 정보 추가: Id={}", email);
                                                 memberService.addMember(newMember);
-                                            } catch (Exception e) {
-                                                log.error("회원 추가 중 오류: {}", e.getMessage(), e);
-                                                throw new RuntimeException(e);
-                                            }
-                                        });
-                                    } catch (Exception e) {
-                                        log.error("회원 정보 처리 중 오류: {}", e.getMessage(), e);
-                                        throw new RuntimeException(e);
-                                    }
-                                    return response;
+                                            });
+                                    return res;
                                 }).block();
-                    } catch (Exception e) {
-                        log.error("회원 정보 요청 처리 중 오류: {}", e.getMessage(), e);
+                    }catch (Exception e) {
                         throw new RuntimeException(e);
                     }
+                    String Url = "http://127.0.0.1:3000/member/kakaoNav?loginWay="+ "kakao";
+                    System.out.println(Url);
+
+                    addRefreshTokenCookie(response); // RefreshToken
+
+                    Cookie memberIdCookie = new Cookie("Member-ID", memberId.get());
+                    memberIdCookie.setPath("/");
+                    memberIdCookie.setMaxAge(60 * 60 * 24 * 7);
+                    response.addCookie(memberIdCookie);
+
+                    Cookie AccessTokenCookie = new Cookie("Authorization", accessToken);
+                    AccessTokenCookie.setPath("/");
+                    AccessTokenCookie.setMaxAge(60 * 60 * 24 * 7);
+                    response.addCookie(AccessTokenCookie);
+
+                    Cookie RequestIdCookie = new Cookie("Request-ID", RequestContext.getRequestId());
+                    RequestIdCookie.setPath("/");
+                    RequestIdCookie.setMaxAge(60 * 60 * 24 * 7);
+                    response.addCookie(RequestIdCookie);
+
+
 
                     return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
-                            .header(HttpHeaders.LOCATION, "http://127.0.0.1:3000/?access_token=" + resultJsonObject.get("access_token") + "&memberId=" + memberId,
-                                    "Authorization", RequestContext.getAuthorization())
+                            .header(HttpHeaders.LOCATION, Url)
                             .build();
                 });
     }
@@ -263,8 +286,8 @@ public class MemberRestController {
         return null;
     }
     @PostMapping("/googleLogin")
-    public ResponseEntity<?> googleLogin(@RequestParam String memberId, @RequestParam String password) {
-        log.info("googleLogin" + memberId + " " + password);
+    public ResponseEntity<?> googleLogin(@RequestBody googleLoginRequestDto dto) {
+//        log.info("googleLogin" + memberId + " " + authorizeCode);
         return null;
     }
     @PostMapping("/logout")
@@ -400,6 +423,14 @@ public class MemberRestController {
         // JWT 토큰 검증 로직 구현
         // 유효한 토큰이면 사용자 ID를 반환하고, 그렇지 않으면 예외를 던집니다.
         return "member_100"; // 예시로 사용자 ID 반환
+    }
+    private void addRefreshTokenCookie(HttpServletResponse response) {
+        Cookie refreshTokenCookie = new Cookie("Refresh-Token", RequestContext.getRefreshToken());
+        refreshTokenCookie.setHttpOnly(true);
+//            refreshToken.setSecure(true); Https에서만 사용
+        refreshTokenCookie.setPath("/");//이거 잘 모르겠다
+        refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);//7일
+        response.addCookie(refreshTokenCookie);
     }
 
 

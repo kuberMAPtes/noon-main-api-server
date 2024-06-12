@@ -11,5 +11,5 @@ import lombok.Setter;
 public class ApiResponse<T> {
     private String message;
     private T info;
-    private String requestId;
+    //requestId는 Header에 담아서 보내줘야한다.
 }

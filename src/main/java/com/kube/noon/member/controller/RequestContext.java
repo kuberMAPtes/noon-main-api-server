@@ -11,6 +11,7 @@ public class RequestContext {
 //    private static final ThreadLocal<String> authorization = new ThreadLocal<>();
     public static String requestId = "RequestContext에서 온 requestId";
     public static String authorization = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtZW1iZXJfMTAwIiwiaWF0IjoxNjI5MzYwNjYwLCJleHAiOjE2MjkzNjA3NjB9.7J9Z6Q6J9";
+    public static String refreshToken = "d1f4f0e3-9f47-4c88-8d9c-7e5c6a7d8b7a";
 
     public static String getRequestId() {
 //        return requestId.get();
@@ -30,6 +31,16 @@ public class RequestContext {
     public static void setAuthorization(String authorization) {
 //        RequestContext.authorization.set(authorization);
         RequestContext.authorization = authorization;
+    }
+
+    public static String getRefreshToken() {
+//        RequestContext.refreshToken.set(refreshToken);
+        return refreshToken;
+    }
+
+    public static void setRefreshToken(String refreshToken) {
+//        RequestContext.refreshToken.set(refreshToken);
+        RequestContext.refreshToken = refreshToken;
     }
 
     public static void clear() {

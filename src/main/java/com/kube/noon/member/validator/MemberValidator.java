@@ -32,34 +32,35 @@ public class MemberValidator {
     }
     public void addMemberRelationship(AddMemberRelationshipDto dto) {
         memberScanner.imoDataNotNull(dto);
-        memberScanner.imoMemberNotSignedOff(dto);
+//        memberScanner.imoMemberNotSignedOff(dto);
         memberScanner.imoDtoFieldO(dto);
     }
-    public void findMemberById(String fromId,String memberId){
-        memberScanner.imoDataNotNull(fromId);
-        memberScanner.imoMemberNotSignedOff(fromId);
-        memberScanner.imoDataNotNull(memberId);
-    }
-    public void findMemberById(String memberId) {
-        memberScanner.imoDataNotNull(memberId);
-        memberScanner.imoMemberIdExist(memberId);
-
-    }
+//    public void findMemberById(String fromId,String memberId){
+//        memberScanner.imoDataNotNull(fromId);
+//        memberScanner.imoMemberNotSignedOff(fromId);
+//        memberScanner.imoMemberIdExist(fromId);
+//        memberScanner.imoDataNotNull(memberId);
+//    }
+//    public void findMemberById(String memberId) {
+//        memberScanner.imoDataNotNull(memberId);
+////        memberScanner.imoMemberIdExist(memberId);
+//
+//    }
     public void findMemberProfileById(String fromId, String memberId) {
         memberScanner.imoDataNotNull(fromId);
         memberScanner.imoDataNotNull(memberId);
         memberScanner.imoMemberIdExist(fromId);
-        memberScanner.imoMemberIdExist(memberId);
+//        memberScanner.imoMemberIdExist(memberId);
     }
     public void findMemberByNickname(String fromId, String nickname) {
         memberScanner.imoDataNotNull(fromId);
         memberScanner.imoDataNotNull(nickname);
         memberScanner.imoMemberIdExist(fromId);
-        memberScanner.imoMemberNicknameExist(nickname);
+//        memberScanner.imoMemberNicknameExist(nickname);
     }
     public void findMemberByPhoneNumber(String phoneNumber) {
         memberScanner.imoDataNotNull(phoneNumber);
-        memberScanner.imoMemberPhoneNumberExist(phoneNumber);
+//        memberScanner.imoMemberPhoneNumberExist(phoneNumber);
     }
     public void findMemberListByCriteria(String fromId, MemberSearchCriteriaDto dto, int page, int size) {
         memberScanner.imoDataNotNull(fromId);
