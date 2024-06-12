@@ -38,7 +38,7 @@ public class TokenRefreshFilter extends OncePerRequestFilter {
             String refreshToken = this.tokenSupport.generateRefreshToken(memberId);
             response.addCookie(new Cookie(ACCESS_TOKEN_COOKIE_KEY.get(), accessToken));
             response.addCookie(new Cookie(REFRESH_TOKEN_COOKIE_KEY.get(), refreshToken));
-            response.addCookie(new Cookie(TOKEN_TYPE_COOKIE_KEY.get(), String.valueOf(TokenType.NATIVE_TOKEN.getCode())));
+            response.addCookie(new Cookie(TOKEN_TYPE_COOKIE_KEY.get(), String.valueOf(TokenType.NATIVE_TOKEN)));
             log.info("New JWT Token in Cookie");
         } else {
             log.info("Not authenticated");

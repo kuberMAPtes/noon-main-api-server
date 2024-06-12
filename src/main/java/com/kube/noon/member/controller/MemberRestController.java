@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.common.security.SecurityConstants;
+import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.common.security.support.BearerTokenSupport;
 import com.kube.noon.member.dto.RequestDto.LoginRequestDto;
 import com.kube.noon.member.dto.RequestDto.MemberRelationshipSearchCriteriaRequestDto;
@@ -160,9 +161,9 @@ public class MemberRestController {
     public ResponseEntity<ApiResponse<MemberDto>> login(@RequestBody LoginRequestDto dto, HttpServletResponse response) {
         log.info("로그인 요청: {}", dto);
         String memberId = dto.getMemberId();
-        LoginFlag loginFlag = LoginFlag.FAILURE;
         MemberDto memberDto = memberService.findMemberById(memberId, memberId);
 
+        LoginFlag loginFlag = LoginFlag.FAILURE;
         if (memberDto == null) {
             log.info("존재하지 않는 아이디: {}", memberId);
             loginFlag = LoginFlag.INCORRECT_ID;
@@ -183,6 +184,7 @@ public class MemberRestController {
                 log.info("로그인 성공 처리 완료: {}", memberId);
                 response.addCookie(getAccessTokenCookie(memberId));
                 response.addCookie(getRefreshTokenCookie(memberId));
+                response.addCookie(wrapWithCookie(SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get(), TokenType.NATIVE_TOKEN.name()));
                 return ResponseEntity.ok()
                         .body(ApiResponseFactory.createResponse("로그인 성공", memberDto));
             case INCORRECT_ID:
@@ -232,7 +234,9 @@ public class MemberRestController {
                     System.out.println("resultJsonObject");
                     System.out.println(resultJsonObject);
                     System.out.println(resultJsonObject.get("access_token"));
-                    String accessToken = resultJsonObject.get("access_token").toString();///////////////////////////////////////
+                    String accessToken = resultJsonObject.getString("access_token");
+                    String refreshToken = resultJsonObject.getString("refresh_token");
+
                     AtomicReference<String> memberId = new AtomicReference<>("");
 
                     try {
@@ -284,14 +288,9 @@ public class MemberRestController {
                     String Url = "http://127.0.0.1:3000/member/kakaoNav?loginWay="+ "kakao";
                     System.out.println(Url);
 
-//                    getRefreshTokenCookie(response); // RefreshToken
-
-                    Cookie memberIdCookie = new Cookie("Member-ID", memberId.get());
-                    memberIdCookie.setPath("/");
-                    memberIdCookie.setMaxAge(60 * 60 * 24 * 7);
-                    response.addCookie(memberIdCookie);
-
-//                    getAccessTokenCookie(response); // AccessToken
+                    response.addCookie(wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), accessToken));
+                    response.addCookie(wrapWithCookie(SecurityConstants.REFRESH_TOKEN_COOKIE_KEY.get(), refreshToken));
+                    response.addCookie(wrapWithCookie(SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get(), TokenType.KAKAO_TOKEN.name()));
 
                     return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
                             .header(HttpHeaders.LOCATION, Url)
@@ -451,8 +450,8 @@ public class MemberRestController {
         return wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), accessToken);
     }
 
-    private Cookie wrapWithCookie(String cookieName, String token) {
-        Cookie cookie = new Cookie(cookieName, token);
+    private Cookie wrapWithCookie(String cookieName, String value) {
+        Cookie cookie = new Cookie(cookieName, value);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         return cookie;
