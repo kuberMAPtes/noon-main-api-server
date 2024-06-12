@@ -1,7 +1,5 @@
 package com.kube.noon.member.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.common.security.SecurityConstants;
 import com.kube.noon.common.security.TokenPair;
@@ -10,7 +8,6 @@ import com.kube.noon.common.security.support.BearerTokenSupport;
 import com.kube.noon.member.dto.RequestDto.LoginRequestDto;
 import com.kube.noon.member.dto.RequestDto.MemberRelationshipSearchCriteriaRequestDto;
 import com.kube.noon.member.dto.RequestDto.MemberSearchCriteriaRequestDto;
-import com.kube.noon.member.dto.auth.KakaoResponseDto;
 import com.kube.noon.member.dto.auth.googleLoginRequestDto;
 import com.kube.noon.member.dto.member.*;
 import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
@@ -18,7 +15,6 @@ import com.kube.noon.member.dto.memberRelationship.DeleteMemberRelationshipDto;
 import com.kube.noon.member.dto.memberRelationship.MemberRelationshipDto;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
-import com.kube.noon.member.dto.util.RandomData;
 import com.kube.noon.member.enums.LoginFlag;
 import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.service.AuthService;
@@ -26,13 +22,9 @@ import com.kube.noon.member.service.KakaoService;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-
-
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -41,10 +33,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.scheduler.Schedulers;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 음? 왜 바로 ok만 내보내지? -> GlobalExceptionHandler에서 검증하고 있음
@@ -209,7 +201,7 @@ public class MemberRestController {
      */
     @RequestMapping(value = "kakaoLogin", method = RequestMethod.GET)
     public ResponseEntity<ApiResponse<String>> kakaoLogin(@RequestParam(value = "code") String authorizeCode,
-                                                                HttpServletResponse response) throws Exception {
+                                                          HttpServletResponse response) throws Exception {
         log.info("카카오 로그인 요청: code={}", authorizeCode);
 
         TokenPair tokenPair = this.kakaoService.generateTokenPairAndAddMemberIfNotExists(authorizeCode);
@@ -230,15 +222,36 @@ public class MemberRestController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(@RequestBody LoginRequestDto dto) {
-        // 토큰을 블랙리스트에 추가
-//        tokenBlacklistService.addToken(token);
-//
-//        // SecurityContext에서 인증 정보 제거
-//        SecurityContextHolder.clearContext();
-        log.info("logout" + dto);
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @CookieValue(value = "token_type", required = false) String tokenTypeStr,
+            @CookieValue(value = "refresh_token", required = false) String refreshToken,
+            HttpServletResponse response
+    ) {
+        response.addCookie(getDestructionCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get()));
+        response.addCookie(getDestructionCookie(SecurityConstants.REFRESH_TOKEN_COOKIE_KEY.get()));
+        response.addCookie(getDestructionCookie(SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get()));
+
+        if (tokenTypeStr != null) {
+            try {
+                TokenType tokenType = TokenType.valueOf(tokenTypeStr);
+                this.tokenSupport.forEach((ts) -> {
+                    if (ts.supports(tokenType) && refreshToken != null) {
+                        ts.invalidateRefreshToken(refreshToken);
+                    }
+                });
+            } catch (IllegalArgumentException e) {
+                log.trace("No such token type={}", tokenTypeStr, e);
+            }
+        }
 
         return ResponseEntity.ok(ApiResponseFactory.createResponse("로그아웃 성공", null));
+    }
+
+    private Cookie getDestructionCookie(String key) {
+        Cookie cookie = new Cookie(key, null);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        return cookie;
     }
 
     // 체크 : 완료
