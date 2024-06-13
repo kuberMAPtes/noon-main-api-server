@@ -39,7 +39,9 @@ public class FeedDto {
     private boolean activate;
     private List<FeedAttachmentDto> attachments;
     private List<FeedCommentDto> comments;
+    private List<TagDto> tags;
     private List<TagFeedDto> tagFeeds;
+    private List<String> updateTagList; // 피드를 추가할 때 피드 내용을 가져올 리스트
 
     public static FeedDto toDto(Feed feed) {
         // NullPointException

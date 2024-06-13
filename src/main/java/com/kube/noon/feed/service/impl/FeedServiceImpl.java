@@ -3,13 +3,21 @@ package com.kube.noon.feed.service.impl;
 import com.kube.noon.building.domain.Building;
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.feed.domain.Feed;
+import com.kube.noon.feed.domain.Tag;
+import com.kube.noon.feed.domain.TagFeed;
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
+import com.kube.noon.feed.dto.TagDto;
+import com.kube.noon.feed.dto.UpdateFeedDto;
 import com.kube.noon.feed.repository.FeedRepository;
+import com.kube.noon.feed.repository.TagFeedRepository;
+import com.kube.noon.feed.repository.TagRepository;
 import com.kube.noon.feed.repository.mybatis.FeedMyBatisRepository;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.feed.service.recommend.FeedRecommendationMemberId;
 import com.kube.noon.member.domain.Member;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +36,11 @@ public class FeedServiceImpl implements FeedService {
 
     private final FeedRepository feedRepository;
     private final FeedMyBatisRepository feedMyBatisRepository;
+    private final TagRepository tagRepository;
+    private final TagFeedRepository tagFeedRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     public List<FeedSummaryDto> getFeedListByMember(String memberId) {
@@ -210,22 +223,87 @@ public class FeedServiceImpl implements FeedService {
             addFeed.setBuilding(null);
         }
         addFeed.setActivated(true);
-        return feedRepository.save(addFeed).getFeedId();
+
+        int feedId = feedRepository.save(addFeed).getFeedId();
+
+        List<String> updateTagList = feedDto.getUpdateTagList();
+
+        // 태그는 각각 리스트를 받아서 추가한다.
+        if(updateTagList != null && updateTagList.size() > 0) {
+            for(String tagText : updateTagList) {
+                // 1. 삽입 전 tag 테이블에 존재하는지 탐색
+                Tag tag = tagRepository.findByTagText(tagText);
+
+                // 1-1. 만약 테이블에 없다면 삽입하기
+                if(tag == null) {
+                    tag = Tag.builder().tagText(tagText).build();
+                    tag = tagRepository.save(tag);
+                }
+
+                // 2. tag_feed 테이블에 추가하기
+                Feed feed = Feed.builder().feedId(feedId).build();
+                TagFeed tagFeed = TagFeed.builder().feed(feed).tag(tag).build();
+
+                tagFeedRepository.save(tagFeed);
+            }
+        }
+
+        entityManager.flush();
+        entityManager.clear();
+
+        return feedId;
     }
 
     @Transactional
     @Override
-    public int updateFeed(FeedDto feedDto) {
-        Feed updateFeed = feedRepository.findByFeedId(feedDto.getFeedId());
+    public int updateFeed(UpdateFeedDto updateFeedDto) {
+        int feedId = updateFeedDto.getFeedId();
+        Feed updateFeed = feedRepository.findByFeedId(updateFeedDto.getFeedId());
 
         if(updateFeed.getFeedCategory() == FeedCategory.NOTICE) {
             updateFeed.setBuilding(null);
         }
-        updateFeed.setTitle(feedDto.getTitle());
-        updateFeed.setFeedText(feedDto.getFeedText());
+        // 수정 가능한 내용 : 제목, 내용, 공개범위, 카테고리
+        updateFeed.setTitle(updateFeedDto.getTitle());
+        updateFeed.setFeedText(updateFeedDto.getFeedText());
         updateFeed.setModified(true);
-        updateFeed.setFeedCategory(feedDto.getFeedCategory());
-        return feedRepository.save(updateFeed).getFeedId();
+        updateFeed.setPublicRange(updateFeedDto.getPublicRange());
+        updateFeed.setFeedCategory(updateFeedDto.getFeedCategory());
+
+        List<String> updateTagList = updateFeedDto.getUpdateTagList();
+
+        // feed 내용 업데이트
+        int updateFeedId = feedRepository.save(updateFeed).getFeedId();
+
+        // 피드의 태그 정리
+        // 0. 피드에 속한 모든 태그 삭제 -> 중복 태그 대비
+        tagFeedRepository.deleteByFeed(updateFeed);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        if(updateTagList != null && updateTagList.size() > 0) {
+            for(String tagText : updateTagList) {
+                // 1. 삽입 전 tag 테이블에 존재하는지 탐색
+                Tag tag = tagRepository.findByTagText(tagText);
+
+                // 1-1. 만약 테이블에 없다면 삽입하기
+                if(tag == null) {
+                    tag = Tag.builder().tagText(tagText).build();
+                    tag = tagRepository.save(tag);
+                }
+
+                System.out.println(tag.getTagId());
+
+                // 2. tag_feed 테이블에 추가하기
+                Feed feed = Feed.builder().feedId(feedId).build();
+                TagFeed tagFeed = TagFeed.builder().feed(feed).tag(tag).build();
+
+                tagFeedRepository.save(tagFeed);
+            }
+        }
+
+        return updateFeedId;
     }
 
     @Transactional
@@ -240,7 +318,13 @@ public class FeedServiceImpl implements FeedService {
     @Override
     public FeedDto getFeedById(int feedId) {
         Feed getFeed = feedRepository.findByFeedId(feedId);
-        return FeedDto.toDto(getFeed);
+        FeedDto resultFeed = FeedDto.toDto(getFeed);
+
+        // tag의 목록을 가져온다.
+        List<Tag> tagList = tagRepository.getTagByFeedId(Feed.builder().feedId(feedId).build());
+        resultFeed.setTags(TagDto.toDtoList(tagList));
+
+        return resultFeed;
     }
 
     @Transactional

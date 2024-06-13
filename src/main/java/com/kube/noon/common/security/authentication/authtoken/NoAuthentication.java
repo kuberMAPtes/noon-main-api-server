@@ -5,15 +5,15 @@ package com.kube.noon.common.security.authentication.authtoken;
  *
  * @author PGD
  */
-public class NoAuthenticationToken extends BearerTokenAuthenticationToken {
+public class NoAuthentication extends BearerTokenAuthentication {
     private final Object details;
 
-    public NoAuthenticationToken(String token) {
+    public NoAuthentication(String token) {
         super(token);
         this.details = null;
     }
 
-    public NoAuthenticationToken(String token, Object details) {
+    public NoAuthentication(String token, Object details) {
         super(token);
         this.details = details;
     }

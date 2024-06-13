@@ -1,7 +1,7 @@
 package com.kube.noon.common.security.filter;
 
-import com.kube.noon.common.security.authentication.authtoken.JwtAuthenticationToken;
-import com.kube.noon.common.security.authentication.authtoken.SimpleJsonAuthenticationToken;
+import com.kube.noon.common.security.SecurityConstants;
+import com.kube.noon.common.security.authentication.authtoken.BearerTokenAuthentication;
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.common.security.authentication.authtoken.generator.BearerTokenAuthenticationTokenGenerator;
 import jakarta.servlet.FilterChain;
@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -25,7 +26,7 @@ import java.util.List;
  * SecurityContext에 BearerTokenAuthenticationToken 인스턴스를 담아 AuthFilter에 전달해 인증 로직을 위임한다.
  *
  * @author PGD
- * @see com.kube.noon.common.security.authentication.authtoken.BearerTokenAuthenticationToken
+ * @see BearerTokenAuthentication
  * @see BearerTokenAuthenticationTokenGenerator
  * @see AuthFilter
  * @see SecurityContextHolder
@@ -41,8 +42,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         Cookie[] cookies = request.getCookies() == null ? new Cookie[0] : request.getCookies();
-        String accessToken = getCookieValue(cookies, TokenRefreshFilter.ACCESS_TOKEN_COOKIE_KEY);
-        String tokenTypeStr = getCookieValue(cookies, TokenRefreshFilter.TOKEN_TYPE_COOKIE_KEY);
+        String accessToken = getCookieValue(cookies, SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get());
+        String tokenTypeStr = getCookieValue(cookies, SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get());
 
         if (accessToken == null) {
             log.info("access token is null");
@@ -50,7 +51,14 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        TokenType tokenType = tokenTypeStr == null ? TokenType.NATIVE_TOKEN : TokenType.valueOf(tokenTypeStr);
+        TokenType tokenType;
+
+        try {
+            tokenType = TokenType.valueOf(tokenTypeStr);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            return;
+        }
 
         WebAuthenticationDetails webAuthenticationDetails = new WebAuthenticationDetailsSource().buildDetails(request);
 
@@ -71,6 +79,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext()
                 .setAuthentication(support.generate(accessToken, webAuthenticationDetails));
         filterChain.doFilter(request, response);
+
+        log.trace("Response Status={}", response.getStatus());
+        log.trace("Set-Cookie: {}", response.getHeader("Set-Cookie"));
     }
 
     private String getCookieValue(Cookie[] cookies, String cookieName) {

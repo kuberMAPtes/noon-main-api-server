@@ -1,6 +1,6 @@
 package com.kube.noon.common.security.authentication.provider;
 
-import com.kube.noon.common.security.authentication.authtoken.SimpleJsonAuthenticationToken;
+import com.kube.noon.common.security.authentication.authtoken.SimpleJsonAuthentication;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -16,7 +16,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * 암호화하지 않은 JSON 토큰 기반 인증 로직을 수행하는 AuthenticationProvider.
  *
  * @author PGD
- * @see SimpleJsonAuthenticationToken
+ * @see SimpleJsonAuthentication
  * @see com.kube.noon.common.security.filter.AuthFilter
  */
 @Slf4j
@@ -26,7 +26,7 @@ public class SimpleJsonAuthenticationProvider implements AuthenticationProvider 
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        SimpleJsonAuthenticationToken simpleJson = (SimpleJsonAuthenticationToken)authentication;
+        SimpleJsonAuthentication simpleJson = (SimpleJsonAuthentication)authentication;
 
         JSONObject token = new JSONObject(simpleJson.getToken());
         String memberId = token.getString("memberId");
@@ -47,6 +47,6 @@ public class SimpleJsonAuthenticationProvider implements AuthenticationProvider 
     @Override
     public boolean supports(Class<?> authentication) {
         log.debug("authentication class={}", authentication);
-        return authentication == SimpleJsonAuthenticationToken.class;
+        return authentication == SimpleJsonAuthentication.class;
     }
 }

@@ -1,7 +1,8 @@
 package com.kube.noon.common.security.authentication.provider;
 
-import com.kube.noon.common.security.authentication.authtoken.JwtAuthenticationToken;
+import com.kube.noon.common.security.authentication.authtoken.JwtAuthentication;
 import com.kube.noon.common.security.support.BearerTokenSupport;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -20,7 +21,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  *
  * @author PGD
  * @see com.kube.noon.common.security.filter.AuthFilter
- * @see JwtAuthenticationToken
+ * @see JwtAuthentication
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -30,29 +31,40 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        String jwtToken = ((JwtAuthenticationToken) authentication).getToken();
+        String jwtToken = ((JwtAuthentication)authentication).getToken();
 
-        if (this.tokenSupport.isTokenExpired(jwtToken) || this.tokenSupport.isRefreshToken(jwtToken)) {
-            return null;
+        log.trace("jwtToken={}", jwtToken);
+
+        try {
+            if (this.tokenSupport.isTokenExpired(jwtToken) || this.tokenSupport.isRefreshToken(jwtToken)) {
+                log.trace("token is not good");
+                log.trace("isTokenExpired={}", this.tokenSupport.isTokenExpired(jwtToken));
+                log.trace("isRefreshToken={}", this.tokenSupport.isRefreshToken(jwtToken));
+                return UsernamePasswordAuthenticationToken.unauthenticated("", "");
+            }
+        } catch (JwtException e) {
+            log.trace("JwtException", e);
+            return UsernamePasswordAuthenticationToken.unauthenticated("", "");
         }
 
         String memberId = this.tokenSupport.extractMemberId(jwtToken);
         try {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(memberId);
-            return new UsernamePasswordAuthenticationToken(
+            return UsernamePasswordAuthenticationToken.authenticated(
                     userDetails.getUsername(),
                     userDetails.getPassword(),
                     userDetails.getAuthorities()
             );
         } catch (UsernameNotFoundException e) {
             log.debug("memberId of \"{}\" is not found", memberId, e);
-            return null;
+            return UsernamePasswordAuthenticationToken.unauthenticated("", "");
         }
     }
 
     @Override
     public boolean supports(Class<?> authentication) {
-        log.debug("authentication={}", authentication);
-        return authentication == JwtAuthenticationToken.class;
+        log.trace("authentication={}", authentication);
+        log.trace("authentication == JwtAuthentication.class={}", authentication == JwtAuthentication.class);
+        return authentication == JwtAuthentication.class;
     }
 }

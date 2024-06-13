@@ -1,5 +1,6 @@
 package com.kube.noon.common.security.authentication.provider;
 
+import com.kube.noon.common.security.authentication.authtoken.NoAuthentication;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -10,7 +11,7 @@ import org.springframework.security.core.AuthenticationException;
  *
  * @author PGD
  * @see com.kube.noon.common.security.filter.AuthFilter
- * @see com.kube.noon.common.security.authentication.authtoken.NoAuthenticationToken
+ * @see NoAuthentication
  */
 public class NoAuthenticationProvider implements AuthenticationProvider {
 
