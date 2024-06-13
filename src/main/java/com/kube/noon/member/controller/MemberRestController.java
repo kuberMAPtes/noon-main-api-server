@@ -147,6 +147,9 @@ public class MemberRestController {
                 .map(cookie -> cookie.getValue())
                 .findFirst();
 
+        //authorizeCookie가 없고 refreshToken도 없으면 쿠키가 존재하지 않는다고 알린다.
+        //authorizeCookie
+
         boolean isExist = authorizationCookie.isPresent() && refreshTokenCookie.isPresent();
 
         String message =  isExist ? "쿠키가 존재합니다." : "쿠키가 존재하지 않습니다.";
@@ -292,9 +295,32 @@ public class MemberRestController {
     }
 
     @PostMapping("/googleLogin")
-    public ResponseEntity<?> googleLogin(@RequestBody googleLoginRequestDto dto) {
-//        log.info("googleLogin" + memberId + " " + authorizeCode);
-        return null;
+    public ResponseEntity<?> googleLogin(@RequestBody googleLoginRequestDto dto,HttpServletResponse response) {
+            log.info("구글 로그인 요청: {}", dto);
+
+            AtomicReference<MemberDto> memberDtoAtomicReference = new AtomicReference<>();
+
+        Optional.ofNullable(memberService.findMemberById(dto.getMemberId(), dto.getMemberId())).ifPresentOrElse(memberDto -> {
+            log.info("회원 정보: {}", memberDto);
+            memberDtoAtomicReference.set(memberDto);
+        }, () -> {
+            AddMemberDto addMemberDto = new AddMemberDto();
+            addMemberDto.setMemberId(dto.getMemberId());
+            addMemberDto.setNickname(dto.getNickname());
+            addMemberDto.setPwd("socialLogin");
+            addMemberDto.setPhoneNumber(RandomData.getRandomPhoneNumber());
+            memberService.addMember(addMemberDto);
+
+            MemberDto memberDto = memberService.findMemberById(dto.getMemberId(), dto.getMemberId());
+            memberDtoAtomicReference.set(memberDto);
+
+        });
+
+
+        addRefreshTokenCookie(response);
+        addAccessTokenCookie(response);
+
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("로그인 성공", memberDtoAtomicReference.get()));
     }
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(@RequestBody LoginRequestDto dto) {

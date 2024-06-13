@@ -82,16 +82,19 @@ public class WebSecurityConfig {
     }
 
     @Bean
+    @Profile({"dev", "prod"})
     public TokenAuthenticationFilter tokenAuthenticationFilter(List<BearerTokenAuthenticationTokenGenerator> generatorList) {
         return new TokenAuthenticationFilter(generatorList);
     }
 
     @Bean
+    @Profile({"dev", "prod"})
     public AuthFilter authFilter(AuthenticationManager authenticationManager) {
         return new AuthFilter(authenticationManager);
     }
 
     @Bean
+    @Profile({"dev", "prod"})
     public TokenRefreshFilter tokenRefreshFilter(BearerTokenSupport tokenSupport) {
         return new TokenRefreshFilter(tokenSupport);
     }
