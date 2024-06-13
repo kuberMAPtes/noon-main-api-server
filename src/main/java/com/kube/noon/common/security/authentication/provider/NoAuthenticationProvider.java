@@ -16,7 +16,6 @@ public class NoAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-//        authentication.setAuthenticated(true);
         return authentication;
     }
 
