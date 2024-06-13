@@ -6,9 +6,6 @@ import com.kube.noon.common.security.TokenPair;
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.auth.KakaoResponseDto;
-import com.kube.noon.member.dto.member.AddMemberDto;
-import com.kube.noon.member.dto.util.RandomData;
-import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -19,13 +16,10 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.netty.http.client.HttpClient;
-
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -39,7 +33,6 @@ public class KakaoTokenSupport implements BearerTokenSupport {
     private final String apiKey;
     private final String mainServerHost;
     private final ObjectMapper objectMapper;
-    private final MemberService memberService;
 
     public KakaoTokenSupport(@Value("${kakao.api.key}") String apiKey,
                              @Value("${main.server.host}") String mainServerHost,
@@ -51,7 +44,6 @@ public class KakaoTokenSupport implements BearerTokenSupport {
         this.webClientAuth = WebClient.builder().clientConnector(connector).baseUrl("https://kauth.kakao.com").build();
         this.webClientApi = WebClient.builder().clientConnector(connector).baseUrl("https://kapi.kakao.com").build();
         this.objectMapper = new ObjectMapper();
-        this.memberService = memberService;
     }
 
     @Override
@@ -134,17 +126,6 @@ public class KakaoTokenSupport implements BearerTokenSupport {
                     return member;
                 })
                 .block();
-    }
-
-    private void addMember(String memberId, String pwd, String nickname, String phoneNumber) {
-        AddMemberDto addDto = AddMemberDto.builder()
-                .memberId(memberId)
-                .pwd(pwd)
-                .nickname(nickname)
-                .phoneNumber(phoneNumber)
-                .socialSignUp(true)
-                .build();
-        this.memberService.addMember(addDto);
     }
 
     @Override
