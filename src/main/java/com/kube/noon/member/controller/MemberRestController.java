@@ -16,13 +16,13 @@ import com.kube.noon.member.dto.memberRelationship.DeleteMemberRelationshipDto;
 import com.kube.noon.member.dto.memberRelationship.MemberRelationshipDto;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
+import com.kube.noon.member.dto.util.RandomData;
 import com.kube.noon.member.enums.LoginFlag;
 import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.service.AuthService;
 import com.kube.noon.member.service.KakaoService;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -39,6 +39,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 음? 왜 바로 ok만 내보내지? -> GlobalExceptionHandler에서 검증하고 있음
@@ -238,9 +240,7 @@ public class MemberRestController {
         log.info("카카오 로그인 요청: code={}", authorizeCode);
 
         TokenPair tokenPair = this.kakaoService.generateTokenPairAndAddMemberIfNotExists(authorizeCode);
-        response.addCookie(wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), tokenPair.getAccessToken()));
-        response.addCookie(wrapWithCookie(SecurityConstants.REFRESH_TOKEN_COOKIE_KEY.get(), tokenPair.getRefreshToken()));
-        response.addCookie(wrapWithCookie(SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get(), TokenType.KAKAO_TOKEN.name()));
+        addTokenToCookie(response, tokenPair,TokenType.KAKAO_TOKEN);
 
         final String redirectClientUrl = "http://127.0.0.1:3000/member/kakaoNav?loginWay=" + "kakao";
         return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
@@ -248,10 +248,30 @@ public class MemberRestController {
                 .build();
     }
 
-    @PostMapping("/googleLogin")
-    public ResponseEntity<?> googleLogin(@RequestBody googleLoginRequestDto dto) {
-//        log.info("googleLogin" + memberId + " " + authorizeCode);
-        return null;
+    public ResponseEntity<?> googleLogin(@RequestBody googleLoginRequestDto dto,HttpServletResponse response) {
+        log.info("구글 로그인 요청: {}", dto);
+
+        AtomicReference<MemberDto> memberDtoAtomicReference = new AtomicReference<>();
+
+        Optional.ofNullable(memberService.findMemberById(dto.getMemberId(), dto.getMemberId())).ifPresentOrElse(memberDto -> {
+            log.info("회원 정보: {}", memberDto);
+            memberDtoAtomicReference.set(memberDto);
+        }, () -> {
+            AddMemberDto addMemberDto = new AddMemberDto();
+            addMemberDto.setMemberId(dto.getMemberId());
+            addMemberDto.setNickname(dto.getNickname());
+            addMemberDto.setPwd("socialLogin");
+            addMemberDto.setPhoneNumber(RandomData.getRandomPhoneNumber());
+            memberService.addMember(addMemberDto);
+
+            MemberDto memberDto = memberService.findMemberById(dto.getMemberId(), dto.getMemberId());
+            memberDtoAtomicReference.set(memberDto);
+
+        });
+
+//        addTokenToCookie();
+
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("로그인 성공", memberDtoAtomicReference.get()));
     }
 
     @PostMapping("/logout")
