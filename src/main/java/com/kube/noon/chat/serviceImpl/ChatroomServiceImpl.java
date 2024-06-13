@@ -53,6 +53,18 @@ public class ChatroomServiceImpl implements ChatroomService {
         return convertToChatroomDto(savedChatroom);
     }
 
+    @Override
+    public String deleteChatroom(int chatroomId) throws Exception {
+        // 채팅방 삭제
+        chatroomRepository.deleteChatroomByChatroomId(chatroomId);
+
+        Chatroom chatroom = chatroomRepository.findChatroomByChatroomId(chatroomId);
+        if(chatroom != null) {
+            System.out.println("        🦐[ServiceImpl] deleteChatroom 삭제 안됨 => " + chatroom);
+        }
+        return "delete success";
+    }
+
     // 채팅방 참여멤버를 채팅방으로 조회 (테스트위해 방 번호 고정해놓음)
     @Override
     public List<ChatEntranceDto> getChatEntranceListByChatroom(ChatroomDto requestChatroom) {

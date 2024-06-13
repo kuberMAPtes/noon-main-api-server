@@ -3,7 +3,6 @@ package com.kube.noon.chat.repository;
 import com.kube.noon.chat.domain.Chatroom;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.awt.print.Pageable;
 import java.util.List;
 
 public interface ChatroomRepository extends JpaRepository<Chatroom, Integer> {
@@ -12,5 +11,6 @@ public interface ChatroomRepository extends JpaRepository<Chatroom, Integer> {
     List<Chatroom> findByBuildingId(int buildingId);
     List<Chatroom> findByBuildingIdAndChatroomNameContaining(int buildingId, String searchKeywordChatroom);
     List<Chatroom> findByChatroomNameContaining(String searchKeywordChatroom);
-
+    void deleteChatroomByChatroomId(int chatroomId);
+    Chatroom findChatroomByChatroomId(int chatroomId);
 }
