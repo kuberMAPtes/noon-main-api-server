@@ -8,12 +8,17 @@ import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.auth.KakaoResponseDto;
 import com.kube.noon.member.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -24,19 +29,24 @@ import reactor.netty.http.client.HttpClient;
 @Slf4j
 @Component
 public class KakaoTokenSupport implements BearerTokenSupport {
-
+    private static final String KAKAO_KAUTH_DOMAIN = "https://kauth.kakao.com";
     private static final String KAKAO_LOGIN_ROUTE_PATH = "/member/kakaoLogin";
     private static final String KAKAO_OAUTH_TOKEN_PATH = "/oauth/token";
+    private static final String BODY_KEY_CLIENT_ID = "client_id";
+    private static final String BODY_KEY_REDIRECT_URI = "redirect_uri";
+    private static final String BODY_KEY_CODE = "code";
+    private static final String BODY_KEY_REFRESH_TOKEN = "refresh_token";
+    private static final String BODY_KEY_GRANT_TYPE = "grant_type";
 
     private final WebClient webClientAuth;
     private final WebClient webClientApi;
     private final String apiKey;
     private final String mainServerHost;
     private final ObjectMapper objectMapper;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     public KakaoTokenSupport(@Value("${kakao.api.key}") String apiKey,
-                             @Value("${main.server.host}") String mainServerHost,
-                             MemberService memberService) {
+                             @Value("${main.server.host}") String mainServerHost) {
         this.apiKey = apiKey;
         this.mainServerHost = mainServerHost;
         HttpClient httpClient = HttpClient.create();
@@ -53,10 +63,10 @@ public class KakaoTokenSupport implements BearerTokenSupport {
         Mono<String> responseMono = this.webClientAuth.post()
                 .uri(KAKAO_OAUTH_TOKEN_PATH)
                 .header(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=utf-8")
-                .body(BodyInserters.fromFormData("grant_type", "authorization_code")
-                        .with("client_id", apiKey)
-                        .with("redirect_uri", redirectUri)
-                        .with("code", code))
+                .body(BodyInserters.fromFormData(BODY_KEY_GRANT_TYPE, "authorization_code")
+                        .with(BODY_KEY_CLIENT_ID, apiKey)
+                        .with(BODY_KEY_REDIRECT_URI, redirectUri)
+                        .with(BODY_KEY_CODE, code))
                 .exchangeToMono((response) -> {
                     if (response.statusCode().is2xxSuccessful()) {
                         return response.bodyToMono(String.class)
@@ -85,7 +95,23 @@ public class KakaoTokenSupport implements BearerTokenSupport {
 
     @Override
     public TokenPair refreshToken(String refreshToken) throws InvalidRefreshTokenException {
-        return null;
+        MultiValueMap<String, String> urlEncodedBody = new LinkedMultiValueMap<>();
+        urlEncodedBody.add(BODY_KEY_GRANT_TYPE, "refresh_token");
+        urlEncodedBody.add(BODY_KEY_CLIENT_ID, this.apiKey);
+        urlEncodedBody.add(BODY_KEY_REFRESH_TOKEN, refreshToken);
+        RequestEntity<MultiValueMap<String, String>> requestEntity =
+                RequestEntity.post(KAKAO_KAUTH_DOMAIN + KAKAO_OAUTH_TOKEN_PATH)
+                        .header(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=utf-8")
+                        .body(urlEncodedBody);
+        try {
+            JSONObject responseBody =
+                    new JSONObject(this.restTemplate.exchange(requestEntity, String.class).getBody());
+            String newAccessToken = responseBody.getString("access_token");
+            String newRefreshToken = responseBody.getString("refresh_token");
+            return new TokenPair(newAccessToken, newRefreshToken);
+        } catch (JSONException e) {
+            throw new InvalidRefreshTokenException("Invalid refresh token=" + refreshToken, e);
+        }
     }
 
     public Member getMemberInformation(String accessToken) {
@@ -130,7 +156,7 @@ public class KakaoTokenSupport implements BearerTokenSupport {
 
     @Override
     public String extractMemberId(String token) {
-        return null;
+        return getMemberInformation(token).getMemberId();
     }
 
     @Override
