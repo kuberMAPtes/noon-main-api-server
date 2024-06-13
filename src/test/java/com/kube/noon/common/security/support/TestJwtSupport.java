@@ -31,7 +31,7 @@ class TestJwtSupport {
     @DisplayName("Access Token 생성 확인")
     @Test
     void generateAccessToken() {
-        String token = this.jwtSupport.generateAccessToken(SAMPLE_MEMBER_ID);
+        String token = this.jwtSupport.generateToken(SAMPLE_MEMBER_ID).getAccessToken();
         log.info("token={}", token);
         assertThat(token).isNotNull();
     }
@@ -39,7 +39,7 @@ class TestJwtSupport {
     @DisplayName("Refresh Token 생성 확인")
     @Test
     void generateRefreshToken() {
-        String token = this.jwtSupport.generateRefreshToken(SAMPLE_MEMBER_ID);
+        String token = this.jwtSupport.generateToken(SAMPLE_MEMBER_ID).getRefreshToken();
         log.info("token={}", token);
         assertThat(token).isNotNull();
     }
@@ -47,7 +47,7 @@ class TestJwtSupport {
     @DisplayName("Member ID 추출 - Access Token")
     @Test
     void extractMemberId_accessToken() {
-        String token = this.jwtSupport.generateAccessToken(SAMPLE_MEMBER_ID);
+        String token = this.jwtSupport.generateToken(SAMPLE_MEMBER_ID).getAccessToken();
         log.info("token={}", token);
         String extracted = this.jwtSupport.extractMemberId(token);
         log.info("extracted={}", extracted);
@@ -57,7 +57,7 @@ class TestJwtSupport {
     @DisplayName("Member ID 추출 - Refresh Token")
     @Test
     void extractMemberId_refreshToken() {
-        String token = this.jwtSupport.generateRefreshToken(SAMPLE_MEMBER_ID);
+        String token = this.jwtSupport.generateToken(SAMPLE_MEMBER_ID).getRefreshToken();
         log.info("token={}", token);
         String extracted = this.jwtSupport.extractMemberId(token);
         log.info("extracted={}", extracted);
@@ -67,7 +67,7 @@ class TestJwtSupport {
     @DisplayName("토큰이 만료되지 않음 - Access Token")
     @Test
     void checkExpirationOfUnexpiredToken_accessToken() {
-        String token = this.jwtSupport.generateAccessToken(SAMPLE_MEMBER_ID);
+        String token = this.jwtSupport.generateToken(SAMPLE_MEMBER_ID).getAccessToken();
         assertThat(this.jwtSupport.isTokenExpired(token)).isFalse();
     }
 
@@ -80,7 +80,7 @@ class TestJwtSupport {
                 50
         );
 
-        String token = this.jwtSupport.generateAccessToken(SAMPLE_MEMBER_ID);
+        String token = this.jwtSupport.generateToken(SAMPLE_MEMBER_ID).getAccessToken();
         Thread.sleep(100);
         assertThat(this.jwtSupport.isTokenExpired(token)).isTrue();
     }
@@ -88,7 +88,7 @@ class TestJwtSupport {
     @DisplayName("토큰이 만료되지 않음 - Refresh Token")
     @Test
     void checkExpirationOfUnexpiredToken_refreshToken() {
-        String token = this.jwtSupport.generateRefreshToken(SAMPLE_MEMBER_ID);
+        String token = this.jwtSupport.generateToken(SAMPLE_MEMBER_ID).getRefreshToken();
         assertThat(this.jwtSupport.isTokenExpired(token)).isFalse();
     }
 
@@ -101,7 +101,7 @@ class TestJwtSupport {
                 50
         );
 
-        String token = this.jwtSupport.generateRefreshToken(SAMPLE_MEMBER_ID);
+        String token = this.jwtSupport.generateToken(SAMPLE_MEMBER_ID).getRefreshToken();
         Thread.sleep(100);
         assertThat(this.jwtSupport.isTokenExpired(token)).isTrue();
     }
@@ -109,10 +109,10 @@ class TestJwtSupport {
     @DisplayName("Refresh Token 재발급")
     @Test
     void generateRefreshToken_twice() throws InterruptedException {
-        String firstToken = this.jwtSupport.generateRefreshToken(SAMPLE_MEMBER_ID);
+        String firstToken = this.jwtSupport.generateToken(SAMPLE_MEMBER_ID).getRefreshToken();
         assertThat(this.jwtSupport.isValidRefreshToken(firstToken)).isTrue();
         Thread.sleep(500);
-        String secondToken = this.jwtSupport.generateRefreshToken(SAMPLE_MEMBER_ID);
+        String secondToken = this.jwtSupport.generateToken(SAMPLE_MEMBER_ID).getRefreshToken();
         log.info("tokenFirst={}", secondToken);
         log.info("tokenSecond={}", secondToken);
         assertThat(firstToken).isNotEqualTo(secondToken);

@@ -34,10 +34,10 @@ public class AuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.trace("authentication={}", authentication);
 
         if (authentication == null) {
             log.debug("authentication is null");
-            SecurityContextHolder.clearContext();
             filterChain.doFilter(request, response);
             return;
         }

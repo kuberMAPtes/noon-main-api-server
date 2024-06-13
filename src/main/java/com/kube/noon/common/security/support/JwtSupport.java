@@ -1,10 +1,11 @@
 package com.kube.noon.common.security.support;
 
+import com.kube.noon.common.security.TokenPair;
+import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.common.security.support.repository.RefreshTokenRepository;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -20,7 +21,6 @@ import java.util.Date;
  */
 @Slf4j
 @Component
-@Primary
 public class JwtSupport implements BearerTokenSupport {
     private static final SecretKey SECRET_KEY = Jwts.SIG.HS256.key().build();
     private static final String REFRESH_TOKEN_CLAIM = "refreshToken";
@@ -43,12 +43,24 @@ public class JwtSupport implements BearerTokenSupport {
     }
 
     @Override
-    public String generateAccessToken(String memberId) {
-        return generateToken(memberId, false);
+    public TokenPair generateToken(String memberId) {
+        return new TokenPair(generateAccessToken(memberId), generateRefreshToken(memberId));
     }
 
     @Override
-    public String generateRefreshToken(String memberId) {
+    public TokenPair refreshToken(String refreshToken) throws InvalidRefreshTokenException {
+        if (refreshToken == null || !isValidRefreshToken(refreshToken)) {
+            throw new InvalidRefreshTokenException("Invalid refresh token=" + refreshToken);
+        }
+        String memberId = extractMemberId(refreshToken);
+        return new TokenPair(generateAccessToken(memberId), generateRefreshToken(memberId));
+    }
+
+    private String generateAccessToken(String memberId) {
+        return generateToken(memberId, false);
+    }
+
+    private String generateRefreshToken(String memberId) {
         invalidateRefreshTokenByMemberId(memberId);
         String token = generateToken(memberId, true);
         this.refreshTokenRepository.save(memberId, token);
@@ -57,11 +69,12 @@ public class JwtSupport implements BearerTokenSupport {
 
     private String generateToken(String memberId, boolean refreshToken) {
         Date now = new Date();
-        log.info("now={}", now);
+        log.trace("now={}", now);
         Date expiration = new Date(
                 now.getTime()
                         + (refreshToken ? REFRESH_TOKEN_DURATION_IN_MILLIS : ACCESS_TOKEN_DURATION_IN_MILLIS)
         );
+        log.trace("expiration={}", expiration);
         return Jwts.builder()
                 .subject(memberId)
                 .issuedAt(now)
@@ -85,7 +98,7 @@ public class JwtSupport implements BearerTokenSupport {
     public boolean isTokenExpired(String token) {
         try {
             return getPayloads(token).getExpiration().before(new Date());
-        } catch (ExpiredJwtException e) {
+        } catch (JwtException e) {
             return true;
         }
     }
@@ -128,5 +141,10 @@ public class JwtSupport implements BearerTokenSupport {
     @Override
     public void invalidateRefreshTokenByMemberId(String memberId) {
         this.refreshTokenRepository.remove(memberId);
+    }
+
+    @Override
+    public boolean supports(TokenType tokenType) {
+        return tokenType == TokenType.NATIVE_TOKEN;
     }
 }
