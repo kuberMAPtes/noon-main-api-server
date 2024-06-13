@@ -86,8 +86,8 @@ public class FeedRestController {
 
     @Operation(summary = "피드 수정", description = "피드를 하나 수정합니다. 제목과 텍스트, 카테고리만 수정 가능합니다.")
     @PostMapping("/updateFeed")
-    public int updateFeed(@RequestBody FeedDto feedDto) {
-        int feedId = feedService.updateFeed(feedDto);
+    public int updateFeed(@RequestBody UpdateFeedDto updateFeedDto) {
+        int feedId = feedService.updateFeed(updateFeedDto);
 
         return feedId;
     }
@@ -221,7 +221,7 @@ public class FeedRestController {
     }
 
     @Operation(summary = "피드 내 태그 목록 조회", description = "피드에 등록된 태그 목록을 가져옵니다.")
-    @GetMapping("/feedTagList")
+    @GetMapping("/getFeedTagList")
     public List<TagDto> getFeedTagList(@Parameter(description = "피드 목록을 가져올 피드 ID") @RequestParam int feedId) {
         return feedSubService.getFeedTagList(feedId);
     }

@@ -3,8 +3,10 @@ package com.kube.noon.feed.service;
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.feed.domain.Feed;
+import com.kube.noon.feed.domain.TagFeed;
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
+import com.kube.noon.feed.dto.UpdateFeedDto;
 import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.feed.service.impl.FeedServiceImpl;
 import com.kube.noon.feed.service.impl.FeedStatisticsServiceImpl;
@@ -17,6 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -86,6 +89,12 @@ public class TestFeedServiceImpl {
     @Transactional
     @Test
     public void addFeedTest() {
+        // 태그 추가
+        List<String> updateTagList = new ArrayList<>();
+        updateTagList.add("집에");
+        updateTagList.add("가고");
+        updateTagList.add("싶다");
+
         FeedDto feedDto = FeedDto.builder()
                 .writerId("member_15")
                 .buildingId(10015)
@@ -97,16 +106,21 @@ public class TestFeedServiceImpl {
                 .writtenTime(LocalDateTime.now())
                 .feedCategory(FeedCategory.GENERAL)
                 .modified(false)
+                .updateTagList(updateTagList)
                 .build();
 
         int feedId = feedServiceImpl.addFeed(feedDto);
 
         FeedDto getFeedDto = feedServiceImpl.getFeedById(feedId);
 
+        log.info(getFeedDto);
+
         assertThat(getFeedDto).isNotNull();
         assertThat(getFeedDto.getWriterId()).isEqualTo("member_15");
         assertThat(getFeedDto.getBuildingId()).isEqualTo(10015);
         assertThat(getFeedDto.getTitle()).isEqualTo("WinterHana Test");
+        assertThat(getFeedDto.getTagFeeds().size()).isEqualTo(3);
+        assertThat(getFeedDto.getTags().size()).isEqualTo(3);
     }
 
     /**
@@ -115,18 +129,34 @@ public class TestFeedServiceImpl {
     @Transactional
     @Test
     public void updateFeedTest() {
-        FeedDto updateFeedDto = feedServiceImpl.getFeedById(10000);
-        updateFeedDto.setFeedText("수정 테스트 중입니다.");
+        List<String> updateTagList = new ArrayList<>();
+        updateTagList.add("집에");
+        updateTagList.add("가고");
+        updateTagList.add("싶다");
+
+        FeedDto feedDto = feedServiceImpl.getFeedById(10000);
+        UpdateFeedDto updateFeedDto = UpdateFeedDto.builder()
+                .feedId(feedDto.getFeedId())
+                .feedText("수정 테스트 중입니다.")
+                .title(feedDto.getTitle())
+                .publicRange(feedDto.getPublicRange())
+                .feedCategory(feedDto.getFeedCategory())
+                .updateTagList(updateTagList)
+                .build();
 
         int feedId = feedServiceImpl.updateFeed(updateFeedDto);
 
         FeedDto getFeedDto = feedServiceImpl.getFeedById(feedId);
+
+        log.info(getFeedDto);
 
         assertThat(getFeedDto).isNotNull();
         assertThat(getFeedDto.getWriterId()).isEqualTo("member_1");
         assertThat(getFeedDto.getBuildingId()).isEqualTo(10001);
         assertThat(getFeedDto.getTitle()).isEqualTo("Title_1");
         assertThat(getFeedDto.getFeedText()).isEqualTo("수정 테스트 중입니다.");
+        assertThat(getFeedDto.getTagFeeds().size()).isEqualTo(3);
+        assertThat(getFeedDto.getTags().size()).isEqualTo(3);
     }
 
     /**

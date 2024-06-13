@@ -2,6 +2,7 @@ package com.kube.noon.feed.service;
 
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
+import com.kube.noon.feed.dto.UpdateFeedDto;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,7 +42,7 @@ public interface FeedService {
     int addFeed(FeedDto feedDto);
 
     // 피드를 수정한다.
-    int updateFeed(FeedDto feedDto);
+    int updateFeed(UpdateFeedDto updateFeedDto);
 
     // 피드를 삭제한다.
     int deleteFeed(int feedId);
