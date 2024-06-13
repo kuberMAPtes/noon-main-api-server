@@ -22,6 +22,7 @@ import com.kube.noon.member.service.AuthService;
 import com.kube.noon.member.service.KakaoService;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -392,21 +393,41 @@ public class MemberRestController {
     }
 
     @PostMapping("/deleteMemberRelationship/{fromId}/{toId}")
-    public ResponseEntity<ApiResponse<Void>> deleteMemberRelationship(@RequestBody DeleteMemberRelationshipDto requestDto) {
+    public ResponseEntity<ApiResponse<Void>> deleteMemberRelationship(
+            @RequestBody DeleteMemberRelationshipDto requestDto,
+            @CookieValue(value = "token", required = false) String accessToken,
+            @CookieValue(value = "token_type", required = false) String tokenTypeStr,
+            @CookieValue(value = "refresh_token", required = false) String refreshToken,
+            HttpServletResponse response
+    ) {
         log.info("deleteMemberRelationship" + requestDto);
         // JWT 토큰 검증
-        String fromId = validateJwtToken(RequestContext.getAuthorization());
-        requestDto.setFromId(fromId);
-        memberService.deleteMemberRelationship(requestDto);
-        String message = requestDto.getRelationshipType() == RelationshipType.FOLLOW ? "팔로우가 해제되었습니다." : "차단이 해제되었습니다.";
-        return ResponseEntity.ok(ApiResponseFactory.createResponse(message, null));
-    }
+        if (accessToken == null) {
+            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("access token is null"), HttpStatus.FORBIDDEN);
+        }
 
-    //이게
-    private String validateJwtToken(String token) {
-        // JWT 토큰 검증 로직 구현
-        // 유효한 토큰이면 사용자 ID를 반환하고, 그렇지 않으면 예외를 던집니다.
-        return "member_100"; // 예시로 사용자 ID 반환
+        TokenType tokenType;
+        try {
+            tokenType = TokenType.valueOf(tokenTypeStr);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Not supported token type=" + tokenTypeStr), HttpStatus.FORBIDDEN);
+        }
+
+        try {
+            for (BearerTokenSupport ts : this.tokenSupport) {
+                if (ts.supports(tokenType)) {
+                    String fromId = ts.extractMemberId(accessToken);
+                    requestDto.setFromId(fromId);
+                    memberService.deleteMemberRelationship(requestDto);
+                    String message = requestDto.getRelationshipType() == RelationshipType.FOLLOW ? "팔로우가 해제되었습니다." : "차단이 해제되었습니다.";
+                    return ResponseEntity.ok(ApiResponseFactory.createResponse(message, null));
+                }
+            }
+            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Not supported token type=" + tokenTypeStr), HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            log.warn("Exception in processing token", e);
+            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid access token"), HttpStatus.FORBIDDEN);
+        }
     }
 
     private Cookie wrapWithCookie(String cookieName, String value) {
