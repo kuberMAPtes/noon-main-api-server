@@ -12,7 +12,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
@@ -30,6 +32,7 @@ import reactor.netty.http.client.HttpClient;
 @Component
 public class KakaoTokenSupport implements BearerTokenSupport {
     private static final String KAKAO_KAUTH_DOMAIN = "https://kauth.kakao.com";
+    private static final String KAKAO_KAPI_DOMAIN = "https://kapi.kakao.com";
     private static final String KAKAO_LOGIN_ROUTE_PATH = "/member/kakaoLogin";
     private static final String KAKAO_OAUTH_TOKEN_PATH = "/oauth/token";
     private static final String BODY_KEY_CLIENT_ID = "client_id";
@@ -51,8 +54,8 @@ public class KakaoTokenSupport implements BearerTokenSupport {
         this.mainServerHost = mainServerHost;
         HttpClient httpClient = HttpClient.create();
         ClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
-        this.webClientAuth = WebClient.builder().clientConnector(connector).baseUrl("https://kauth.kakao.com").build();
-        this.webClientApi = WebClient.builder().clientConnector(connector).baseUrl("https://kapi.kakao.com").build();
+        this.webClientAuth = WebClient.builder().clientConnector(connector).baseUrl(KAKAO_KAUTH_DOMAIN).build();
+        this.webClientApi = WebClient.builder().clientConnector(connector).baseUrl(KAKAO_KAPI_DOMAIN).build();
         this.objectMapper = new ObjectMapper();
     }
 
@@ -159,9 +162,20 @@ public class KakaoTokenSupport implements BearerTokenSupport {
         return getMemberInformation(token).getMemberId();
     }
 
+    private static final String KAKAO_TOKEN_INFO_PATH = "/v1/user/access_token_info";
+
     @Override
     public boolean isTokenExpired(String token) {
-        return false;
+        RequestEntity<Void> requestEntity = RequestEntity.get(KAKAO_KAPI_DOMAIN + KAKAO_TOKEN_INFO_PATH)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .build();
+        try {
+            HttpStatusCode statusCode = this.restTemplate.exchange(requestEntity, String.class).getStatusCode();
+            return !statusCode.is4xxClientError();
+        } catch (Exception e) {
+            log.warn("Exception in sending request to {}{}", KAKAO_KAPI_DOMAIN, KAKAO_TOKEN_INFO_PATH, e);
+            return false;
+        }
     }
 
     @Override
