@@ -208,12 +208,16 @@ public class KakaoTokenSupport implements BearerTokenSupport {
 
     @Override
     public void invalidateRefreshToken(String refreshToken) {
-
+        // 카카오 로그아웃은 Access Token이 필요하다.
+        // 그러나 Access Token은 매 요청마다 새로 생성하므로 하나의 Access Token에 대한
+        // 세션을 만료시킨다고 해서 의미가 없다.
+        // 그러므로 클라이언트의 cookie를 비우는 방식으로만 로그아웃 처리를 한다.
     }
 
     @Override
     public void invalidateRefreshTokenByMemberId(String memberId) {
-
+        // TODO: Refresh token을 재발급받을 때만 사용되고 있다. 그러나 체크해야 한다.
+        throw new UnsupportedOperationException();
     }
 
     @Override
