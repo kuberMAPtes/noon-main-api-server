@@ -69,11 +69,12 @@ public class JwtSupport implements BearerTokenSupport {
 
     private String generateToken(String memberId, boolean refreshToken) {
         Date now = new Date();
-        log.info("now={}", now);
+        log.trace("now={}", now);
         Date expiration = new Date(
                 now.getTime()
                         + (refreshToken ? REFRESH_TOKEN_DURATION_IN_MILLIS : ACCESS_TOKEN_DURATION_IN_MILLIS)
         );
+        log.trace("expiration={}", expiration);
         return Jwts.builder()
                 .subject(memberId)
                 .issuedAt(now)
@@ -97,7 +98,7 @@ public class JwtSupport implements BearerTokenSupport {
     public boolean isTokenExpired(String token) {
         try {
             return getPayloads(token).getExpiration().before(new Date());
-        } catch (ExpiredJwtException e) {
+        } catch (JwtException e) {
             return true;
         }
     }

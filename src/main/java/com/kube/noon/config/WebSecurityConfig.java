@@ -17,12 +17,15 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.event.EventListener;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -42,18 +45,6 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
-
-    @Bean
-    @ConditionalOnMissingBean(AuthenticationProvider.class)
-    public NoAuthenticationProvider noAuthenticationProvider() {
-        return new NoAuthenticationProvider();
-    }
-
-    @Bean
-    @ConditionalOnBean(NoAuthenticationProvider.class)
-    public NoAuthenticationGenerator noAuthenticationTokenGenerator() {
-        return new NoAuthenticationGenerator();
-    }
 
     @Bean
     @Profile("dev")
@@ -92,7 +83,19 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(List<AuthenticationProvider> authenticationProviders) {
+    @ConditionalOnMissingBean(AuthenticationProvider.class)
+    public NoAuthenticationProvider noAuthenticationProvider() {
+        return new NoAuthenticationProvider();
+    }
+
+    @Bean
+    @ConditionalOnBean(NoAuthenticationProvider.class)
+    public NoAuthenticationGenerator noAuthenticationTokenGenerator() {
+        return new NoAuthenticationGenerator();
+    }
+
+    @Bean
+    public ProviderManager authenticationManager(List<AuthenticationProvider> authenticationProviders) {
         return new ProviderManager(authenticationProviders);
     }
 
@@ -137,8 +140,8 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    @Profile({"dev", "prod"})
-    public SecurityFilterChain tokenBasedFilterChainDev(
+    @Profile({"authdev", "prod"})
+    public SecurityFilterChain tokenBasedFilterChain(
             HttpSecurity http,
             AuthFilter authFilter,
             TokenAuthenticationFilter tokenAuthenticationFilter,
@@ -146,14 +149,22 @@ public class WebSecurityConfig {
     ) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((registry) -> {
+//                    registry.requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
+//                            .requestMatchers(HttpMethod.GET, AccessDefinition.WHITE_LIST.toArray(new String[0]))
+//                            .permitAll()
+//                            .requestMatchers(HttpMethod.POST, AccessDefinition.WHITE_LIST.toArray(new String[0]))
+//                            .permitAll()
+//                            .requestMatchers(HttpMethod.GET, AccessDefinition.ALLOWED_TO_MEMBER.toArray(new String[0]))
+//                            .hasAnyAuthority(Role.MEMBER.name(), Role.ADMIN.name())
+//                            .requestMatchers(HttpMethod.POST, AccessDefinition.ALLOWED_TO_MEMBER.toArray(new String[0]))
+//                            .hasAnyAuthority(Role.MEMBER.name(), Role.ADMIN.name());
                     AccessDefinition.WHITE_LIST.forEach((uri) ->
                             registry.requestMatchers(new AntPathRequestMatcher(uri)).permitAll());
-
                     AccessDefinition.ALLOWED_TO_MEMBER.forEach((uri) ->
-                            registry.requestMatchers(new AntPathRequestMatcher(uri))
-                                    .hasAnyAuthority(Role.MEMBER.name(), Role.ADMIN.name()));
+                            registry.requestMatchers(new AntPathRequestMatcher(uri)).hasAnyAuthority(Role.MEMBER.name(), Role.ADMIN.name()));
                 })
                 .sessionManagement((config) -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .requestCache(RequestCacheConfigurer::disable)
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(tokenAuthenticationFilter, AuthFilter.class)
                 .addFilterAfter(tokenRefreshFilter, AuthorizationFilter.class)

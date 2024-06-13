@@ -79,6 +79,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext()
                 .setAuthentication(support.generate(accessToken, webAuthenticationDetails));
         filterChain.doFilter(request, response);
+
+        log.trace("Response Status={}", response.getStatus());
+        log.trace("Set-Cookie: {}", response.getHeader("Set-Cookie"));
     }
 
     private String getCookieValue(Cookie[] cookies, String cookieName) {

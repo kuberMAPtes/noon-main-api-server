@@ -53,21 +53,21 @@ public class KakaoTokenAuthenticationProvider implements AuthenticationProvider 
             log.trace("responseBody={}", responseBody);
         } catch (RestClientException e) {
             log.error("Error", e);
-            return null;
+            return UsernamePasswordAuthenticationToken.unauthenticated("", "");
         }
 
         String memberId = responseBody.getJSONObject("kakao_account").getString("email");
 
         try {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(memberId);
-            return new UsernamePasswordAuthenticationToken(
+            return UsernamePasswordAuthenticationToken.authenticated(
                     userDetails.getUsername(),
                     userDetails.getPassword(),
                     userDetails.getAuthorities()
             );
         } catch (UsernameNotFoundException e) {
             log.error("memberId of \"{}\" is not found", memberId, e);
-            return null;
+            return UsernamePasswordAuthenticationToken.unauthenticated("", "");
         }
     }
 

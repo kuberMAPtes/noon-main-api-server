@@ -43,6 +43,11 @@ public class TokenRefreshFilter extends OncePerRequestFilter {
         String tokenTypeStr = cookies.get(TOKEN_TYPE_COOKIE_KEY.get());
         filterChain.doFilter(request, response);
 
+        if (refreshToken == null || tokenTypeStr == null) {
+            log.trace("No previous refresh token");
+            return;
+        }
+
         TokenType tokenType;
         try {
             tokenType = TokenType.valueOf(tokenTypeStr);

@@ -151,7 +151,7 @@ public class MemberRestController {
         String errorMessage = "";
         switch (loginFlag) {
             case SUCCESS:
-                this.loginAttemptCheckerAgent.loginSucceeded(memberId);
+//                this.loginAttemptCheckerAgent.loginSucceeded(memberId); // TODO: With Redis
                 log.info("로그인 성공 처리 완료: {}", memberId);
 
 
@@ -178,7 +178,7 @@ public class MemberRestController {
                 log.info("로그인 실패: {}", memberId);
         }
 
-        this.loginAttemptCheckerAgent.loginFailed(memberId);
+//        this.loginAttemptCheckerAgent.loginFailed(memberId); // TODO: With Redis
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ApiResponseFactory.createErrorResponse(errorMessage));
     }
