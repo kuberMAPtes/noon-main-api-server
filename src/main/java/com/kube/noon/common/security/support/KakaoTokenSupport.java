@@ -185,13 +185,25 @@ public class KakaoTokenSupport implements BearerTokenSupport {
 
     @Override
     public boolean isValidRefreshToken(String refreshToken) {
-        // TODO: Should check what happens if sending a request with expired refresh token to the kakao auth api
-        throw new UnsupportedOperationException();
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add(BODY_KEY_GRANT_TYPE, "refresh_token");
+        body.add(BODY_KEY_CLIENT_ID, this.apiKey);
+        body.add(BODY_KEY_REFRESH_TOKEN, refreshToken);
+
+        try {
+            RequestEntity.post(KAKAO_KAUTH_DOMAIN + KAKAO_OAUTH_TOKEN_PATH)
+                    .header(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=utf-8")
+                    .body(body);
+            return true;
+        } catch (HttpClientErrorException.BadRequest e) {
+            log.trace("Invalid refresh token={}", refreshToken, e);
+            return false;
+        }
     }
 
     @Override
     public boolean isRefreshToken(String token) {
-        return false;
+        return isValidRefreshToken(token);
     }
 
     @Override
