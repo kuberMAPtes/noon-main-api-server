@@ -49,7 +49,7 @@ public class JwtSupport implements BearerTokenSupport {
 
     @Override
     public TokenPair refreshToken(String refreshToken) throws InvalidRefreshTokenException {
-        if (!isValidRefreshToken(refreshToken)) {
+        if (refreshToken == null || !isValidRefreshToken(refreshToken)) {
             throw new InvalidRefreshTokenException("Invalid refresh token=" + refreshToken);
         }
         String memberId = extractMemberId(refreshToken);

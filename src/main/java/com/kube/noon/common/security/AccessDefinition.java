@@ -20,7 +20,8 @@ public class AccessDefinition {
             "/member/checkMemberId",
             "/member/addMember",
             "/member/sendAuthentificationNumber",
-            "/member/confirmAuthentificationNumber"
+            "/member/confirmAuthentificationNumber",
+            "/member/refresh"
     );
 
     public static final List<String> ALLOWED_TO_MEMBER = List.of(

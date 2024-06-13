@@ -5,6 +5,7 @@ import com.kube.noon.common.security.SecurityConstants;
 import com.kube.noon.common.security.TokenPair;
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.common.security.support.BearerTokenSupport;
+import com.kube.noon.common.security.support.InvalidRefreshTokenException;
 import com.kube.noon.member.dto.RequestDto.LoginRequestDto;
 import com.kube.noon.member.dto.RequestDto.MemberRelationshipSearchCriteriaRequestDto;
 import com.kube.noon.member.dto.RequestDto.MemberSearchCriteriaRequestDto;
@@ -128,6 +129,33 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("패스워드를 사용할 수 있습니다.", null));
     }
 
+    @GetMapping("/refresh")
+    public ResponseEntity<ApiResponse<Void>> refreshToken(
+            @CookieValue(value = "token_type", required = false) String tokenTypeStr,
+            @CookieValue(value = "refresh_token", required = false) String refreshToken,
+            HttpServletResponse response
+    ) {
+        TokenType tokenType;
+        try {
+            tokenType = TokenType.valueOf(tokenTypeStr);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid refresh token"), HttpStatus.FORBIDDEN);
+        }
+
+        for (BearerTokenSupport ts : this.tokenSupport) {
+            if (ts.supports(tokenType)) {
+                try {
+                    TokenPair tokenPair = ts.refreshToken(refreshToken);
+                    addTokenToCookie(response, tokenPair, tokenType);
+                    return new ResponseEntity<>(ApiResponseFactory.createResponse("Success", null), HttpStatus.OK);
+                } catch (InvalidRefreshTokenException e) {
+                    return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid refresh token"), HttpStatus.FORBIDDEN);
+                }
+            }
+        }
+        return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid token type"), HttpStatus.FORBIDDEN);
+    }
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<MemberDto>> login(@RequestBody LoginRequestDto dto, HttpServletResponse response) {
         log.info("로그인 요청: {}", dto);
@@ -160,9 +188,7 @@ public class MemberRestController {
                         .findAny()
                         .orElseThrow()
                         .generateToken(memberId);
-                response.addCookie(wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), tokenPair.getAccessToken()));
-                response.addCookie(wrapWithCookie(SecurityConstants.REFRESH_TOKEN_COOKIE_KEY.get(), tokenPair.getRefreshToken()));
-                response.addCookie(wrapWithCookie(SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get(), TokenType.NATIVE_TOKEN.name()));
+                addTokenToCookie(response, tokenPair, TokenType.NATIVE_TOKEN);
                 return ResponseEntity.ok()
                         .body(ApiResponseFactory.createResponse("로그인 성공", memberDto));
             case INCORRECT_ID:
@@ -181,6 +207,12 @@ public class MemberRestController {
 //        this.loginAttemptCheckerAgent.loginFailed(memberId); // TODO: With Redis
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ApiResponseFactory.createErrorResponse(errorMessage));
+    }
+
+    private void addTokenToCookie(HttpServletResponse response, TokenPair tokenPair, TokenType tokenType) {
+        response.addCookie(wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), tokenPair.getAccessToken()));
+        response.addCookie(wrapWithCookie(SecurityConstants.REFRESH_TOKEN_COOKIE_KEY.get(), tokenPair.getRefreshToken()));
+        response.addCookie(wrapWithCookie(SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get(), tokenType.name()));
     }
 
     /**

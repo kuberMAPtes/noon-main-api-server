@@ -43,6 +43,12 @@ public class TokenRefreshFilter extends OncePerRequestFilter {
         String tokenTypeStr = cookies.get(TOKEN_TYPE_COOKIE_KEY.get());
         filterChain.doFilter(request, response);
 
+        final String refreshTokenUri = "/member/refresh";
+        if (request.getRequestURI().equals(refreshTokenUri)) {
+            log.trace("Request for refreshing token, so no refresh executed in this filter");
+            return;
+        }
+
         if (refreshToken == null || tokenTypeStr == null) {
             log.trace("No previous refresh token");
             return;
