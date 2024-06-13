@@ -6,9 +6,8 @@ import com.kube.noon.common.security.TokenPair;
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.common.security.support.BearerTokenSupport;
 import com.kube.noon.common.security.support.InvalidRefreshTokenException;
-import com.kube.noon.member.dto.RequestDto.LoginRequestDto;
-import com.kube.noon.member.dto.RequestDto.MemberRelationshipSearchCriteriaRequestDto;
-import com.kube.noon.member.dto.RequestDto.MemberSearchCriteriaRequestDto;
+import com.kube.noon.common.security.support.KakaoTokenSupport;
+import com.kube.noon.member.dto.RequestDto.*;
 import com.kube.noon.member.dto.auth.googleLoginRequestDto;
 import com.kube.noon.member.dto.member.*;
 import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
@@ -41,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static com.kube.noon.member.controller.AESUtil.*;
 
 /**
  * 음? 왜 바로 ok만 내보내지? -> GlobalExceptionHandler에서 검증하고 있음
@@ -242,12 +243,38 @@ public class MemberRestController {
         TokenPair tokenPair = this.kakaoService.generateTokenPairAndAddMemberIfNotExists(authorizeCode);
         addTokenToCookie(response, tokenPair,TokenType.KAKAO_TOKEN);
 
+
+        String memberId = "";
+        for( BearerTokenSupport element : tokenSupport ){
+            if(element.supports(TokenType.KAKAO_TOKEN)){
+                memberId = ((KakaoTokenSupport) element).getMemberInformation(tokenPair.getAccessToken()).getMemberId();
+            }
+        }
+
+        List<String> encryptedMemberId =  encryptAES(memberId,STATIC_KEY);
+
+        Cookie cookie = new Cookie("Member-ID", encryptedMemberId.get(0));
+        cookie.setPath("/");
+        cookie.setMaxAge(60*60*24*7);
+        cookie.setHttpOnly(false);
+        cookie.setSecure(false);
+        response.addCookie(cookie);
+
+        Cookie cookie2 = new Cookie("IV", encryptedMemberId.get(1));
+        cookie2.setPath("/");
+        cookie2.setMaxAge(60*60*24*7);
+        cookie2.setHttpOnly(false);
+        cookie2.setSecure(false);
+        response.addCookie(cookie2);
+
+
         final String redirectClientUrl = "http://127.0.0.1:3000/member/kakaoNav?loginWay=" + "kakao";
         return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
                 .header(HttpHeaders.LOCATION, redirectClientUrl)
                 .build();
     }
 
+    @PostMapping("/googleLogin")
     public ResponseEntity<?> googleLogin(@RequestBody googleLoginRequestDto dto,HttpServletResponse response) {
         log.info("구글 로그인 요청: {}", dto);
 
@@ -366,17 +393,17 @@ public class MemberRestController {
     /**
      * 관리자가 사용
      */
-    @GetMapping("/getMember/{fromId}/{memberId}/")
-    public ResponseEntity<ApiResponse<MemberDto>> getMember(@PathVariable String fromId, @PathVariable String memberId) {
-        log.info("getMember" + fromId + " " + memberId);
-        MemberDto dto = memberService.findMemberById(fromId, memberId);
+    @PostMapping("/getMember")
+    public ResponseEntity<ApiResponse<MemberDto>> getMember(@RequestBody GetMemberRequestDto requestDto) {
+        log.info("getMember :: " + requestDto);
+        MemberDto dto = memberService.findMemberById(requestDto.getMemberId(), requestDto.getMemberId());
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 조회 성공", dto));
     }
 
-    @GetMapping("/getMemberProfile/{fromId}/{toId}")
-    public ResponseEntity<ApiResponse<MemberProfileDto>> getMemberProfile(@PathVariable String fromId, @PathVariable String toId) {
-        log.info("getMemberProfile" + fromId + " " + toId);
-        MemberProfileDto dto = memberService.findMemberProfileById(fromId, toId);
+    @PostMapping("/getMemberProfile")
+    public ResponseEntity<ApiResponse<MemberProfileDto>> getMemberProfile(@RequestBody GetMemberProfileRequestDto requestDto) {
+        log.info("getMemberProfile" +requestDto);
+        MemberProfileDto dto = memberService.findMemberProfileById(requestDto.getFromId(), requestDto.getToId());
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 프로필 조회 성공", dto));
     }
 
