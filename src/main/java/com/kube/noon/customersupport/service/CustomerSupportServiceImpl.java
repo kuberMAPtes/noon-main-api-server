@@ -30,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -187,10 +188,17 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
         //피신고자 계정 잠금 일수 연장
         Optional<Member> reportee = memberService.findMemberById(reportProcessingDto.getReporteeId());
         log.info("피신고자 정보={}", reportee.toString());
-
         UpdateMemberDto updateMemberDto = new UpdateMemberDto();
         BeanUtils.copyProperties(reportee.orElseThrow(), updateMemberDto);
-        updateMemberDto.setUnlockTime(reportee.orElseThrow().getUnlockTime().plusDays(UnlockDuration.valueOf(reportProcessingDto.getUnlockDuration()).getDays()));
+
+        LocalDateTime reporteeUnlockTime = reportee.orElseThrow().getUnlockTime();
+        int unlockDuration = UnlockDuration.valueOf(reportProcessingDto.getUnlockDuration()).getDays();
+
+        if(reporteeUnlockTime.isBefore(LocalDateTime.now())){
+            updateMemberDto.setUnlockTime(LocalDateTime.now().plusDays(unlockDuration));
+        }else{
+            updateMemberDto.setUnlockTime(reporteeUnlockTime.plusDays(unlockDuration));
+        }
 
         memberService.updateMember(updateMemberDto);
 
