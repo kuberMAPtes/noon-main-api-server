@@ -20,6 +20,7 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -102,17 +103,21 @@ public class KakaoTokenSupport implements BearerTokenSupport {
         urlEncodedBody.add(BODY_KEY_GRANT_TYPE, "refresh_token");
         urlEncodedBody.add(BODY_KEY_CLIENT_ID, this.apiKey);
         urlEncodedBody.add(BODY_KEY_REFRESH_TOKEN, refreshToken);
-        RequestEntity<MultiValueMap<String, String>> requestEntity =
-                RequestEntity.post(KAKAO_KAUTH_DOMAIN + KAKAO_OAUTH_TOKEN_PATH)
-                        .header(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=utf-8")
-                        .body(urlEncodedBody);
+
         try {
+            RequestEntity<MultiValueMap<String, String>> requestEntity =
+                    RequestEntity.post(KAKAO_KAUTH_DOMAIN + KAKAO_OAUTH_TOKEN_PATH)
+                            .header(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=utf-8")
+                            .body(urlEncodedBody);
             JSONObject responseBody =
                     new JSONObject(this.restTemplate.exchange(requestEntity, String.class).getBody());
+            log.trace("response={}", responseBody);
             String newAccessToken = responseBody.getString("access_token");
-            String newRefreshToken = responseBody.getString("refresh_token");
+            String newRefreshToken = responseBody.has("refresh_token")
+                    ? responseBody.getString("refresh_token")
+                    : refreshToken;
             return new TokenPair(newAccessToken, newRefreshToken);
-        } catch (JSONException e) {
+        } catch (HttpClientErrorException.BadRequest | JSONException e) {
             throw new InvalidRefreshTokenException("Invalid refresh token=" + refreshToken, e);
         }
     }
@@ -180,7 +185,8 @@ public class KakaoTokenSupport implements BearerTokenSupport {
 
     @Override
     public boolean isValidRefreshToken(String refreshToken) {
-        return false;
+        // TODO: Should check what happens if sending a request with expired refresh token to the kakao auth api
+        throw new UnsupportedOperationException();
     }
 
     @Override
