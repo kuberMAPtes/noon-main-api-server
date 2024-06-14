@@ -26,6 +26,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Random;
 
 /**
  *
@@ -57,10 +58,15 @@ public class MemberServiceImpl implements MemberService {
             });
 
             if (Boolean.TRUE.equals(dto.getSocialSignUp())) {
-                dto.setPwd("social_sign_up");
+                member.setPwd("social_sign_up");
+
+                if(member.getPhoneNumber().equals("010-0000-0000")){
+                    member.setPhoneNumber(RandomData.getRandomPhoneNumber()+"X");
+                }
+
             }
             memberRepository.addMember(member);
-            log.info("회원 추가 성공 : DTO {}", dto);
+            log.info("회원 추가 성공 : DTO {}", member);
         } catch (MemberCreationException e) {
             log.error("회원 추가 중 오류 발생: {}", dto, e);
             throw e;
@@ -112,7 +118,7 @@ public class MemberServiceImpl implements MemberService {
                                 log.info("MemberDto: {}", memberDto);
                                 return memberDto;
                             }))
-                    .orElseThrow(() -> new MemberNotFoundException("회원이 없습니다."));
+                    .orElse(null);
 
         } catch (MemberNotFoundException e) {
             log.error("회원 조회 중 오류 발생: FromID={}, MemberID={}", fromId, memberId, e);

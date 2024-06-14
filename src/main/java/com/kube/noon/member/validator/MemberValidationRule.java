@@ -32,28 +32,28 @@ public class MemberValidationRule {
 
         validationChain.addRule(AddMemberDto.class, dto -> {
 
-            System.out.println("DTO 좀 보자 :::: " + dto);
-            System.out.println("DTO 좀 보자 :::: " + dto.getClass());
+                    System.out.println("DTO 좀 보자 :::: " + dto);
+                    System.out.println("DTO 좀 보자 :::: " + dto.getClass());
 
-            memberScanner.imoDataNotNull(dto.getMemberId());
-            memberScanner.imoMemberIdNotExist(dto.getMemberId());
-            memberScanner.imoMemberIdPatternO(dto.getMemberId());
-            memberScanner.imoNotBadWord(dto.getMemberId());
+                    memberScanner.imoDataNotNull(dto.getMemberId());
+                    memberScanner.imoMemberIdNotExist(dto.getMemberId());
+                    memberScanner.imoMemberIdPatternO(dto.getMemberId());
+                    memberScanner.imoNotBadWord(dto.getMemberId());
 
-            memberScanner.imoDataNotNull(dto.getNickname());
-            memberScanner.imoNicknameNotAlreadyExist(dto.getNickname());
-            memberScanner.imoNicknamePatternO(dto.getNickname());
-            memberScanner.imoNotBadWord(dto.getNickname());
+                    memberScanner.imoDataNotNull(dto.getNickname());
+                    memberScanner.imoNicknameNotAlreadyExist(dto.getNickname());
+                    memberScanner.imoNicknamePatternO(dto.getNickname());
+                    memberScanner.imoNotBadWord(dto.getNickname());
 
-            memberScanner.imoDataNotNull(dto.getPhoneNumber());
-            memberScanner.imoPhoneNumberNotAlreadyExist(dto.getPhoneNumber());
-            memberScanner.imoPhoneNumberPatternO(dto.getPhoneNumber());
 
-            if (Boolean.FALSE.equals(dto.getSocialSignUp())) {
-                memberScanner.imoDataNotNull(dto.getPwd());
-                memberScanner.imoPwdPatternO(dto.getPwd());
-            }
-        }
+                    if (Boolean.FALSE.equals(dto.getSocialSignUp())) {
+                        memberScanner.imoDataNotNull(dto.getPhoneNumber());
+                        memberScanner.imoDataNotNull(dto.getPwd());
+                        memberScanner.imoPwdPatternO(dto.getPwd());
+                        memberScanner.imoPhoneNumberNotAlreadyExist(dto.getPhoneNumber());
+                        memberScanner.imoPhoneNumberPatternO(dto.getPhoneNumber());
+                    }
+                }
         );
 
         validationChain.addRule(AddMemberRelationshipDto.class, dto -> {
@@ -71,7 +71,6 @@ public class MemberValidationRule {
              */
 
 
-
         });
         //둘중하나
         validationChain.addRule(UpdateMemberDto.class, dto -> {
@@ -79,19 +78,19 @@ public class MemberValidationRule {
             memberScanner.imoNotBadWord(dto.getMemberId());
             memberScanner.imoNotBadWord(dto.getNickname());
 
-            if(dto.getMemberId()!=null) {
+            if (dto.getMemberId() != null) {
                 memberScanner.imoMemberIdPatternO(dto.getMemberId());
             }
-            if(dto.getNickname()!=null){
+            if (dto.getNickname() != null) {
                 memberScanner.imoNicknamePatternO(dto.getNickname());
             }
-            if(dto.getDajungScore()!=null){
+            if (dto.getDajungScore() != null) {
                 memberScanner.imoDajungScorePatternO(dto.getDajungScore());
             }
-            if(dto.getProfileIntro()!=null){
+            if (dto.getProfileIntro() != null) {
                 memberScanner.imoProfileIntroPatternO(dto.getProfileIntro());
             }
-            if(dto.getUnlockTime()!=null){
+            if (dto.getUnlockTime() != null) {
                 memberScanner.imoUnlockTimePatternO(dto.getUnlockTime());
             }
             //레인지는 정할 룰이 없다.
@@ -140,12 +139,11 @@ public class MemberValidationRule {
             memberScanner.imoDataNotNull(dto.getToId());
             memberScanner.imoDataNotNull(dto.getRelationshipType());
             memberScanner.imoMemberNotSame(dto.getFromId(), dto.getToId());
-            memberScanner.imoMemberRelationshipExist(dto.getFromId(),dto.getToId());
+            memberScanner.imoMemberRelationshipExist(dto.getFromId(), dto.getToId());
         });
 
 
     }//end of setRule
-
 
 
 }

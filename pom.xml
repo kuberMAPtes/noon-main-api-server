@@ -167,6 +167,8 @@
             <artifactId>mahout-mr</artifactId>
             <version>0.13.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt -->
+
     </dependencies>
 
     <build>
