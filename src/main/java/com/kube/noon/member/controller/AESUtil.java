@@ -2,7 +2,9 @@ package com.kube.noon.member.controller;
 
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
+import jakarta.annotation.PostConstruct;
 import jakarta.xml.bind.DatatypeConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.BadPaddingException;
@@ -19,16 +21,27 @@ import java.util.List;
 public class AESUtil {
 
     private static final String ALGORITHM = "AES";
-    public static final String STATIC_KEY = "1234567890123456"; // 16바이트 고정 키
+
+
+    private static String STATIC_KEY; // 16바이트 고정 키
+
+    @Value("${crypto.secret.key}")
+    private String staticKeyValue;
+
+    @PostConstruct
+    private void init() {
+        STATIC_KEY = staticKeyValue;
+    }
 
     private static SecretKeySpec getSecretKey() {
+
         return new SecretKeySpec(Base64.getEncoder().encode(STATIC_KEY.getBytes()), ALGORITHM);
     }
 
-    public static List<String> encryptAES(String data, String secretKey) {
+    public static List<String> encryptAES(String data) {
         try {
             //시크릿을 UTF8 인코딩으로 바이트 배열로 변환
-            byte[] secretKeys = secretKey.getBytes(StandardCharsets.UTF_8);
+            byte[] secretKeys = STATIC_KEY.getBytes(StandardCharsets.UTF_8);
             // AES/CBC/PKCS5Padding 알고리즘을 사용하는 Cipher 객체 생성
             final SecretKeySpec secret = new SecretKeySpec(secretKeys, "AES");
             // 암호화 모드로 초기화
@@ -55,7 +68,7 @@ public class AESUtil {
         }
     }
 
-    public static List<String> decryptAES(List<String> base64Data, String secretKey) {
+    public static List<String> decryptAES(List<String> base64Data) {
         try {
             String ivBase64 = base64Data.get(0);
             String cipherTextBase64 = base64Data.get(1);
@@ -65,7 +78,7 @@ public class AESUtil {
             byte[] cipherText = Base64.getDecoder().decode(cipherTextBase64);
 
             //시크릿을 UTF8 인코딩으로 바이트 배열로 변환
-            byte[] secretKeys = secretKey.getBytes(StandardCharsets.UTF_8);
+            byte[] secretKeys = STATIC_KEY.getBytes(StandardCharsets.UTF_8);
 
             // AES/CBC/PKCS5Padding 알고리즘을 사용하는 Cipher 객체 생성
             final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
@@ -88,14 +101,14 @@ public class AESUtil {
 
     public static void main(String[] args) {
         String originalText = "Hello, World!";
-        String secretKey = "1234567890123456";
+        String secretKey = "g5j4ti8e3n1q9m6i";
 
         // AESUtil을 사용하여 데이터 암호화
-        List<String> encryptedData = AESUtil.encryptAES(originalText, secretKey);
+        List<String> encryptedData = AESUtil.encryptAES(originalText);
         System.out.println("Encrypted Data: " + encryptedData);
 
         // 암호화된 데이터와 IV를 전달하여 복호화
-        List<String> decryptedData = AESUtil.decryptAES(encryptedData, secretKey);
+        List<String> decryptedData = AESUtil.decryptAES(encryptedData);
         System.out.println("Decrypted Data: " + decryptedData);
 
         System.out.println("STATIC_KEY" +  STATIC_KEY);

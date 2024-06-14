@@ -172,7 +172,7 @@ public class MemberRestController {
             loginFlag = LoginFlag.INCORRECT_ID;
         } else {
             if (memberDto.getPwd().equals(dto.getPwd())) {
-                log.info("로그인 성공: {}", memberId);
+                log.info("로그인 업무: {}", memberId);
                 loginFlag = LoginFlag.SUCCESS;
             } else {
                 log.info("비밀번호 불일치: {} {} 원래 아이디 비번 : {} {} ", memberId, dto.getPwd(), memberDto.getMemberId(), memberDto.getPwd());
@@ -184,7 +184,7 @@ public class MemberRestController {
         switch (loginFlag) {
             case SUCCESS:
 //                this.loginAttemptCheckerAgent.loginSucceeded(memberId); // TODO: With Redis
-                log.info("로그인 성공 처리 완료: {}", memberId);
+                log.info("로그인 업무 처리 완료: {}", memberId);
 
 
                 TokenPair tokenPair = this.tokenSupport.stream()
@@ -194,7 +194,7 @@ public class MemberRestController {
                         .generateToken(memberId);
                 addTokenToCookie(response, tokenPair, TokenType.NATIVE_TOKEN);
                 return ResponseEntity.ok()
-                        .body(ApiResponseFactory.createResponse("로그인 성공", memberDto));
+                        .body(ApiResponseFactory.createResponse("로그인 업무", memberDto));
             case INCORRECT_ID:
                 errorMessage = "존재하지 않는 아이디입니다.";
                 log.info("존재하지 않는 아이디: {}", memberId);
@@ -251,16 +251,20 @@ public class MemberRestController {
             }
         }
 
-        List<String> encryptedMemberId =  encryptAES(memberId,STATIC_KEY);
+        if(memberId.isEmpty()){
+            memberId = memberService.findMemberById(memberId).get().getMemberId();
+        }
 
-        Cookie cookie = new Cookie("Member-ID", encryptedMemberId.get(0));
+        List<String> encryptedMemberId =  encryptAES(memberId);
+
+        Cookie cookie = new Cookie("IV", encryptedMemberId.get(0));
         cookie.setPath("/");
         cookie.setMaxAge(60*60*24*7);
         cookie.setHttpOnly(false);
         cookie.setSecure(false);
         response.addCookie(cookie);
 
-        Cookie cookie2 = new Cookie("IV", encryptedMemberId.get(1));
+        Cookie cookie2 = new Cookie("Member-ID", encryptedMemberId.get(1));
         cookie2.setPath("/");
         cookie2.setMaxAge(60*60*24*7);
         cookie2.setHttpOnly(false);
@@ -298,7 +302,7 @@ public class MemberRestController {
 
 //        addTokenToCookie();
 
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("로그인 성공", memberDtoAtomicReference.get()));
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("로그인 업무", memberDtoAtomicReference.get()));
     }
 
     @PostMapping("/logout")
@@ -324,7 +328,7 @@ public class MemberRestController {
             }
         }
 
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("로그아웃 성공", null));
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("로그아웃 업무", null));
     }
 
     private Cookie getDestructionCookie(String key) {
@@ -352,42 +356,42 @@ public class MemberRestController {
         log.info("왜 로그가 안찍혀");
         memberService.addMember(dto);
 
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원가입 성공", null));
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원가입 업무", null));
     }
 
     @PostMapping("/updatePassword")
     public ResponseEntity<ApiResponse<Void>> updatePassword(@RequestBody UpdatePasswordDto requestDto) {
         log.info("updatePassword" + requestDto);
         memberService.updatePassword(requestDto);
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("비밀번호 변경 성공", null));
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("비밀번호 변경 업무", null));
     }
 
     @PostMapping("/updatePhoneNumber")
     public ResponseEntity<ApiResponse<Void>> updatePhoneNumber(@RequestBody UpdatePhoneNumberDto requestDto) {
         log.info("updatePhoneNumber" + requestDto);
         memberService.updatePhoneNumber(requestDto);
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("전화번호 변경 성공", null));
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("전화번호 변경 업무", null));
     }
 
     @PostMapping("/updateProfilePhoto")
     public ResponseEntity<ApiResponse<Void>> updateProfilePhoto(@RequestBody UpdateMemberProfilePhotoUrlDto requestDto) {
         log.info("updateProfilePhoto" + requestDto);
         memberService.updateMemberProfilePhotoUrl(requestDto);
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("프로필 사진 변경 성공", null));
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("프로필 사진 변경 업무", null));
     }
 
     @PostMapping("/updateProfileIntro")
     public ResponseEntity<ApiResponse<Void>> updateProfileIntro(@RequestBody UpdateMemberProfileIntroDto requestDto) {
         log.info("updateProfileIntro" + requestDto);
         memberService.updateMemberProfileIntro(requestDto);
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("프로필 소개 변경 성공", null));
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("프로필 소개 변경 업무", null));
     }
 
     @PostMapping("/updateDajungScore")
     public ResponseEntity<ApiResponse<Void>> updateDajungScore(@RequestBody UpdateMemberDajungScoreDto requestDto) {
         log.info("updateDajungScore" + requestDto);
         memberService.updateDajungScore(requestDto);
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("다정점수 변경 성공", null));
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("다정점수 변경 업무", null));
     }
 
     /**
@@ -397,14 +401,16 @@ public class MemberRestController {
     public ResponseEntity<ApiResponse<MemberDto>> getMember(@RequestBody GetMemberRequestDto requestDto) {
         log.info("getMember :: " + requestDto);
         MemberDto dto = memberService.findMemberById(requestDto.getMemberId(), requestDto.getMemberId());
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 조회 성공", dto));
+        System.out.println("회원조회업무 :: "+dto);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 조회 업무", dto));
     }
 
     @PostMapping("/getMemberProfile")
     public ResponseEntity<ApiResponse<MemberProfileDto>> getMemberProfile(@RequestBody GetMemberProfileRequestDto requestDto) {
         log.info("getMemberProfile" +requestDto);
         MemberProfileDto dto = memberService.findMemberProfileById(requestDto.getFromId(), requestDto.getToId());
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 프로필 조회 성공", dto));
+        System.out.println(dto.toString());
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 프로필 조회 업무", dto));
     }
 
     @PostMapping("/listMember")
@@ -419,7 +425,7 @@ public class MemberRestController {
     public ResponseEntity<ApiResponse<Void>> deleteMember(@PathVariable String memberId) {
         log.info("deleteMember" + memberId);
         memberService.deleteMember(memberId);
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원이 성공적으로 삭제되었습니다.", null));
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원이 업무적으로 삭제되었습니다.", null));
     }
 
     @PostMapping("/addMemberRelationship")
@@ -427,7 +433,7 @@ public class MemberRestController {
         log.info("addMemberRelationship" + dto);
         memberService.addMemberRelationship(dto);
         return ResponseEntity.ok(
-                ApiResponseFactory.createResponse("관계가 성공적으로 추가되었습니다.", null)
+                ApiResponseFactory.createResponse("관계가 업무적으로 추가되었습니다.", null)
         );
     }
 

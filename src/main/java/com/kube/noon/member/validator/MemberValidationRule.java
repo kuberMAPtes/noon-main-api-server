@@ -45,13 +45,13 @@ public class MemberValidationRule {
             memberScanner.imoNicknamePatternO(dto.getNickname());
             memberScanner.imoNotBadWord(dto.getNickname());
 
-            memberScanner.imoDataNotNull(dto.getPhoneNumber());
-            memberScanner.imoPhoneNumberNotAlreadyExist(dto.getPhoneNumber());
-            memberScanner.imoPhoneNumberPatternO(dto.getPhoneNumber());
 
             if (Boolean.FALSE.equals(dto.getSocialSignUp())) {
+                memberScanner.imoDataNotNull(dto.getPhoneNumber());
                 memberScanner.imoDataNotNull(dto.getPwd());
                 memberScanner.imoPwdPatternO(dto.getPwd());
+                memberScanner.imoPhoneNumberNotAlreadyExist(dto.getPhoneNumber());
+                memberScanner.imoPhoneNumberPatternO(dto.getPhoneNumber());
             }
         }
         );
