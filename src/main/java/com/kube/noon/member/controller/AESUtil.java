@@ -98,30 +98,4 @@ public class AESUtil {
             throw new RuntimeException(e);
         }
     }
-
-    public static void main(String[] args) {
-        String originalText = "Hello, World!";
-        String secretKey = "g5j4ti8e3n1q9m6i";
-
-        // AESUtil을 사용하여 데이터 암호화
-        List<String> encryptedData = AESUtil.encryptAES(originalText);
-        System.out.println("Encrypted Data: " + encryptedData);
-
-        // 암호화된 데이터와 IV를 전달하여 복호화
-        List<String> decryptedData = AESUtil.decryptAES(encryptedData);
-        System.out.println("Decrypted Data: " + decryptedData);
-
-        System.out.println("STATIC_KEY" +  STATIC_KEY);
-        //스태틱키가 UTF8 문자열이 아니라면 encodedKey와 decodedKey가 다를 수 있다.
-        //문자열을 영국영어 호주영어라고 생각하고, 바이트를 한국어라고 생각해보자.
-        //문자열은 그냥 봐서 이게 호주영어인지 영국영어인지 알 수가 없다.
-        //UTF8은 예를 들어 호주영어<->한 번역기이다. 호주영어를 ISO로 번역하면
-        //ISO는 예를 들어 영국영어<->한 번역기이다.
-        String encodedKey = new String(STATIC_KEY.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
-        System.out.println("Encoded Key: " + encodedKey);
-        String decodedKey = new String(encodedKey.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
-        System.out.println("Decoded Key: " + decodedKey);
-        String encodedKey2 = Base64.getEncoder().encodeToString(decodedKey.getBytes());
-    }
-
 }

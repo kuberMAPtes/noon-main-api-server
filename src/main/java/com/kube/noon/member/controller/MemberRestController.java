@@ -22,6 +22,9 @@ import com.kube.noon.member.service.AuthService;
 import com.kube.noon.member.service.KakaoService;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -49,6 +52,7 @@ import static com.kube.noon.member.controller.AESUtil.*;
  * <p>
  * 잘못된 설계가 하나 있음 RequestDto로 쓰이는 Dto중에 FromId가 존재하는 것들이 있음. RequestDto에서 FromId를 꺼내서 쓰면 절대 안됨 비었음.
  */
+@Tag(name = "Member", description = "회원 관련 API")
 @Slf4j
 @RestController
 @RequestMapping("/member")
@@ -69,7 +73,6 @@ public class MemberRestController {
     @Value("${pageSize}")
     int pageSize;
 
-
     // Constructor
     public MemberRestController(@Qualifier("memberServiceImpl") MemberService memberService,
                                 @Qualifier("loginAttemptCheckerAgent") LoginAttemptCheckerAgent loginAttemptCheckerAgent,
@@ -84,7 +87,17 @@ public class MemberRestController {
         this.tokenSupport = tokenSupport;
     }
 
-
+    @Operation(summary = "문자날리기", description = "문자날립니다")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "업데이트 성공"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "유효하지 않은 파라미터"
+            )
+    })
     @GetMapping("/sendAuthentificationNumber")
     public ResponseEntity<ApiResponse<Void>> sendAuthentificationNumber(@RequestParam String phoneNumber) {
         log.info("sendAuthentificationNumber :: " + phoneNumber);
@@ -92,6 +105,12 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse(phoneNumber + "로 인증 번호가 전송되었습니다.", null));
     }
 
+
+    @Operation(summary = "인증 번호 확인", description = "인증 번호를 확인합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "인증이 확인되었습니다."),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "잘못된 인증 번호입니다.")
+    })
     @GetMapping("/confirmAuthentificationNumber")
     public ResponseEntity<ApiResponse<Void>> confirmAuthentificationNumber(@RequestParam String phoneNumber, @RequestParam String authNumber) {
         log.info("confirmAuthentificationNumber :: " + phoneNumber + " " + authNumber);
@@ -103,6 +122,12 @@ public class MemberRestController {
         }
     }
 
+
+    @Operation(summary = "회원 ID 확인", description = "회원 ID의 유효성을 확인합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 ID를 사용할 수 있습니다."),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 회원 ID")
+    })
     @GetMapping("/checkMemberId")
     public ResponseEntity<ApiResponse<String>> checkMemberId(@RequestParam String memberId) {
         log.info("checkMemberId :: " + memberId);
@@ -111,6 +136,12 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 ID를 사용할 수 있습니다.", null));
     }
 
+
+    @Operation(summary = "닉네임 확인", description = "닉네임의 유효성을 확인합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "닉네임을 사용할 수 있습니다."),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 닉네임")
+    })
     @GetMapping("/checkNickname")
     public ResponseEntity<ApiResponse<String>> checkNickname(@RequestParam String nickname) {
         log.info("checkNickname :: " + nickname);
@@ -119,6 +150,12 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("닉네임을 사용할 수 있습니다.", null));
     }
 
+
+    @Operation(summary = "전화번호 확인", description = "전화번호의 유효성을 확인합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "전화번호를 사용할 수 있습니다."),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 전화번호")
+    })
     @GetMapping("/checkPhoneNumber")
     public ResponseEntity<ApiResponse<String>> checkPhoneNumber(@RequestParam String phoneNumber) {
         log.info("checkPhoneNumber :: " + phoneNumber);
@@ -126,6 +163,12 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("전화번호를 사용할 수 있습니다.", null));
     }
 
+
+    @Operation(summary = "비밀번호 확인", description = "회원 ID와 비밀번호의 유효성을 확인합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "패스워드를 사용할 수 있습니다."),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 패스워드")
+    })
     @GetMapping("/checkPassword")
     public ResponseEntity<ApiResponse<String>> checkPassword(@RequestParam String memberId, @RequestParam String password) {
         log.info("checkPassword :: " + memberId + " " + password);
@@ -133,6 +176,12 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("패스워드를 사용할 수 있습니다.", null));
     }
 
+
+    @Operation(summary = "토큰 갱신", description = "리프레시 토큰을 사용하여 액세스 토큰을 갱신합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "토큰 갱신 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "유효하지 않은 리프레시 토큰")
+    })
     @GetMapping("/refresh")
     public ResponseEntity<ApiResponse<Void>> refreshToken(
             @CookieValue(value = "token_type", required = false) String tokenTypeStr,
@@ -160,6 +209,11 @@ public class MemberRestController {
         return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid token type"), HttpStatus.FORBIDDEN);
     }
 
+    @Operation(summary = "로그인", description = "사용자가 아이디와 비밀번호를 통해 로그인합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그인 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "로그인 실패")
+    })
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<MemberDto>> login(@RequestBody LoginRequestDto dto, HttpServletResponse response) {
         log.info("로그인 요청: {}", dto);
@@ -235,38 +289,43 @@ public class MemberRestController {
      * 2. 얻은 토큰으로 멤버정보얻기
      * 3. 얻은 정보로 처음이면 회원가입시키기, 있으면 로그인
      */
+    @Operation(summary = "카카오 로그인", description = "사용자가 카카오 로그인 인증을 마친 후 토큰을 통해 로그인합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "302", description = "카카오 로그인 성공 및 리다이렉트"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "카카오 로그인 실패")
+    })
     @RequestMapping(value = "kakaoLogin", method = RequestMethod.GET)
     public ResponseEntity<ApiResponse<String>> kakaoLogin(@RequestParam(value = "code") String authorizeCode,
                                                           HttpServletResponse response) throws Exception {
         log.info("카카오 로그인 요청: code={}", authorizeCode);
 
         TokenPair tokenPair = this.kakaoService.generateTokenPairAndAddMemberIfNotExists(authorizeCode);
-        addTokenToCookie(response, tokenPair,TokenType.KAKAO_TOKEN);
+        addTokenToCookie(response, tokenPair, TokenType.KAKAO_TOKEN);
 
 
         String memberId = "";
-        for( BearerTokenSupport element : tokenSupport ){
-            if(element.supports(TokenType.KAKAO_TOKEN)){
+        for (BearerTokenSupport element : tokenSupport) {
+            if (element.supports(TokenType.KAKAO_TOKEN)) {
                 memberId = ((KakaoTokenSupport) element).getMemberInformation(tokenPair.getAccessToken()).getMemberId();
             }
         }
 
-        if(memberId.isEmpty()){
+        if (memberId.isEmpty()) {
             memberId = memberService.findMemberById(memberId).get().getMemberId();
         }
 
-        List<String> encryptedMemberId =  encryptAES(memberId);
+        List<String> encryptedMemberId = encryptAES(memberId);
 
         Cookie cookie = new Cookie("IV", encryptedMemberId.get(0));
         cookie.setPath("/");
-        cookie.setMaxAge(60*60*24*7);
+        cookie.setMaxAge(60 * 60 * 24 * 7);
         cookie.setHttpOnly(false);
         cookie.setSecure(false);
         response.addCookie(cookie);
 
         Cookie cookie2 = new Cookie("Member-ID", encryptedMemberId.get(1));
         cookie2.setPath("/");
-        cookie2.setMaxAge(60*60*24*7);
+        cookie2.setMaxAge(60 * 60 * 24 * 7);
         cookie2.setHttpOnly(false);
         cookie2.setSecure(false);
         response.addCookie(cookie2);
@@ -278,8 +337,13 @@ public class MemberRestController {
                 .build();
     }
 
+    @Operation(summary = "구글 로그인", description = "사용자가 구글 로그인 인증을 마친 후 토큰을 통해 로그인합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "구글 로그인 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "구글 로그인 실패")
+    })
     @PostMapping("/googleLogin")
-    public ResponseEntity<?> googleLogin(@RequestBody googleLoginRequestDto dto,HttpServletResponse response) {
+    public ResponseEntity<?> googleLogin(@RequestBody googleLoginRequestDto dto, HttpServletResponse response) {
         log.info("구글 로그인 요청: {}", dto);
 
         AtomicReference<MemberDto> memberDtoAtomicReference = new AtomicReference<>();
@@ -305,6 +369,11 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("로그인 업무", memberDtoAtomicReference.get()));
     }
 
+    @Operation(summary = "로그아웃", description = "사용자가 로그아웃합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "로그아웃 실패")
+    })
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
             @CookieValue(value = "token_type", required = false) String tokenTypeStr,
@@ -338,7 +407,11 @@ public class MemberRestController {
         return cookie;
     }
 
-    // 체크 : 완료
+    @Operation(summary = "회원 가입", description = "새로운 사용자를 회원으로 등록합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원가입 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원가입 실패")
+    })
     @PostMapping("/addMember")
     public ResponseEntity<ApiResponse<?>> addMember(@Valid @RequestBody AddMemberDto dto, BindingResult bindingResult) {
         log.info("addMember" + dto + " " + bindingResult);
@@ -359,6 +432,11 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원가입 업무", null));
     }
 
+    @Operation(summary = "비밀번호 변경", description = "사용자의 비밀번호를 변경합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "비밀번호 변경 실패")
+    })
     @PostMapping("/updatePassword")
     public ResponseEntity<ApiResponse<Void>> updatePassword(@RequestBody UpdatePasswordDto requestDto) {
         log.info("updatePassword" + requestDto);
@@ -366,6 +444,11 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("비밀번호 변경 업무", null));
     }
 
+    @Operation(summary = "전화번호 변경", description = "사용자의 전화번호를 변경합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "전화번호 변경 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "전화번호 변경 실패")
+    })
     @PostMapping("/updatePhoneNumber")
     public ResponseEntity<ApiResponse<Void>> updatePhoneNumber(@RequestBody UpdatePhoneNumberDto requestDto) {
         log.info("updatePhoneNumber" + requestDto);
@@ -373,6 +456,11 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("전화번호 변경 업무", null));
     }
 
+    @Operation(summary = "프로필 사진 변경", description = "사용자의 프로필 사진을 변경합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "프로필 사진 변경 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "프로필 사진 변경 실패")
+    })
     @PostMapping("/updateProfilePhoto")
     public ResponseEntity<ApiResponse<Void>> updateProfilePhoto(@RequestBody UpdateMemberProfilePhotoUrlDto requestDto) {
         log.info("updateProfilePhoto" + requestDto);
@@ -380,6 +468,11 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("프로필 사진 변경 업무", null));
     }
 
+    @Operation(summary = "프로필 소개 변경", description = "사용자의 프로필 소개를 변경합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "프로필 소개 변경 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "프로필 소개 변경 실패")
+    })
     @PostMapping("/updateProfileIntro")
     public ResponseEntity<ApiResponse<Void>> updateProfileIntro(@RequestBody UpdateMemberProfileIntroDto requestDto) {
         log.info("updateProfileIntro" + requestDto);
@@ -387,6 +480,11 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("프로필 소개 변경 업무", null));
     }
 
+    @Operation(summary = "다정점수 변경", description = "사용자의 다정점수를 변경합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "다정점수 변경 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "다정점수 변경 실패")
+    })
     @PostMapping("/updateDajungScore")
     public ResponseEntity<ApiResponse<Void>> updateDajungScore(@RequestBody UpdateMemberDajungScoreDto requestDto) {
         log.info("updateDajungScore" + requestDto);
@@ -397,22 +495,37 @@ public class MemberRestController {
     /**
      * 관리자가 사용
      */
+    @Operation(summary = "회원 조회", description = "관리자가 사용자를 조회합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원 조회 실패")
+    })
     @PostMapping("/getMember")
     public ResponseEntity<ApiResponse<MemberDto>> getMember(@RequestBody GetMemberRequestDto requestDto) {
         log.info("getMember :: " + requestDto);
         MemberDto dto = memberService.findMemberById(requestDto.getMemberId(), requestDto.getMemberId());
-        System.out.println("회원조회업무 :: "+dto);
+        System.out.println("회원조회업무 :: " + dto);
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 조회 업무", dto));
     }
 
+    @Operation(summary = "회원 프로필 조회", description = "사용자의 프로필을 조회합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 프로필 조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원 프로필 조회 실패")
+    })
     @PostMapping("/getMemberProfile")
     public ResponseEntity<ApiResponse<MemberProfileDto>> getMemberProfile(@RequestBody GetMemberProfileRequestDto requestDto) {
-        log.info("getMemberProfile" +requestDto);
+        log.info("getMemberProfile" + requestDto);
         MemberProfileDto dto = memberService.findMemberProfileById(requestDto.getFromId(), requestDto.getToId());
         System.out.println(dto.toString());
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 프로필 조회 업무", dto));
     }
 
+    @Operation(summary = "회원 목록 조회", description = "사용자 목록을 조회합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 목록 조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원 목록 조회 실패")
+    })
     @PostMapping("/listMember")
     public ResponseEntity<Page<MemberDto>> listMember(@RequestBody MemberSearchCriteriaRequestDto requestDto) {
         log.info("listMember" + requestDto);
@@ -421,6 +534,11 @@ public class MemberRestController {
         return ResponseEntity.ok(members);
     }
 
+    @Operation(summary = "회원 삭제", description = "관리자가 사용자를 삭제합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 삭제 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원 삭제 실패")
+    })
     @PostMapping("/deleteMember/{memberId}")
     public ResponseEntity<ApiResponse<Void>> deleteMember(@PathVariable String memberId) {
         log.info("deleteMember" + memberId);
@@ -428,6 +546,11 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원이 업무적으로 삭제되었습니다.", null));
     }
 
+    @Operation(summary = "회원 관계 추가", description = "사용자 간의 관계를 추가합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 관계 추가 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원 관계 추가 실패")
+    })
     @PostMapping("/addMemberRelationship")
     public ResponseEntity<ApiResponse<String>> addMemberRelationship(@RequestBody AddMemberRelationshipDto dto) {
         log.info("addMemberRelationship" + dto);
@@ -437,6 +560,11 @@ public class MemberRestController {
         );
     }
 
+    @Operation(summary = "회원 관계 목록 조회", description = "사용자 간의 관계 목록을 조회합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 관계 목록 조회 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원 관계 목록 조회 실패")
+    })
     @PostMapping("/getMemberRelationshipList")
     public ResponseEntity<Page<MemberRelationshipDto>> getMemberRelationshipList(@RequestBody MemberRelationshipSearchCriteriaRequestDto requestDto) {
         log.info("getMemberRelationshipList" + requestDto);
@@ -445,6 +573,11 @@ public class MemberRestController {
         return ResponseEntity.ok(relationships);
     }
 
+    @Operation(summary = "회원 관계 삭제", description = "사용자 간의 관계를 삭제합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 관계 삭제 성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원 관계 삭제 실패")
+    })
     @PostMapping("/deleteMemberRelationship/{fromId}/{toId}")
     public ResponseEntity<ApiResponse<Void>> deleteMemberRelationship(
             @RequestBody DeleteMemberRelationshipDto requestDto,
