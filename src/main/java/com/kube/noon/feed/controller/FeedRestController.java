@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -78,7 +79,8 @@ public class FeedRestController {
 
     @Operation(summary = "피드 추가", description = "피드를 하나 추가합니다.")
     @PostMapping("/addFeed")
-    public int addFeed(@RequestBody FeedDto feedDto) {
+    public int addFeed(
+            @RequestBody FeedDto feedDto) {
         int feedId = feedService.addFeed(feedDto);
 
         return feedId;
@@ -141,9 +143,11 @@ public class FeedRestController {
     }
 
     @Operation(summary = "피드 내 첨부파일 추가", description = "피드에 첨부파일 하나를 추가합니다.")
-    @PostMapping("/addFeedAttachment")
-    public int addFeedAttachment(@RequestBody FeedAttachmentDto feedAttachmentDto) {
-        int attachmentId = feedSubService.addFeedAttachment(feedAttachmentDto);
+    @PostMapping("/addFeedAttachment/{feedId}")
+    public int addFeedAttachment(
+            @RequestParam("multipartFile") List<MultipartFile> multiFileList,
+            @Parameter(description = "첨부파일을 추가할 피드ID") @PathVariable("feedId") int feedId) {
+        int attachmentId = feedSubService.addFeedAttachment(feedId, multiFileList);
 
         return attachmentId;
     }
