@@ -65,13 +65,9 @@ public class FeedSubServiceImpl implements FeedSubService {
             if(multipartFileList != null && multipartFileList.size() > 0) {
                 for(MultipartFile file : multipartFileList) {
                     String originalFileName = file.getOriginalFilename();
-                    InputStreamEntity entitiy = new InputStreamEntity(
-                            file.getInputStream(),
-                            file.getSize(),
-                            ContentType.DEFAULT_BINARY
-                    );
+
                     // Object Storage에 넣기
-                    String Url = objectStorageAPI.putObject(originalFileName, entitiy);
+                    String Url = objectStorageAPI.putObject(originalFileName, file);
 
                     // DB에 넣기
                     feedAttachmentRepository.save(FeedAttachment.builder()
