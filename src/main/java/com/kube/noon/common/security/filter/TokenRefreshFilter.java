@@ -16,10 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.kube.noon.common.security.SecurityConstants.*;
 
@@ -31,6 +28,13 @@ import static com.kube.noon.common.security.SecurityConstants.*;
 @Slf4j
 @RequiredArgsConstructor
 public class TokenRefreshFilter extends OncePerRequestFilter {
+    private static final Set<String> URI_NOT_REFRESH_TOKEN = Set.of(
+            "/member/refresh",
+            "/member/login",
+            "/member/logout",
+            "/member/kakaoLogin"
+    );
+
     private final List<BearerTokenSupport> tokenSupportList;
 
     @Override
@@ -42,9 +46,10 @@ public class TokenRefreshFilter extends OncePerRequestFilter {
         String tokenTypeStr = cookies.get(TOKEN_TYPE_COOKIE_KEY.get());
         filterChain.doFilter(request, response);
 
-        final String refreshTokenUri = "/member/refresh";
-        if (request.getRequestURI().equals(refreshTokenUri)) {
-            log.trace("Request for refreshing token, so no refresh executed in this filter");
+        log.trace("request.getRequestURI()={}", request.getRequestURI());
+        if (URI_NOT_REFRESH_TOKEN.contains(request.getRequestURI())) {
+
+            log.trace("Token shouldn't be refreshed for the URI: {}", request.getRequestURI());
             return;
         }
 
@@ -61,23 +66,18 @@ public class TokenRefreshFilter extends OncePerRequestFilter {
             return;
         }
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            BearerTokenSupport tokenSupport = this.tokenSupportList.stream().filter((ts) -> ts.supports(tokenType)).findAny().orElseThrow();
-            TokenPair tokenPair;
-            try {
-                tokenPair = tokenSupport.refreshToken(refreshToken);
-            } catch (InvalidRefreshTokenException e) {
-                log.trace("Invalid refresh token={}", request, e);
-                return;
-            }
-            response.addCookie(wrapWithHttpOnlyCookie(ACCESS_TOKEN_COOKIE_KEY.get(), tokenPair.getAccessToken()));
-            response.addCookie(wrapWithHttpOnlyCookie(REFRESH_TOKEN_COOKIE_KEY.get(), tokenPair.getRefreshToken()));
-            response.addCookie(wrapWithCookie(TOKEN_TYPE_COOKIE_KEY.get(), String.valueOf(tokenType)));
-            log.info("New JWT Token in Cookie");
-        } else {
-            log.info("Not authenticated");
+        BearerTokenSupport tokenSupport = this.tokenSupportList.stream().filter((ts) -> ts.supports(tokenType)).findAny().orElseThrow();
+        TokenPair tokenPair;
+        try {
+            tokenPair = tokenSupport.refreshToken(refreshToken);
+        } catch (InvalidRefreshTokenException e) {
+            log.trace("Invalid refresh token={}", refreshToken, e);
+            return;
         }
+        response.addCookie(wrapWithHttpOnlyCookie(ACCESS_TOKEN_COOKIE_KEY.get(), tokenPair.getAccessToken()));
+        response.addCookie(wrapWithHttpOnlyCookie(REFRESH_TOKEN_COOKIE_KEY.get(), tokenPair.getRefreshToken()));
+        response.addCookie(wrapWithCookie(TOKEN_TYPE_COOKIE_KEY.get(), String.valueOf(tokenType)));
+        log.info("New JWT Token in Cookie");
     }
 
     private Map<String, String> getCookiesOnDemand(HttpServletRequest request) {
