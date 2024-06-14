@@ -1,5 +1,7 @@
 package com.kube.noon.feed.controller;
 
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.kube.noon.common.ObjectStorageAPI;
 import com.kube.noon.feed.dto.*;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.feed.service.FeedStatisticsService;
@@ -9,9 +11,16 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @Log4j2
@@ -25,6 +34,7 @@ public class FeedRestController {
     private final FeedSubService feedSubService;
 
     private static final int PAGE_SIZE = 10;        // 일단 static final로 설정, 나중에 메타데이터로 뺄 예정
+    private final ObjectStorageAPI objectStorageAPI;
 
     @Operation(summary = "회원 피드 목록 조회", description = "회원이 작성한 피드 목록을 가져옵니다.")
     @GetMapping("/getFeedListByMember")
@@ -137,9 +147,32 @@ public class FeedRestController {
     @Operation(summary = "피드의 첨부파일 목록 조회", description = "피드에 첨부된 파일 목록을 가져옵니다.")
     @GetMapping("/getFeedAttachmentList")
     public List<FeedAttachmentDto> getFeedAttachmentList(@Parameter(description = "첨부파일을 조회할 피드 ID") @RequestParam int feedId) {
-        List<FeedAttachmentDto> result = feedSubService.getFeedAttachmentList(feedId);
+        List<FeedAttachmentDto> feedAttachmentDtoList = feedSubService.getFeedAttachmentList(feedId);
 
-        return result;
+        return feedAttachmentDtoList;
+    }
+
+    @Operation(summary = "피드의 첨부파일 하나 조회", description = "피드에 첨부된 파일 하나를 만듭니다.")
+    @GetMapping("/getFeedAttachment")
+    public ResponseEntity<byte[]> getFeedAttachment(@Parameter(description = "첨부파일 ID") @RequestParam int attachmentId) {
+        FeedAttachmentDto feedAttachmentDto = feedSubService.getFeedAttachment(attachmentId);
+
+        // Data insert
+        String[] fileNames = feedAttachmentDto.getFileUrl().split("/");
+        String fileName = fileNames[fileNames.length - 1];
+
+        S3ObjectInputStream inputStream = objectStorageAPI.getObject(fileName);
+        List<ResponseEntity<byte[]>> responseList = new ArrayList<>();
+        try {
+            byte[] imageBytes = inputStream.readAllBytes();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_JPEG);
+
+            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        } catch(IOException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Operation(summary = "피드 내 첨부파일 추가", description = "피드에 첨부파일 하나를 추가합니다.")

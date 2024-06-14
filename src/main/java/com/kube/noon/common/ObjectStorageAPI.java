@@ -7,6 +7,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
+import com.kube.noon.feed.dto.FeedAttachmentDto;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -32,9 +33,7 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
-import java.util.TreeMap;
+import java.util.*;
 
 @Component
 public class ObjectStorageAPI {
@@ -92,5 +91,12 @@ public class ObjectStorageAPI {
         return fileUrl;
     }
 
-    public
+    // getFeedAttachment
+    public S3ObjectInputStream getObject(String fileName) {
+        S3Object s3Object = s3.getObject(BUCKET_NAME, fileName);
+
+        S3ObjectInputStream s3ObjectInputStream = s3Object.getObjectContent();
+
+        return s3ObjectInputStream;
+    }
 }
