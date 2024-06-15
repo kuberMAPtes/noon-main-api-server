@@ -34,7 +34,6 @@ public class FeedRestController {
     private final FeedSubService feedSubService;
 
     private static final int PAGE_SIZE = 10;        // 일단 static final로 설정, 나중에 메타데이터로 뺄 예정
-    private final ObjectStorageAPI objectStorageAPI;
 
     @Operation(summary = "회원 피드 목록 조회", description = "회원이 작성한 피드 목록을 가져옵니다.")
     @GetMapping("/getFeedListByMember")
@@ -155,24 +154,9 @@ public class FeedRestController {
     @Operation(summary = "피드의 첨부파일 하나 조회", description = "피드에 첨부된 파일 하나를 만듭니다.")
     @GetMapping("/getFeedAttachment")
     public ResponseEntity<byte[]> getFeedAttachment(@Parameter(description = "첨부파일 ID") @RequestParam int attachmentId) {
-        FeedAttachmentDto feedAttachmentDto = feedSubService.getFeedAttachment(attachmentId);
+        ResponseEntity<byte[]> resultEntity = feedSubService.getFeedAttachment(attachmentId);
 
-        // Data insert
-        String[] fileNames = feedAttachmentDto.getFileUrl().split("/");
-        String fileName = fileNames[fileNames.length - 1];
-
-        S3ObjectInputStream inputStream = objectStorageAPI.getObject(fileName);
-        List<ResponseEntity<byte[]>> responseList = new ArrayList<>();
-        try {
-            byte[] imageBytes = inputStream.readAllBytes();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.IMAGE_JPEG);
-
-            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
-        } catch(IOException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return resultEntity;
     }
 
     @Operation(summary = "피드 내 첨부파일 추가", description = "피드에 첨부파일 하나를 추가합니다.")
