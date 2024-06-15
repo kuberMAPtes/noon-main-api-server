@@ -5,7 +5,9 @@ import com.kube.noon.feed.dto.FeedAttachmentDto;
 import com.kube.noon.feed.dto.FeedCommentDto;
 import com.kube.noon.feed.dto.FeedLIkeMemberDto;
 import com.kube.noon.feed.dto.TagDto;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -21,13 +23,13 @@ public interface FeedSubService {
     List<FeedAttachmentDto> getFeedAttachementListByFileType(FileType fileType);
 
     // 첨부파일 하나를 가져온다.
-    FeedAttachmentDto getFeedAttachment(int attachmentId);
+    ResponseEntity<byte[]> getFeedAttachment(int attachmentId);
 
     // 피드와 연관있는 첨부파일 목록을 가져온다.
     List<FeedAttachmentDto> getFeedAttachmentList(int feedId);
 
-    // 피드에 첨부파일 하나를 추가한다.
-    int addFeedAttachment(FeedAttachmentDto feedAttachmentDto);
+    // 피드에 첨부파일 하나를 추가한다. (return : feedId)
+    int addFeedAttachment(int feedId, List<MultipartFile> multipartFileList);
 
     // 피드에 첨부파일 하나를 삭제한다.
     int deleteFeedAttachment(int attachmentId);

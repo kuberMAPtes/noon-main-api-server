@@ -186,8 +186,4 @@ public class ObjectStorageAWS3S {
         }
 
     }/// end of deleteFile
-
-
-
-
 }

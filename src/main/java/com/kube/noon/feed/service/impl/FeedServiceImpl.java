@@ -2,13 +2,17 @@ package com.kube.noon.feed.service.impl;
 
 import com.kube.noon.building.domain.Building;
 import com.kube.noon.common.FeedCategory;
+import com.kube.noon.common.FileType;
+import com.kube.noon.common.ObjectStorageAPI;
 import com.kube.noon.feed.domain.Feed;
+import com.kube.noon.feed.domain.FeedAttachment;
 import com.kube.noon.feed.domain.Tag;
 import com.kube.noon.feed.domain.TagFeed;
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.dto.TagDto;
 import com.kube.noon.feed.dto.UpdateFeedDto;
+import com.kube.noon.feed.repository.FeedAttachmentRepository;
 import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.feed.repository.TagFeedRepository;
 import com.kube.noon.feed.repository.TagRepository;
@@ -20,10 +24,13 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.InputStreamEntity;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +45,8 @@ public class FeedServiceImpl implements FeedService {
     private final FeedMyBatisRepository feedMyBatisRepository;
     private final TagRepository tagRepository;
     private final TagFeedRepository tagFeedRepository;
+    private final FeedAttachmentRepository feedAttachmentRepository;
+    private final ObjectStorageAPI objectStorageAPI;
 
     @PersistenceContext
     private EntityManager entityManager;
