@@ -123,37 +123,45 @@ public class MemberValidator {
         memberScanner.imoMemberIdExist(memberId);
     }
 
+    //닉네임변경시
     public void checkNickname(String nickname) {
         memberScanner.imoDataNotNull(nickname);
         memberScanner.imoNicknamePatternO(nickname);
         memberScanner.imoMemberNicknameNotExist(nickname);
         memberScanner.imoNotBadWord(nickname);
     }
-
+    //회원가입시
     public void checkMemberId(String memberId) {
         memberScanner.imoDataNotNull(memberId);
         memberScanner.imoMemberIdPatternO(memberId);
         memberScanner.imoMemberIdNotExist(memberId);
         memberScanner.imoNotBadWord(memberId);
     }
+    //로그인시
+    public void checkLoginMemberIdPattern(String memberId){
+        memberScanner.imoDataNotNull(memberId);
+        memberScanner.imoMemberIdPatternO(memberId);
+    }
 
+    //비밀번호변경시
     public void checkPassword(String memberId, String password) {
         memberScanner.imoDataNotNull(memberId);
         memberScanner.imoDataNotNull(password);
         memberScanner.imoPwdPatternO(password);
     }
-
+    //회원가입시
     public void checkPhoneNumber(String phoneNumber) {
         memberScanner.imoDataNotNull(phoneNumber);
         memberScanner.imoPhoneNumberPatternO(phoneNumber);
         memberScanner.imoMemberPhoneNumberNotExist(phoneNumber);
     }
 
+    //비속어 체크시
     public void checkBadWord(String word) {
         memberScanner.imoDataNotNull(word);
         memberScanner.imoNotBadWord(word);
     }
-
+    //이메일 전송시
     public void sendAuthentificationNumber(String phoneNumber) {
         memberScanner.imoDataNotNull(phoneNumber);
         memberScanner.imoPhoneNumberPatternO(phoneNumber);

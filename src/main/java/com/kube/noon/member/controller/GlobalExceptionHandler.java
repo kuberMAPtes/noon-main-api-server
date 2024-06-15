@@ -2,6 +2,7 @@ package com.kube.noon.member.controller;
 
 import com.kube.noon.common.validator.IllegalServiceCallException;
 import com.kube.noon.member.exception.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -11,6 +12,7 @@ import org.springframework.web.context.request.WebRequest;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @ControllerAdvice(basePackages = "com.kube.noon.member.controller")
 public class GlobalExceptionHandler {
 
@@ -25,7 +27,7 @@ public class GlobalExceptionHandler {
             MemberSecurityBreachException.class,
             MemberUpdateException.class
     })
-    public ResponseEntity<Object> handleMemberExceptions(RuntimeException ex, WebRequest request) {
+    public ResponseEntity<ApiResponse<Map<String,Object>>> handleMemberExceptions(RuntimeException ex, WebRequest request) {
         Map<String, Object> map = null;
         if (ex instanceof IllegalServiceCallException) {
             map = ((IllegalServiceCallException) ex).getProblems();
@@ -60,13 +62,10 @@ public class GlobalExceptionHandler {
         }
     }
 
-    private ResponseEntity<Object> buildErrorResponse(String message, Map<String, Object> map, HttpStatus status) {
+    private ResponseEntity<ApiResponse<Map<String,Object>>> buildErrorResponse(String message, Map<String, Object> map, HttpStatus status) {
         Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("message", message);
-        if (map != null) {
-            responseBody.put("map", map);
-        }
-        return ResponseEntity.status(status).body(responseBody);
+        log.error("buildErrorResponse message,map,status :: "+message, map, status);
+        return ResponseEntity.status(status).body(ApiResponseFactory.createErrorResponse(message,map));
     }
 
 }

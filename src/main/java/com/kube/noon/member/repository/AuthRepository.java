@@ -13,4 +13,10 @@ public interface AuthRepository {
     //Redis에 해당 휴대전화번호로 저장된 인증번호가 존재하는지 확인
     public boolean hasKey(String phone);
 
+    public void incrementFailedAttempts(String phone);
+
+    public int getFailedAttempts(String phone);
+
+    public int getMaxAttempts();
+
 }

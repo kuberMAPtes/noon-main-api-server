@@ -438,6 +438,10 @@ public class MemberServiceImpl implements MemberService {
     public void checkMemberId(String memberId) {
         log.info("회원 아이디 중복 확인 완료 : {}", memberId);
     }
+    @Override
+    public void checkLoginMemberIdPattern(String memberId){
+        log.info("회원 아이디 패턴 확인 완료 : {}", memberId);
+    }
 
     @Override
     public void checkPassword(String memberId, String password) {
