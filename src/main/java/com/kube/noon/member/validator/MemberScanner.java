@@ -2,6 +2,7 @@ package com.kube.noon.member.validator;
 
 import com.kube.noon.common.badwordfiltering.BadWordFilterAgent;
 import com.kube.noon.common.binder.DtoEntityBinder;
+import com.kube.noon.common.messagesender.ApickApiAgent;
 import com.kube.noon.common.validator.IllegalServiceCallException;
 import com.kube.noon.common.validator.Problems;
 import com.kube.noon.common.validator.ValidationChain;
@@ -42,11 +43,16 @@ public class MemberScanner {
     private final ValidationChain validationChain;
     private final MemberRepository memberRepository;
     private final BadWordFilterAgent badWordFilterAgent;
+    private final ApickApiAgent apickApiAgent;
 
-    public MemberScanner(ValidationChain validationChain, MemberRepository memberRepository, BadWordFilterAgent badWordFilterAgent) {
+    public MemberScanner(ValidationChain validationChain
+            , MemberRepository memberRepository
+            , BadWordFilterAgent badWordFilterAgent
+            , ApickApiAgent apickApiAgent) {
         this.validationChain = validationChain;
         this.memberRepository = memberRepository;
         this.badWordFilterAgent = badWordFilterAgent;
+        this.apickApiAgent = apickApiAgent;
         this.webClient = WebClient.builder().build();
     }
 
@@ -235,6 +241,14 @@ public class MemberScanner {
         if (!PHONE_NUMBER_PATTERN.matcher(phoneNumber).matches()) {
             throw new IllegalServiceCallException("전화번호 형식이 올바르지 않습니다. 올바른 형식 예: 010-XXXX-XXXX", new Problems(Map.of("phoneNumber", phoneNumber)));
         }
+    }
+    public void imoPhoneNumberRealNumber(String phoneNumber) {
+        if(!apickApiAgent.checkPhoneNumber(phoneNumber)) {
+            log.info("실제 존재하는 전화번호가 아닙니다.");
+            throw new IllegalServiceCallException("실제 존재하는 전화번호가 아닙니다.", new Problems(Map.of("phoneNumber", phoneNumber)));
+        }
+
+
     }
 
     public void imoPwdPatternO(String password) {

@@ -451,7 +451,6 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void checkPhoneNumber(String phoneNumber) {
         log.info("회원 전화번호 중복 확인 완료 : {}", phoneNumber);
-
     }
 
     @Override

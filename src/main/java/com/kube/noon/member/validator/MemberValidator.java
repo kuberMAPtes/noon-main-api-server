@@ -153,6 +153,7 @@ public class MemberValidator {
     public void checkPhoneNumber(String phoneNumber) {
         memberScanner.imoDataNotNull(phoneNumber);
         memberScanner.imoPhoneNumberPatternO(phoneNumber);
+        memberScanner.imoPhoneNumberRealNumber(phoneNumber);
         memberScanner.imoMemberPhoneNumberNotExist(phoneNumber);
     }
 

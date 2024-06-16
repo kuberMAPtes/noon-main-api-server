@@ -1,6 +1,8 @@
 package com.kube.noon.member.controller;
 
 import com.kube.noon.common.binder.DtoEntityBinder;
+import com.kube.noon.common.messagesender.ApickApiAgent;
+import com.kube.noon.common.messagesender.ApickApiAgentImpl;
 import com.kube.noon.common.security.SecurityConstants;
 import com.kube.noon.common.security.TokenPair;
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
