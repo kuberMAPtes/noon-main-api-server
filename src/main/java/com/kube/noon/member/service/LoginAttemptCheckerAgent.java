@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class LoginAttemptCheckerAgent {
 
     private static final int MAX_ATTEMPTS = 5;
+    private static final int LOCK_TIME = 30;//TTL기능 이용 time to live
 
     private final StringRedisTemplate redisTemplate;
 
@@ -29,14 +30,18 @@ public class LoginAttemptCheckerAgent {
 
     public void loginFailed(String key) {
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
+        // 꺼내서 null이면 0이고, 있으면 키에 대한 밸류를 가져옴 밸류가 횟수임.
         Integer attempts = Integer.parseInt(ops.get(key) == null ? "0" : ops.get(key));
         attempts++;
         ops.set(key, attempts.toString());
+
+        if (attempts >= MAX_ATTEMPTS) {
+            redisTemplate.expire(key, LOCK_TIME, java.util.concurrent.TimeUnit.MINUTES);
+        }
     }
 
-    public boolean isCaptchaRequired(String key) {
-        ValueOperations<String, String> ops = redisTemplate.opsForValue();
-        Integer attempts = Integer.parseInt(ops.get(key) == null ? "0" : ops.get(key));
-        return attempts >= MAX_ATTEMPTS;
+    public boolean isLoginLocked(String key) {
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key)) && redisTemplate.getExpire(key) > 0;
     }
+
 }

@@ -75,6 +75,7 @@ public class NotificationCoolSmsMessageSender implements NotificationMessageSend
             System.out.println(authorizationHeader);
             sendRequest(authorizationHeader, receiver.getPhoneNumber(), text);
         } catch (NoSuchAlgorithmException e) {
+            log.error("적합하지 않은 알고리즘", e);
             throw new RuntimeException(e);
         } catch (InvalidKeyException e) {
             log.error("적합하지 않은 Key", e);
@@ -113,5 +114,7 @@ public class NotificationCoolSmsMessageSender implements NotificationMessageSend
 
         ResponseEntity<String> responseEntity = this.restTemplate.exchange(requestEntity, String.class);
         log.trace(responseEntity.getBody());
+        log.info(responseEntity.getBody());
+        log.info(responseEntity.toString());
     }
 }

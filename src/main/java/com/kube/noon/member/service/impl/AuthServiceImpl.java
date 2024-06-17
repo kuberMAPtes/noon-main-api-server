@@ -2,6 +2,7 @@ package com.kube.noon.member.service.impl;
 
 import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.common.messagesender.NotificationCoolSmsMessageSender;
+import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.member.MemberDto;
 import com.kube.noon.member.dto.util.RandomData;
 import com.kube.noon.member.repository.AuthRepository;
@@ -12,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -42,10 +45,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void sendAuthentificationNumber(String phoneNumber){
+    public boolean sendAuthentificationNumber(String phoneNumber){
 
-        MemberDto dto = memberService.findMemberByPhoneNumber(phoneNumber);
-
+        if(memberService.findMemberByPhoneNumber(phoneNumber) != null){
+            log.info("이미 가입된 회원이므로 가입하실 수 없습니다. : {}", phoneNumber);
+            throw new RuntimeException("이미 가입된 회원이므로 가입하실 수 없습니다.");
+        }
 
         String messageFormat = "인증번호 : ";
         String authNumber = RandomData.getRandomAuthNumber();
@@ -55,33 +60,50 @@ public class AuthServiceImpl implements AuthService {
         authRepository.createAuthentificationNumber(phoneNumber, authNumber);
 
 
+       MemberDto memberDto = MemberDto.builder()
+               .phoneNumber(phoneNumber)
+               .build();
         notificationCoolSmsMessageSender.send(
-                DtoEntityBinder.INSTANCE.toEntity(dto),message
+                DtoEntityBinder.INSTANCE.toEntity(memberDto),message
         );
 
         log.info("인증번호 전송 완료 : {} 보낸 메세지 : {}", phoneNumber, message);
-    }
+
+        return true;
+    };
 
 
     //인증번호검증하기
-    public boolean confirmAuthenticationNumber(String phoneNumber, String randomNumber) {
+    public Map<String,Object> confirmAuthenticationNumber(String phoneNumber, String inputNumber) {
 
-        boolean isMatched = false;
+        String storedNumber = authRepository.getAuthentificationNumber(phoneNumber);
+        String returnMessage = "";
+        String messageKey = "message";
+        String resultKey = "result";
 
-
-        if (isVerify(phoneNumber,randomNumber)) {
-            isMatched = true;
+        if(storedNumber==null){
+            System.out.println("인증번호를 보내지 않았거나 만료되었습니다.");
+            returnMessage = "인증번호를 보내지 않았거나 만료되었습니다.";
+            return Map.of(messageKey,returnMessage,resultKey,false);
         }
-        authRepository.deleteAuthentificationNumber(phoneNumber);
-
-        return isMatched;
-    }
-    //인증번호검증도구
-    private boolean isVerify(String phoneNumber, String randomNumber) {
-        //레디스에 키가 있는지 본다. 사용자가 준 폰 번호를 레디스의 키로 써서 Value(인증번호)가 있는지 본다.
-        //그 인증번호가 사용자가 준 인증번호랑 같은지 본다.
-        return (authRepository.hasKey(phoneNumber) &&
-                authRepository.getAuthentificationNumber(phoneNumber).equals(randomNumber));
+        if(!storedNumber.equals(inputNumber)){
+            authRepository.incrementFailedAttempts(phoneNumber);
+            int attempts = authRepository.getFailedAttempts(phoneNumber);
+            if(attempts>= authRepository.getMaxAttempts()){
+                System.out.println("인증번호 시도횟수 초과로 인증번호가 삭제되었습니다.");
+                returnMessage = "인증번호 시도횟수 초과로 인증번호가 삭제되었습니다.";
+                return Map.of(messageKey,returnMessage,resultKey,false);
+            }else {
+                System.out.println("인증번호가 일치하지 않습니다. 현재 시도 횟수 : " + attempts);
+                returnMessage = "인증번호가 일치하지 않습니다. 현재 시도 횟수 : " + attempts;
+                return Map.of(messageKey,returnMessage,resultKey,false);
+            }
+        }else{
+            authRepository.deleteAuthentificationNumber(phoneNumber);
+            System.out.println("인증 성공");
+            returnMessage = "인증 성공";
+            return Map.of(messageKey,returnMessage,"result",true);
+        }
     }
 
 }

@@ -2,6 +2,7 @@ package com.kube.noon.member.validator;
 
 import com.kube.noon.common.badwordfiltering.BadWordFilterAgent;
 import com.kube.noon.common.binder.DtoEntityBinder;
+import com.kube.noon.common.messagesender.ApickApiAgent;
 import com.kube.noon.common.validator.IllegalServiceCallException;
 import com.kube.noon.common.validator.Problems;
 import com.kube.noon.common.validator.ValidationChain;
@@ -30,7 +31,7 @@ public class MemberScanner {
 
     private static final Pattern PHONE_NUMBER_PATTERN = Pattern.compile("^01(?:0|1|[6-9])-(?:\\d{3}|\\d{4})-\\d{4}$");
     private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9가-힣_ ]{2,20}$");
-    private static final Pattern MEMBER_ID_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])[a-zA-Z0-9_@.]{6,64}$");
+    private static final Pattern MEMBER_ID_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z][a-zA-Z0-9_]{6,24}$");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9!@#\\$%\\^&\\*_]{8,16}$");
     private static final Pattern SEQUENTIAL_PATTERN = Pattern.compile("(abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz|123|234|345|456|567|678|789|890|012)");
     private static final Pattern URL_PATTERN = Pattern.compile("^(https?|ftp)://[^\s/$.?#].[^\s]*$", Pattern.CASE_INSENSITIVE);
@@ -42,11 +43,16 @@ public class MemberScanner {
     private final ValidationChain validationChain;
     private final MemberRepository memberRepository;
     private final BadWordFilterAgent badWordFilterAgent;
+    private final ApickApiAgent apickApiAgent;
 
-    public MemberScanner(ValidationChain validationChain, MemberRepository memberRepository, BadWordFilterAgent badWordFilterAgent) {
+    public MemberScanner(ValidationChain validationChain
+            , MemberRepository memberRepository
+            , BadWordFilterAgent badWordFilterAgent
+            , ApickApiAgent apickApiAgent) {
         this.validationChain = validationChain;
         this.memberRepository = memberRepository;
         this.badWordFilterAgent = badWordFilterAgent;
+        this.apickApiAgent = apickApiAgent;
         this.webClient = WebClient.builder().build();
     }
 
@@ -235,6 +241,14 @@ public class MemberScanner {
         if (!PHONE_NUMBER_PATTERN.matcher(phoneNumber).matches()) {
             throw new IllegalServiceCallException("전화번호 형식이 올바르지 않습니다. 올바른 형식 예: 010-XXXX-XXXX", new Problems(Map.of("phoneNumber", phoneNumber)));
         }
+    }
+    public void imoPhoneNumberRealNumber(String phoneNumber) {
+        if(!apickApiAgent.checkPhoneNumber(phoneNumber)) {
+            log.info("실제 존재하는 전화번호가 아닙니다.");
+            throw new IllegalServiceCallException("실제 존재하는 전화번호가 아닙니다.", new Problems(Map.of("phoneNumber", phoneNumber)));
+        }
+
+
     }
 
     public void imoPwdPatternO(String password) {

@@ -7,12 +7,15 @@ import lombok.*;
 
 @ToString
 @EqualsAndHashCode
-@NoArgsConstructor
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 public class AddMemberDto {
+
+    public AddMemberDto() {
+        this.phoneNumber = "010-0000-0000";
+    }
 
     //체크 : 비지니스로직에서 있는지 없는지 검사했었었나? 검사안해도되겠네
     @NotBlank(message = "회원 아이디가 없습니다.")
@@ -27,10 +30,8 @@ public class AddMemberDto {
     @Pattern(regexp = "^[a-zA-Z0-9가-힣_ ]{2,20}$", message = "닉네임 형식이 올바르지 않습니다(2~20자). 올바른 형식 예: 가_힣")
     private String nickname;
 
-    @NotBlank(message = "전화번호가 없습니다.")
     @Pattern(regexp = "^01(?:0|1|[6-9])-(?:\\d{3}|\\d{4})-\\d{4}$", message = "전화번호 형식이 올바르지 않습니다(010,011,016~019). 올바른 형식 예: 010-XXXX-XXXX")
     private String phoneNumber;
-
 
     @Nullable
     private Boolean socialSignUp;

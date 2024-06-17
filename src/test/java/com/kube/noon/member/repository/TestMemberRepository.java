@@ -108,7 +108,7 @@ public class TestMemberRepository {
     @DisplayName("회원 리스트 조회 테스트")
     void findMemberListByCriteria() {
         Page<Member> foundMemberList = memberRepository.findMemberListByCriteria(
-                getMemberSearchCriteriaDto("member_1", "nickname_1", null, null, null, false),5,3);
+                getMemberSearchCriteriaDto("member_1", null, null, null, null, false),5,3);
         System.out.println("리스트조회" + foundMemberList);
         System.out.println(foundMemberList.getContent());
     }

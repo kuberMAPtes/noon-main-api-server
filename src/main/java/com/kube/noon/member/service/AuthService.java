@@ -1,9 +1,11 @@
 package com.kube.noon.member.service;
 
+import java.util.Map;
+
 public interface AuthService {
 
-    void sendAuthentificationNumber(String phoneNumber);
+    boolean sendAuthentificationNumber(String phoneNumber);
 
-    boolean confirmAuthenticationNumber(String phoneNumber, String randomNumber);
+    Map<String,Object> confirmAuthenticationNumber(String phoneNumber, String randomNumber);
 
 }
