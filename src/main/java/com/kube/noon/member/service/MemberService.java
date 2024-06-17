@@ -26,6 +26,8 @@ public interface MemberService {
 
     MemberDto findMemberByNickname(String fromId, String nickname);//JPA
 
+    MemberDto findMemberByNickname(String nickname);
+
     MemberDto findMemberByPhoneNumber(String phoneNumber);
 
     Page<MemberDto> findMemberListByCriteria(String fromId, MemberSearchCriteriaDto memberSearchCriteriaDto, int page, int size);//JPA

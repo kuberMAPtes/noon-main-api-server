@@ -60,7 +60,7 @@ public class MemberServiceImpl implements MemberService {
             if (Boolean.TRUE.equals(dto.getSocialSignUp())) {
                 member.setPwd("social_sign_up");
 
-                if(member.getPhoneNumber().equals("010-0000-0000")){
+                if(dto.getPhoneNumber().equals("010-0000-0000") || dto.getPhoneNumber().isEmpty() || dto.getPhoneNumber() == null){
                     member.setPhoneNumber(RandomData.getRandomPhoneNumber()+"X");
                 }
 
@@ -239,6 +239,24 @@ public class MemberServiceImpl implements MemberService {
 
         } catch (MemberNotFoundException e) {
             log.error("회원 조회 중 오류 발생: fromId={} 닉네임={}",fromId, nickname, e);
+            throw e;
+        }
+    }
+
+    @Override
+    public MemberDto findMemberByNickname(String nickname){
+        try {
+            log.info("회원 찾는 중 닉네임: {}", nickname);
+
+            return memberRepository.findMemberByNickname(nickname)
+                    .map(member -> DtoEntityBinder.INSTANCE.toDto(member, MemberDto.class))
+                    .orElseGet(() -> {
+                        log.info("회원이 없습니다");
+                        return null;
+                    });
+
+        } catch (MemberNotFoundException e) {
+            log.error("회원 조회 중 오류 발생: 닉네임={}", nickname, e);
             throw e;
         }
     }

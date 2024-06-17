@@ -57,6 +57,9 @@ public class GlobalExceptionHandler {
             return HttpStatus.NOT_FOUND;
         } else if (ex instanceof MemberSecurityBreachException) {
             return HttpStatus.FORBIDDEN;
+        } else if (ex instanceof IllegalServiceCallException) {
+            //유효성 검사는 OK를 반환
+            return HttpStatus.OK;
         } else {
             return HttpStatus.BAD_REQUEST;
         }

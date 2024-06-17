@@ -20,6 +20,9 @@ public class googleLoginRequestDto {
     @JsonProperty("nickname")
     String nickname;
 
+    @JsonProperty("profilePhotoUrl")
+    String profilePhotoUrl;
 
-
+    @JsonProperty("phoneNumber")
+    String phoneNumber;
 }
