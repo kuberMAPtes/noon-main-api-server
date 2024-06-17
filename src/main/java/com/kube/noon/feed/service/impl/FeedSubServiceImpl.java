@@ -1,6 +1,8 @@
 package com.kube.noon.feed.service.impl;
 
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.kube.noon.common.FileType;
+import com.kube.noon.common.ObjectStorageAPI;
 import com.kube.noon.common.zzim.Zzim;
 import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
@@ -14,9 +16,15 @@ import com.kube.noon.feed.service.FeedSubService;
 import com.kube.noon.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -30,6 +38,7 @@ public class FeedSubServiceImpl implements FeedSubService {
     private final TagFeedRepository tagFeedRepository;
     private final TagRepository tagRepository;
     private final ZzimRepository zzimRepository;
+    private final ObjectStorageAPI objectStorageAPI;
 
 
     @Override
@@ -40,8 +49,24 @@ public class FeedSubServiceImpl implements FeedSubService {
     }
 
     @Override
-    public FeedAttachmentDto getFeedAttachment(int attachmentId) {
-        return FeedAttachmentDto.toDto(feedAttachmentRepository.findByAttachmentId(attachmentId));
+    public ResponseEntity<byte[]> getFeedAttachment(int attachmentId) {
+        FeedAttachmentDto feedAttachmentDto = FeedAttachmentDto.toDto(feedAttachmentRepository.findByAttachmentId(attachmentId));
+
+        String[] fileNames = feedAttachmentDto.getFileUrl().split("/");
+        String fileName = fileNames[fileNames.length - 1];
+
+        S3ObjectInputStream inputStream = objectStorageAPI.getObject(fileName);
+
+        try {
+            byte[] imageBytes = inputStream.readAllBytes();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_JPEG);
+
+            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        } catch(IOException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
@@ -53,10 +78,32 @@ public class FeedSubServiceImpl implements FeedSubService {
 
     @Transactional
     @Override
-    public int addFeedAttachment(FeedAttachmentDto feedAttachmentDto) {
-        FeedAttachment addFeedAttachment = FeedAttachmentDto.toEntity(feedAttachmentDto);
+    public int addFeedAttachment(int feedId, List<MultipartFile> multipartFileList) {
 
-        return feedAttachmentRepository.save(addFeedAttachment).getAttachmentId();
+        // 첨부파일은 Object Storage에 넣는다.
+        try {
+            if(multipartFileList != null && multipartFileList.size() > 0) {
+                for(MultipartFile file : multipartFileList) {
+                    String originalFileName = file.getOriginalFilename();
+
+                    // Object Storage에 넣기
+                    String Url = objectStorageAPI.putObject(originalFileName, file);
+
+                    // DB에 넣기
+                    feedAttachmentRepository.save(FeedAttachment.builder()
+                            .feed(Feed.builder().feedId(feedId).build())
+                            .fileUrl(Url)
+                            .fileType(FileType.PHOTO) // 임시
+                            .blurredFileUrl(null)
+                            .activated(true)
+                            .build());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return feedId;
     }
 
     @Transactional

@@ -4,6 +4,7 @@ import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.dto.UpdateFeedDto;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -38,7 +39,7 @@ public interface FeedService {
     List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId);
     List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId, int page, int pageSize);
 
-    // 피드를 추가한다.
+    // 피드를 추가한다. (return : feedId)
     int addFeed(FeedDto feedDto);
 
     // 피드를 수정한다.

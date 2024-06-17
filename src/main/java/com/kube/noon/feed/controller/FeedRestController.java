@@ -1,5 +1,7 @@
 package com.kube.noon.feed.controller;
 
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.kube.noon.common.ObjectStorageAPI;
 import com.kube.noon.feed.dto.*;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.feed.service.FeedStatisticsService;
@@ -9,8 +11,16 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @Log4j2
@@ -78,7 +88,8 @@ public class FeedRestController {
 
     @Operation(summary = "피드 추가", description = "피드를 하나 추가합니다.")
     @PostMapping("/addFeed")
-    public int addFeed(@RequestBody FeedDto feedDto) {
+    public int addFeed(
+            @RequestBody FeedDto feedDto) {
         int feedId = feedService.addFeed(feedDto);
 
         return feedId;
@@ -135,15 +146,25 @@ public class FeedRestController {
     @Operation(summary = "피드의 첨부파일 목록 조회", description = "피드에 첨부된 파일 목록을 가져옵니다.")
     @GetMapping("/getFeedAttachmentList")
     public List<FeedAttachmentDto> getFeedAttachmentList(@Parameter(description = "첨부파일을 조회할 피드 ID") @RequestParam int feedId) {
-        List<FeedAttachmentDto> result = feedSubService.getFeedAttachmentList(feedId);
+        List<FeedAttachmentDto> feedAttachmentDtoList = feedSubService.getFeedAttachmentList(feedId);
 
-        return result;
+        return feedAttachmentDtoList;
+    }
+
+    @Operation(summary = "피드의 첨부파일 하나 조회", description = "피드에 첨부된 파일 하나를 만듭니다.")
+    @GetMapping("/getFeedAttachment")
+    public ResponseEntity<byte[]> getFeedAttachment(@Parameter(description = "첨부파일 ID") @RequestParam int attachmentId) {
+        ResponseEntity<byte[]> resultEntity = feedSubService.getFeedAttachment(attachmentId);
+
+        return resultEntity;
     }
 
     @Operation(summary = "피드 내 첨부파일 추가", description = "피드에 첨부파일 하나를 추가합니다.")
-    @PostMapping("/addFeedAttachment")
-    public int addFeedAttachment(@RequestBody FeedAttachmentDto feedAttachmentDto) {
-        int attachmentId = feedSubService.addFeedAttachment(feedAttachmentDto);
+    @PostMapping("/addFeedAttachment/{feedId}")
+    public int addFeedAttachment(
+            @RequestParam("multipartFile") List<MultipartFile> multiFileList,
+            @Parameter(description = "첨부파일을 추가할 피드ID") @PathVariable("feedId") int feedId) {
+        int attachmentId = feedSubService.addFeedAttachment(feedId, multiFileList);
 
         return attachmentId;
     }
