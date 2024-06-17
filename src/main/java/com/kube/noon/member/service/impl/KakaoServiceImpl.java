@@ -4,6 +4,7 @@ import com.kube.noon.common.security.TokenPair;
 import com.kube.noon.common.security.support.KakaoTokenSupport;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.member.AddMemberDto;
+import com.kube.noon.member.dto.member.MemberDto;
 import com.kube.noon.member.dto.member.UpdateMemberDto;
 import com.kube.noon.member.exception.MemberNotFoundException;
 import com.kube.noon.member.service.KakaoService;
@@ -50,15 +51,15 @@ public class KakaoServiceImpl implements KakaoService {
         this.memberService = memberService;
     }
 
+    @Transactional
     @Override
     public TokenPair generateTokenPairAndAddMemberIfNotExists(String authorizeCode){
         TokenPair tokenPair = this.tokenSupport.generateToken(authorizeCode);
         Member kakaoMember = this.tokenSupport.getMemberInformation(tokenPair.getAccessToken());
-        try {
-            this.memberService.findMemberById(kakaoMember.getMemberId(), kakaoMember.getMemberId());
-        } catch (MemberNotFoundException e) {
-            addKakaoMember(kakaoMember);
-        }
+
+        MemberDto memberDto = this.memberService.findMemberById(kakaoMember.getMemberId(), kakaoMember.getMemberId());
+        if(memberDto==null) addKakaoMember(kakaoMember);
+
         return tokenPair;
     }
 
