@@ -149,19 +149,10 @@ public class WebSecurityConfig {
     ) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((registry) -> {
-//                    registry.requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
-//                            .requestMatchers(HttpMethod.GET, AccessDefinition.WHITE_LIST.toArray(new String[0]))
-//                            .permitAll()
-//                            .requestMatchers(HttpMethod.POST, AccessDefinition.WHITE_LIST.toArray(new String[0]))
-//                            .permitAll()
-//                            .requestMatchers(HttpMethod.GET, AccessDefinition.ALLOWED_TO_MEMBER.toArray(new String[0]))
-//                            .hasAnyAuthority(Role.MEMBER.name(), Role.ADMIN.name())
-//                            .requestMatchers(HttpMethod.POST, AccessDefinition.ALLOWED_TO_MEMBER.toArray(new String[0]))
-//                            .hasAnyAuthority(Role.MEMBER.name(), Role.ADMIN.name());
-                    AccessDefinition.WHITE_LIST.forEach((uri) ->
-                            registry.requestMatchers(new AntPathRequestMatcher(uri)).permitAll());
-                    AccessDefinition.ALLOWED_TO_MEMBER.forEach((uri) ->
-                            registry.requestMatchers(new AntPathRequestMatcher(uri)).hasAnyAuthority(Role.MEMBER.name(), Role.ADMIN.name()));
+                    registry.requestMatchers(AccessDefinition.ALLOWED_TO_MEMBER.stream().map(AntPathRequestMatcher::new).toArray(AntPathRequestMatcher[]::new))
+                            .hasAnyAuthority(Role.MEMBER.name(), Role.ADMIN.name())
+                            .anyRequest()
+                            .permitAll();
                 })
                 .sessionManagement((config) -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .requestCache(RequestCacheConfigurer::disable)
