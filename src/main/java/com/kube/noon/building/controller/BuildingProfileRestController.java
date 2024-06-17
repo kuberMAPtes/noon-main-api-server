@@ -5,6 +5,7 @@ import com.kube.noon.building.dto.BuildingDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
 import com.kube.noon.building.service.BuildingProfileService;
 import com.kube.noon.chat.dto.ChatroomDto;
+import com.kube.noon.chat.service.ChatroomSearchService;
 import com.kube.noon.chat.service.ChatroomService;
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
@@ -24,7 +25,7 @@ public class BuildingProfileRestController {
 
     ///Field
     private final BuildingProfileService buildingProfileService;
-    private final ChatroomService chatroomService;
+    private final ChatroomSearchService chatroomSearchService;
     private final FeedService feedService;
 
 
@@ -76,12 +77,11 @@ public class BuildingProfileRestController {
     /**
      * 건물의 채팅 목록 가져오기
      */
-    /* ChatService 개발되면 활용 예정
     @GetMapping("/getBuildingChatroomList")
-    public List<ChatroomDto> getBuildingChatroomList(@RequestParam("buildingId") String buildingId) {
-        return chatroomService.getBuildingChatroomList(buildingId);
+    public List<ChatroomDto> getBuildingChatroomList(@RequestParam("buildingId") int buildingId) throws Exception {
+        return chatroomSearchService.getBuildingChatroomList(buildingId);
     }
-    */
+
 
     /**
      * 건물의 프로필 정보 가져오기
