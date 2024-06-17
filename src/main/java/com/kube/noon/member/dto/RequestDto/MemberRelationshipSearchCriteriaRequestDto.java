@@ -19,6 +19,8 @@ public class MemberRelationshipSearchCriteriaRequestDto {
     @NonNull
     private String fromId;
     private String memberId;
+    private int pageSize;
+    private int pageUnit;
     private Boolean following;
     private Boolean follower;
     private Boolean blocking;

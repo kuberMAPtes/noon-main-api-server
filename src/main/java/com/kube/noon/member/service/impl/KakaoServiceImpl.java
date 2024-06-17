@@ -6,6 +6,7 @@ import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.member.AddMemberDto;
 import com.kube.noon.member.dto.member.MemberDto;
 import com.kube.noon.member.dto.member.UpdateMemberDto;
+import com.kube.noon.member.dto.util.RandomData;
 import com.kube.noon.member.exception.MemberNotFoundException;
 import com.kube.noon.member.service.KakaoService;
 import com.kube.noon.member.service.MemberService;
@@ -67,6 +68,10 @@ public class KakaoServiceImpl implements KakaoService {
     public void addKakaoMember(Member infoToAdd) {
         AddMemberDto addDto = new AddMemberDto();
         BeanUtils.copyProperties(infoToAdd, addDto);
+
+        if(memberService.findMemberByNickname(infoToAdd.getNickname())!=null) {
+            addDto.setNickname(RandomData.getRandomNickname());
+        }
         addDto.setSocialSignUp(true);
         this.memberService.addMember(addDto);
         this.memberService.findMemberById(addDto.getMemberId())
