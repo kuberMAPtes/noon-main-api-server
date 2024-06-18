@@ -24,7 +24,6 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
      * @author 허예지
      *
      */
-
     boolean existsByBuildingIdAndMemberIdAndSubscriptionProviderId(int buildingId, String memberId, String subscriptionProviderId);
 
 
@@ -48,6 +47,10 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
      * @author 허예지
      */
     Zzim findByBuildingIdAndMemberId(int buildingId, String memberId);
+
+    int countByBuildingId(int buildingId);
+
+
 
     /**
      * 피드 아이디, 유저 아이디, 찜 타입을 통해 Zzim Table의 데이터를 확인한다.
