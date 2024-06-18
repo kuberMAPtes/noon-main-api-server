@@ -11,9 +11,8 @@ import lombok.*;
 @Getter
 @ToString
 public class PositionRange {
-    private Position ne;
-    private Position nw;
-    private Position se;
-    private Position sw;
-
+    private double lowerLatitude;
+    private double lowerLongitude;
+    private double upperLatitude;
+    private double upperLongitude;
 }
