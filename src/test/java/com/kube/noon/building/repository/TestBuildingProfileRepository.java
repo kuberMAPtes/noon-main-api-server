@@ -5,13 +5,17 @@ import com.kube.noon.building.dto.BuildingDto;
 import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
 import com.kube.noon.member.domain.Member;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 @SpringBootTest
@@ -78,6 +82,31 @@ class TestBuildingProfileRepository {
 
         }
 
+    }
+
+    @Transactional
+    @Test
+    void findBuildingByRoadAddr() {
+        Building building = Building.builder()
+                .buildingName("sample-building")
+                .roadAddr("서울시 영등포구 영등포로 101")
+                .profileActivated(true)
+                .latitude(35.1425114)
+                .longitude(127.34151365)
+                .feedAiSummary("Hello Summary")
+                .build();
+        this.buildingProfileRepository.save(building);
+
+        log.trace("building={}", building);
+
+        Building findBuilding = this.buildingProfileRepository.findBuildingProfileByRoadAddr("서울시 영등포구 영등포로 101");
+
+        log.trace("findBuilding={}", findBuilding);
+
+        assertThat(findBuilding.getBuildingId()).isEqualTo(building.getBuildingId());
+        assertThat(findBuilding.getBuildingName()).isEqualTo(building.getBuildingName());
+        assertThat(findBuilding.getFeedAiSummary()).isEqualTo(building.getFeedAiSummary());
+        assertThat(findBuilding.getRoadAddr()).isEqualTo(building.getRoadAddr());
     }
 }
 
