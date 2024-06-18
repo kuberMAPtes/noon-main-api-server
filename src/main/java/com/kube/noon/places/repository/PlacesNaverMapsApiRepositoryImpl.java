@@ -73,8 +73,8 @@ public class PlacesNaverMapsApiRepositoryImpl implements PlacesRepository {
                 JSONObject jsonObj = (JSONObject) addresses.get(i);
                 places.add(Place.builder()
                         .roadAddress(jsonObj.getString("roadAddress"))
-                        .latitude(Double.parseDouble(jsonObj.getString("x")))
-                        .longitude(Double.parseDouble(jsonObj.getString("y")))
+                        .latitude(Double.parseDouble(jsonObj.getString("y")))
+                        .longitude(Double.parseDouble(jsonObj.getString("x")))
                         .placeName(placeName)
                         .build());
             }
