@@ -127,9 +127,21 @@ public class FeedRestController {
         return mainFeedId;
     }
 
+    @Operation(summary = "피드 검색하기", description = "피드 제목이나 내용을 검색한 결과를 가져옵니다. 페이징이 적용됩니다.")
+    @GetMapping("/search/{page}")
+    public List<FeedSummaryDto> searchFeed(
+            @Parameter(description = "검색할 키워드") @RequestParam String keyword,
+            @Parameter(description = "페이지") @PathVariable("page") int page
+            ) {
+        List<FeedSummaryDto> result = feedService.searchFeedList(keyword, page - 1, PAGE_SIZE);
+
+        return result;
+    }
+
     @Operation(summary = "피드 검색하기", description = "피드 제목이나 내용을 검색한 결과를 가져옵니다.")
     @GetMapping("/search")
-    public List<FeedSummaryDto> searchFeed(@Parameter(description = "검색할 키워드") @RequestParam String keyword) {
+    public List<FeedSummaryDto> searchFeed(
+            @Parameter(description = "검색할 키워드") @RequestParam String keyword) {
         List<FeedSummaryDto> result = feedService.searchFeedList(keyword);
 
         return result;

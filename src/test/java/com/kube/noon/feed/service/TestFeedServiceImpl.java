@@ -18,6 +18,8 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -226,9 +228,9 @@ public class TestFeedServiceImpl {
     @Transactional
     @Test
     public void searchFeedListTest() {
-        String keyword = "Title_1";
+        String keyword = "feed 1";
 
-        List<FeedSummaryDto> searchFeedList = feedServiceImpl.searchFeedList(keyword);
+        List<FeedSummaryDto> searchFeedList = feedServiceImpl.searchFeedList(keyword, 0, 10);
 
         assertThat(searchFeedList.size()).isGreaterThan(0);
         for(FeedSummaryDto f : searchFeedList) {

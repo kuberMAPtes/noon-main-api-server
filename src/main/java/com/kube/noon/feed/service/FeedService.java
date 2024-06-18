@@ -59,6 +59,7 @@ public interface FeedService {
 
     // 피드의 제목이나 택스트로 검색한다.
     List<FeedSummaryDto> searchFeedList(String keyword);
+    List<FeedSummaryDto> searchFeedList(String keyword, int page, int pageSize);
 
     // 피드의 조회수를 1 올린다.
     int setViewCntUp(int feedId);
