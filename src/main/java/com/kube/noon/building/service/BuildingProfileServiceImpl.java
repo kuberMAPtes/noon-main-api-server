@@ -11,7 +11,11 @@ import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.repository.FeedRepository;
+import com.kube.noon.places.domain.Position;
 import com.kube.noon.places.domain.PositionRange;
+import com.kube.noon.places.dto.PlaceDto;
+import com.kube.noon.places.exception.PlaceNotFoundException;
+import com.kube.noon.places.service.PlacesService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.web.config.SortHandlerMethodArgumentResolverCustomizer;
@@ -40,6 +44,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     private final BuildingProfileMapper buildingProfileMapper;
     private final BuildingSummaryRepository buildingSummaryRepository;
     private final FeedRepository feedRepository;
+    private final PlacesService placesService;
 
     public static final int SUMMARY_LENGTH_LIMIT = 2000;
     public static final int SUMMARY_FEED_COUNT_LIMIT  = 10;
@@ -163,6 +168,13 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     @Override
     public BuildingDto getBuildingProfile(int buildingId) {
         Building building = buildingProfileRepository.findBuildingProfileByBuildingId(buildingId);
+        return BuildingDto.fromEntity(building);
+    }
+
+    @Override
+    public BuildingDto getBuildingProfileByPosition(Position position) throws PlaceNotFoundException {
+        PlaceDto findPlace = this.placesService.getPlaceByPosition(position);
+        Building building = this.buildingProfileRepository.findBuildingProfileByRoadAddr(findPlace.getRoadAddress());
         return BuildingDto.fromEntity(building);
     }
 
