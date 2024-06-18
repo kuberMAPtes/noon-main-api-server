@@ -11,15 +11,16 @@ import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.repository.FeedRepository;
+import com.kube.noon.places.domain.PositionRange;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.data.web.config.SortHandlerMethodArgumentResolverCustomizer;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -42,6 +43,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
     public static final int SUMMARY_LENGTH_LIMIT = 2000;
     public static final int SUMMARY_FEED_COUNT_LIMIT  = 10;
+    private final SortHandlerMethodArgumentResolverCustomizer sortCustomizer;
 
     ///Method
     /**
@@ -172,7 +174,6 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
                 .collect(Collectors.toList());
     }
 
-
     /**
      * buildingId로 조회한 빌딩의 모든 피드를 가져와 3줄로 요약
      * 임시데이터 피드 10개로 요약. 추후 피드 서비스인 '최신 피드목록 가져오기'로 대체
@@ -215,4 +216,77 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
         return feedAiSummary;
     }
+
+
+    /**
+     * 건물별 구독자 수를 조회한다.
+     * @param buildingId 구독자 수를 조회할 건물 아이디
+     * @return 구독자 수
+     */
+    @Override
+    public int getSubscriberCnt(int buildingId) {
+        return zzimRepository.countByBuildingId(buildingId);
+    }
+
+
+    /**
+     * 위치범위(사용자 화면) 내 건물 중 구독자가 많은 10개의 건물을 가져온다.
+     *
+     * @param positionRange 사용자의 화면 범위
+     * @return
+     */
+    @Override
+    public List<BuildingDto> getBuildingsWithinRange(PositionRange positionRange) {
+
+        Map<Building, Integer> subscriberCntMap = new HashMap<>();
+        Map<String,Double> range = getRange(positionRange);
+        List<Building> buildings = buildingProfileRepository.findActivatedBuildings();
+
+        // 지도 범위 내 건물별 구독자 수 기록
+        for (Building building : buildings){
+
+            if(isWithinRange(range, building.getLongitude(), building.getLatitude())){
+                subscriberCntMap.put(building, this.getSubscriberCnt(building.getBuildingId()));
+            }
+
+        }
+
+        // 구독자 많은순으로 정렬
+        List<Map.Entry<Building, Integer>> listForSorting = new ArrayList<>(subscriberCntMap.entrySet());
+        listForSorting.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
+
+
+        // 결과 추출
+        List<Building> popularBuildings = new ArrayList<>();
+        for (int i = 0; i < Math.min(10, listForSorting.size()); i++) {
+            popularBuildings.add(listForSorting.get(i).getKey());
+        }
+
+        return popularBuildings.stream()
+                .map(BuildingDto::fromEntity)
+                .collect(Collectors.toList());
+
+    }
+
+
+    public Map<String,Double> getRange(PositionRange positionRange){
+        double minLat = Math.min(Math.min(positionRange.getNe().getLatitude(),positionRange.getNw().getLatitude()), Math.min(positionRange.getSe().getLatitude(), positionRange.getSw().getLatitude()));
+        double maxLat = Math.max(Math.max(positionRange.getNe().getLatitude(),positionRange.getNw().getLatitude()), Math.min(positionRange.getSe().getLatitude(), positionRange.getSw().getLatitude()));
+        double minLon = Math.min(Math.min(positionRange.getNe().getLatitude(),positionRange.getNw().getLatitude()), Math.min(positionRange.getSe().getLatitude(), positionRange.getSw().getLatitude()));
+        double maxLon = Math.max(Math.max(positionRange.getNe().getLatitude(),positionRange.getNw().getLatitude()), Math.max(positionRange.getSe().getLatitude(), positionRange.getSw().getLatitude()));
+
+        Map<String,Double> range = new HashMap<>();
+        range.put("minLat", minLat);
+        range.put("maxLat", maxLat);
+        range.put("minLon", minLon);
+        range.put("maxLon", maxLon);
+
+        return range;
+    }
+
+    public static boolean isWithinRange(Map<String,Double> range, double buildingLon, double buildingLat) {
+        return (buildingLat >= range.get("minLat") && buildingLat <= range.get("maxLat")) && (buildingLon >= range.get("minLon") && buildingLon <= range.get("maxLon"));
+    }
+
+
 }

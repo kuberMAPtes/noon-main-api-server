@@ -2,7 +2,10 @@ package com.kube.noon.building.repository;
 
 import com.kube.noon.building.domain.Building;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface BuildingProfileRepository extends JpaRepository<Building, Integer> {
@@ -18,6 +21,9 @@ public interface BuildingProfileRepository extends JpaRepository<Building, Integ
      * @author 허예지
      */
     Building findBuildingProfileByBuildingId(int buildingId);
+
+    @Query("SELECT b FROM Building b WHERE b.profileActivated = true")
+    List<Building> findActivatedBuildings();
 
 
 
