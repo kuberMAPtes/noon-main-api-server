@@ -2,6 +2,9 @@ package com.kube.noon.feed.service;
 
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.common.PublicRange;
+import com.kube.noon.common.zzim.Zzim;
+import com.kube.noon.common.zzim.ZzimRepository;
+import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.domain.TagFeed;
 import com.kube.noon.feed.dto.FeedDto;
@@ -37,6 +40,9 @@ public class TestFeedServiceImpl {
 
     @Autowired
     private FeedStatisticsServiceImpl feedStatisticsServiceImpl;
+    
+    @Autowired
+    private ZzimRepository zzimRepository;
 
     /**
      * 피드 목록을 가져오는 테스트를 한다.
@@ -261,6 +267,21 @@ public class TestFeedServiceImpl {
         } else {
             assertThat(memberIdList.size()).isGreaterThan(0);
             memberIdList.stream().forEach(System.out::println);
+        }
+    }
+
+    /**
+     * ZzimList를 가져오는 것에 대한 테스트, 값만 가져온다.
+     */
+    @Transactional
+    @Test
+    public void getZzimListTest() {
+        List<Integer> zzimFeedIdList = zzimRepository.getFeedIdByMemberIdAndZzimType("member_1", ZzimType.LIKE);
+
+        System.out.println(zzimFeedIdList.size());
+
+        for(int feedId : zzimFeedIdList) {
+            System.out.println("FeedId : " + feedId);
         }
     }
 }
