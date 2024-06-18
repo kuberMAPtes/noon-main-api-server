@@ -1,14 +1,13 @@
 package com.kube.noon.building.service;
 import com.kube.noon.building.dto.BuildingDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
-import com.kube.noon.building.repository.BuildingSummaryRepository;
-import lombok.RequiredArgsConstructor;
+import com.kube.noon.places.domain.Position;
+import com.kube.noon.places.domain.PositionRange;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -82,5 +81,24 @@ public class TestBuildingService {
         log.info("빌딩피드 요약내용={}", buildingProfileService.getFeedAISummary(10099));
       //  Thread.sleep(30000); Scheduled 테스트를 위함. 5초마다 호출하는 것을 확인하기 위해 대기.(실제 앱에서는 매일 24시마다 업데이트)
 
+    }
+
+    @Test
+    void getSubscriberCnt(){
+        log.info("구독자수={}",buildingProfileService.getSubscriberCnt(10089));
+    }
+
+
+    @Test
+    void getBuildingsWithinRange(){
+
+        Position ne = new Position(37.7749, -122.4194); // 북동 (임의의 위도와 경도)
+        Position nw = new Position(37.7749, -122.4244); // 북서 (임의의 위도와 경도)
+        Position se = new Position(37.7680, -122.4194); // 남동 (임의의 위도와 경도)
+        Position sw = new Position(37.7680, -122.4244); // 남서 (임의의 위도와 경도)
+
+        PositionRange positionRange = new PositionRange(ne,nw,se,sw);
+        List<BuildingDto> buildingDtos = buildingProfileService.getBuildingsWithinRange(positionRange);
+        log.info("buildingDtos={}", buildingDtos);
     }
 }
