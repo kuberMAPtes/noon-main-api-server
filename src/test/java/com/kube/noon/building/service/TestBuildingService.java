@@ -97,7 +97,7 @@ public class TestBuildingService {
         Position se = new Position(37.7680, -122.4194); // 남동 (임의의 위도와 경도)
         Position sw = new Position(37.7680, -122.4244); // 남서 (임의의 위도와 경도)
 
-        PositionRange positionRange = new PositionRange(ne,nw,se,sw);
+        PositionRange positionRange = new PositionRange(37.7680, -122.4194, 37.7749, -122.4244);
         List<BuildingDto> buildingDtos = buildingProfileService.getBuildingsWithinRange(positionRange);
         log.info("buildingDtos={}", buildingDtos);
     }

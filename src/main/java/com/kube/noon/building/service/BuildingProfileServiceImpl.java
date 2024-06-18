@@ -251,13 +251,12 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     public List<BuildingDto> getBuildingsWithinRange(PositionRange positionRange) {
 
         Map<Building, Integer> subscriberCntMap = new HashMap<>();
-        Map<String,Double> range = getRange(positionRange);
         List<Building> buildings = buildingProfileRepository.findActivatedBuildings();
 
         // 지도 범위 내 건물별 구독자 수 기록
         for (Building building : buildings){
 
-            if(isWithinRange(range, building.getLongitude(), building.getLatitude())){
+            if(isWithinRange(positionRange, building.getLongitude(), building.getLatitude())){
                 subscriberCntMap.put(building, this.getSubscriberCnt(building.getBuildingId()));
             }
 
@@ -280,24 +279,9 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
     }
 
-
-    public Map<String,Double> getRange(PositionRange positionRange){
-        double minLat = Math.min(Math.min(positionRange.getNe().getLatitude(),positionRange.getNw().getLatitude()), Math.min(positionRange.getSe().getLatitude(), positionRange.getSw().getLatitude()));
-        double maxLat = Math.max(Math.max(positionRange.getNe().getLatitude(),positionRange.getNw().getLatitude()), Math.min(positionRange.getSe().getLatitude(), positionRange.getSw().getLatitude()));
-        double minLon = Math.min(Math.min(positionRange.getNe().getLatitude(),positionRange.getNw().getLatitude()), Math.min(positionRange.getSe().getLatitude(), positionRange.getSw().getLatitude()));
-        double maxLon = Math.max(Math.max(positionRange.getNe().getLatitude(),positionRange.getNw().getLatitude()), Math.max(positionRange.getSe().getLatitude(), positionRange.getSw().getLatitude()));
-
-        Map<String,Double> range = new HashMap<>();
-        range.put("minLat", minLat);
-        range.put("maxLat", maxLat);
-        range.put("minLon", minLon);
-        range.put("maxLon", maxLon);
-
-        return range;
-    }
-
-    public static boolean isWithinRange(Map<String,Double> range, double buildingLon, double buildingLat) {
-        return (buildingLat >= range.get("minLat") && buildingLat <= range.get("maxLat")) && (buildingLon >= range.get("minLon") && buildingLon <= range.get("maxLon"));
+    public static boolean isWithinRange(PositionRange range, double buildingLon, double buildingLat) {
+        return (buildingLat >= range.getLowerLatitude() && buildingLat <= range.getUpperLatitude())
+                && (buildingLon >= range.getLowerLongitude() && buildingLon <= range.getUpperLongitude());
     }
 
 

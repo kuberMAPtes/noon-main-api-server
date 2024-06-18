@@ -106,8 +106,8 @@ public class BuildingProfileRestController {
     /**
      * 사용자의 화면 범위 내 건물 목록 보기
      */
-    @PostMapping("/getBuildingsWithinRange")
-    public List<BuildingDto> getBuildingsWithinRange(@RequestBody PositionRange positionRange){ //////////////////Get으로 받아야되긴 한데.. 파라미터를 사용자측에서 어떤식으로 넘겨줄지 모르겠어서 일단 이렇게 함.
+    @GetMapping("/getBuildingsWithinRange")
+    public List<BuildingDto> getBuildingsWithinRange(@ModelAttribute PositionRange positionRange){
 
         return  buildingProfileService.getBuildingsWithinRange(positionRange);
     }
