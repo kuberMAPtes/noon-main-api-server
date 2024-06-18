@@ -6,14 +6,11 @@ import com.kube.noon.building.dto.BuildingZzimDto;
 import com.kube.noon.building.service.BuildingProfileService;
 import com.kube.noon.chat.dto.ChatroomDto;
 import com.kube.noon.chat.service.ChatroomSearchService;
-import com.kube.noon.chat.service.ChatroomService;
-import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.member.dto.memberRelationship.MemberRelationshipDto;
+import com.kube.noon.places.domain.PositionRange;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -90,5 +87,16 @@ public class BuildingProfileRestController {
     public BuildingDto getBuildingProfile(@RequestParam("buildingId") int buildingId) {
         return buildingProfileService.getBuildingProfile(buildingId);
     }
+
+    /**
+     * 사용자의 화면 범위 내 건물 목록 보기
+     */
+    @PostMapping("/getBuildingsWithinRange")
+    public List<BuildingDto> getBuildingsWithinRange(@RequestBody PositionRange positionRange){ //////////////////Get으로 받아야되긴 한데.. 파라미터를 사용자측에서 어떤식으로 넘겨줄지 모르겠어서 일단 이렇게 함.
+
+        return  buildingProfileService.getBuildingsWithinRange(positionRange);
+    }
+
+
 
 }
