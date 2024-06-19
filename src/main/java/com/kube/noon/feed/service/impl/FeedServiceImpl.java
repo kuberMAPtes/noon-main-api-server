@@ -52,6 +52,10 @@ public class FeedServiceImpl implements FeedService {
         List<Integer> zzimLikeList = zzimRepository.getFeedIdByMemberIdAndZzimType(memberId, ZzimType.LIKE);
         List<Integer> zzimBookmarkList = zzimRepository.getFeedIdByMemberIdAndZzimType(memberId, ZzimType.BOOKMARK);
 
+        if(feedList == null) {
+            return new ArrayList<>();
+        }
+        
         return feedList.stream()
                 .map(feed -> {
                     if (zzimLikeList.contains(feed.getFeedId())) {
