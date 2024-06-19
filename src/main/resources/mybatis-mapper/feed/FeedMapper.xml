@@ -50,7 +50,8 @@
             SELECT f.feed_id, COUNT(*) bookmark_count FROM feed f INNER JOIN zzim z ON f.feed_id = z.feed_id WHERE z.zzim_type = 'BOOKMARK' GROUP BY f.feed_id
         ) bookmarks ON f.feed_id = bookmarks.feed_id
         WHERE building_id = #{buildingId}
-        ORDER BY popularity DESC;
+        ORDER BY popularity DESC
+        LIMIT 5;
     </select>
 
 
