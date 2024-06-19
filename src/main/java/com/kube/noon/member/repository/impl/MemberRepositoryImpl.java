@@ -1,6 +1,7 @@
 package com.kube.noon.member.repository.impl;
 
 import com.kube.noon.common.PublicRange;
+import com.kube.noon.common.constant.PagingConstants;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
@@ -14,7 +15,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -88,6 +91,16 @@ public class MemberRepositoryImpl implements MemberRepository {
             log.error("닉네임으로 회원 조회 중 오류 발생", e);
             throw new MemberNotFoundException("회원 조회 중 오류 발생", e);
         }
+    }
+
+    @Override
+    public Page<Member> findMemberByNickname(String nickname, int page) {
+        if (page < 1) {
+            return new PageImpl<>(List.of());
+        }
+        PageRequest pageRequest =
+                PageRequest.of(page - 1, PagingConstants.PAGE_SIZE, Sort.by(Sort.Order.asc("nickname")));
+        return this.memberJpaRepository.findMemberByNicknameLike(nickname, pageRequest);
     }
 
     @Override
