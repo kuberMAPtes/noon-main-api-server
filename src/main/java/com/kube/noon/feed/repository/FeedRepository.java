@@ -180,7 +180,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
             SELECT f.*
             FROM feed f
             LEFT JOIN (
-                SELECT z.feed_id
+                SELECT DISTINCT z.feed_id
                 FROM zzim z
                 WHERE z.zzim_type = 'LIKE'
                   AND z.member_id = :#{#member.memberId}
