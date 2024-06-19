@@ -17,7 +17,7 @@
     <resultMap id = "feedPopularityMap" type = "com.kube.noon.feed.dto.FeedPopularityDto">
         <result property = "feedId" column = "feed_id" jdbcType = "NUMERIC"/>
         <result property = "title" column = "title" jdbcType = "VARCHAR"/>
-        <result property = "buildingId" column = "building_id" jdbcType = "NUMERIC"/>
+        <result property = "nickname" column = "nickname" jdbcType = "VARCHAR"/>
         <result property = "popularity" column = "popularity" jdbcType = "NUMERIC"/>
     </resultMap>
 
@@ -41,7 +41,7 @@
     </select>
 
     <select id = "getFeedPopularity" parameterType="int" resultMap = "feedPopularityMap">
-        SELECT f.feed_id, f.title, f.building_id, f.view_cnt + 3 * COALESCE(like_count, 0) + 5 * COALESCE(bookmark_count, 0) AS popularity
+        SELECT f.feed_id, f.title, m.nickname, f.view_cnt + 3 * COALESCE(like_count, 0) + 5 * COALESCE(bookmark_count, 0) AS popularity
         FROM feed f
                  LEFT JOIN (
             SELECT f.feed_id, COUNT(*) like_count FROM feed f INNER JOIN zzim z ON f.feed_id = z.feed_id WHERE z.zzim_type = 'LIKE' GROUP BY f.feed_id
@@ -49,9 +49,11 @@
                  LEFT JOIN (
             SELECT f.feed_id, COUNT(*) bookmark_count FROM feed f INNER JOIN zzim z ON f.feed_id = z.feed_id WHERE z.zzim_type = 'BOOKMARK' GROUP BY f.feed_id
         ) bookmarks ON f.feed_id = bookmarks.feed_id
-        WHERE building_id = #{buildingId}
+                 LEFT JOIN
+             members m ON f.writer_id = m.member_id
+        WHERE f.building_id = #{buildingId}
         ORDER BY popularity DESC
-        LIMIT 5;
+            LIMIT 5;
     </select>
 
 
