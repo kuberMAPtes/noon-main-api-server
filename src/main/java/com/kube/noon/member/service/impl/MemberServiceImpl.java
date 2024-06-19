@@ -60,11 +60,15 @@ public class MemberServiceImpl implements MemberService {
             if (Boolean.TRUE.equals(dto.getSocialSignUp())) {
                 member.setPwd("social_sign_up");
 
-                if(dto.getPhoneNumber().equals("010-0000-0000") || dto.getPhoneNumber().isEmpty() || dto.getPhoneNumber() == null){
-                    member.setPhoneNumber(RandomData.getRandomPhoneNumber()+"X");
+                if(dto.getPhoneNumber()==null) {
+                    member.setPhoneNumber(RandomData.getRandomPhoneNumber() + "X");
+                }else {
+                    if (dto.getPhoneNumber().equals("010-0000-0000") || dto.getPhoneNumber().isEmpty()) {
+                        member.setPhoneNumber(RandomData.getRandomPhoneNumber() + "X");
+                    }
                 }
-
             }
+            System.out.println("레포지토리에 넣기 전에 member 검증 : "+member);
             memberRepository.addMember(member);
             log.info("회원 추가 성공 : DTO {}", member);
         } catch (MemberCreationException e) {
@@ -457,6 +461,15 @@ public class MemberServiceImpl implements MemberService {
         log.info("회원 아이디 중복 확인 완료 : {}", memberId);
     }
     @Override
+    public void checkMemberIdExisted(String memberId){
+        log.info("회원 아이디 확인 완료 : {}", memberId);
+    }
+    //회원에 데이터가 있으면 true
+    @Override
+    public void checkPhoneNumberAndMemberId(String phoneNumber, String memberId){
+        log.info("회원 정보와 입력된 전화번호가 같음을 확인 : {}", phoneNumber);
+    }
+    @Override
     public void checkLoginMemberIdPattern(String memberId){
         log.info("회원 아이디 패턴 확인 완료 : {}", memberId);
     }
@@ -466,6 +479,7 @@ public class MemberServiceImpl implements MemberService {
         log.info("회원 비밀번호 확인 완료 : {}", memberId);
     }
 
+    //회원에 데이터가 없으면 true
     @Override
     public void checkPhoneNumber(String phoneNumber) {
         log.info("회원 전화번호 중복 확인 완료 : {}", phoneNumber);

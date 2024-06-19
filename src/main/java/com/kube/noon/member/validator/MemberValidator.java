@@ -137,6 +137,16 @@ public class MemberValidator {
         memberScanner.imoMemberIdNotExist(memberId);
         memberScanner.imoNotBadWord(memberId);
     }
+    //비밀번호 변경 시 아이디 체크
+    public void checkMemberIdExisted(String memberId){
+        memberScanner.imoDataNotNull(memberId);
+        memberScanner.imoMemberIdExist(memberId);
+    }
+    public void checkPhoneNumberAndMemberId(String phoneNumber, String memberId) {
+        memberScanner.imoDataNotNull(phoneNumber);
+        memberScanner.imoDataNotNull(memberId);
+        memberScanner.imoMemberPhoneNumberInPutValueSame(phoneNumber, memberId);
+    }
     //로그인시
     public void checkLoginMemberIdPattern(String memberId){
         memberScanner.imoDataNotNull(memberId);

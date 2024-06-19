@@ -56,6 +56,10 @@ public interface MemberService {
 
     void checkMemberId(String memberId);
 
+    void checkMemberIdExisted(String memberId);
+
+    void checkPhoneNumberAndMemberId(String phoneNumber, String memberId);
+
     void checkLoginMemberIdPattern(String memberId);
 
     void checkPassword(String memberId, String password);

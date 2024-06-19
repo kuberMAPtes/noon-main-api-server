@@ -94,6 +94,13 @@ public class TestMemberRepository {
         assertThat(foundMember).isPresent();
         assertThat(foundMember.get().getNickname()).isEqualTo("nickname_1");
 
+        memberRepository.findMemberById("member_100").ifPresent(
+                member -> {
+                    System.out.println(member);
+                    System.out.println(member.getPhoneNumber().equals("010-0000-0000"));
+                }
+        );
+
     }
 
     @Test

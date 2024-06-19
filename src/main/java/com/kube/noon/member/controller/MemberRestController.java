@@ -142,11 +142,23 @@ public class MemberRestController {
     @GetMapping("/checkMemberId")
     public ResponseEntity<ApiResponse<Boolean>> checkMemberId(@RequestParam String memberId) {
         log.info("checkMemberId :: " + memberId);
+        //회원가입전 체크하는 것
         memberService.checkMemberId(memberId);
         memberService.checkBadWord(memberId);
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 ID를 사용할 수 있습니다.", true));
     }
-
+    @GetMapping("/checkMemberIdExisted")
+    public ResponseEntity<ApiResponse<Boolean>> checkMemberIdExisted(@RequestParam String memberId){
+        log.info("checkMemberIdExisted :: " + memberId);
+        memberService.checkMemberIdExisted(memberId);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 ID를 사용할 수 있습니다.", true));
+    }
+    @GetMapping("/checkPhoneNumberAndMemberId")
+    public ResponseEntity<ApiResponse<Boolean>> checkPhoneNumberAndMemberId(@RequestParam String phoneNumber, @RequestParam String memberId){
+        log.info("checkPhoneNumberAndMemberId :: " + phoneNumber + " " + memberId);
+        memberService.checkPhoneNumberAndMemberId(phoneNumber, memberId);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("입력한 전화번호가 회원정보에 있는 전화번호와 일치합니다.", true));
+    }
 
     @Operation(summary = "닉네임 확인", description = "닉네임의 유효성을 확인합니다.")
     @ApiResponses({
@@ -382,6 +394,7 @@ public class MemberRestController {
             addMemberDto.setPwd("social_sign_up");
             //만약 존재하는 아이디라면 GlobalExceptionHandler에서 처리된다.
             //프론트엔드에서 info를 받았을 때 memberId가 있는지 보면 된다.
+            addMemberDto.setSocialSignUp(true);
             memberService.addMember(addMemberDto);
 
             MemberDto memberDto = memberService.findMemberById(dto.getMemberId(), dto.getMemberId());
@@ -462,9 +475,9 @@ public class MemberRestController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "비밀번호 변경 실패")
     })
-    @PostMapping("/updatePassword")
+    @PostMapping("/updatePwd")
     public ResponseEntity<ApiResponse<Boolean>> updatePassword(@RequestBody UpdatePasswordDto requestDto) {
-        log.info("updatePassword" + requestDto);
+        log.info("updatePwd" + requestDto);
         memberService.updatePassword(requestDto);
         return ResponseEntity.ok(ApiResponseFactory.createResponse("비밀번호 변경 업무", true));
     }
@@ -538,6 +551,13 @@ public class MemberRestController {
         MemberDto dto = memberService.findMemberById(requestDto.getMemberId(), requestDto.getMemberId());
         System.out.println("회원조회업무 :: " + dto);
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 조회 업무", dto));
+    }
+    @GetMapping("/getMemberIdByPhoneNumber")
+    public ResponseEntity<ApiResponse<String>> getMemberByPhoneNumber(@RequestParam String phoneNumber){
+        log.info("getMemberByPhoneNumber :: " + phoneNumber);
+        MemberDto dto = memberService.findMemberByPhoneNumber(phoneNumber);
+        System.out.println("회원조회업무 :: " + dto);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("", dto.getMemberId()));
     }
 
     @Operation(summary = "회원 프로필 조회", description = "사용자의 프로필을 조회합니다.")
