@@ -94,13 +94,13 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
-    public Page<Member> findMemberByNickname(String nickname, int page) {
+    public Page<Member> findMemberByNickname(String nickname, String requester, int page) {
         if (page < 1) {
             return new PageImpl<>(List.of());
         }
         PageRequest pageRequest =
                 PageRequest.of(page - 1, PagingConstants.PAGE_SIZE, Sort.by(Sort.Order.asc("nickname")));
-        return this.memberJpaRepository.findMemberByNicknameLike(nickname, pageRequest);
+        return this.memberJpaRepository.findMemberByNicknameLike(nickname, requester, pageRequest);
     }
 
     @Override

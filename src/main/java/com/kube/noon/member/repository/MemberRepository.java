@@ -24,7 +24,7 @@ public interface MemberRepository {
 
     Optional<Member> findMemberByNickname(String nickname);
 
-    Page<Member> findMemberByNickname(String nickname, int page);
+    Page<Member> findMemberByNickname(String nickname, String requester, int page);
 
     Optional<Member> findMemberByPhoneNumber(String phoneNumber);
 

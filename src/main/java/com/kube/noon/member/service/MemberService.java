@@ -1,6 +1,7 @@
 package com.kube.noon.member.service;
 
 import com.kube.noon.member.domain.Member;
+import com.kube.noon.member.dto.ResponseDto.SearchMemberResponseDto;
 import com.kube.noon.member.dto.member.*;
 import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
 import com.kube.noon.member.dto.memberRelationship.DeleteMemberRelationshipDto;
@@ -35,6 +36,8 @@ public interface MemberService {
     Page<MemberRelationshipDto> findMemberRelationshipListByCriteria(String fromId, MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto, int page, int size);
 
     MemberRelationshipDto findMemberRelationship(String fromId, String toId);
+
+    Page<SearchMemberResponseDto> searchMemberByNickname(String requesterId, String searchKeyword, int page);
 
     void updateMember(UpdateMemberDto updateMemberDto);
 

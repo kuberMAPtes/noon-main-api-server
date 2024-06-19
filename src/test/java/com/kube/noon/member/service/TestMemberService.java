@@ -4,6 +4,7 @@ import com.kube.noon.common.PublicRange;
 import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
+import com.kube.noon.member.dto.ResponseDto.SearchMemberResponseDto;
 import com.kube.noon.member.dto.member.*;
 import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
 import com.kube.noon.member.dto.memberRelationship.DeleteMemberRelationshipDto;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -136,6 +138,56 @@ public class TestMemberService {
                 .build();
         log.info("회원 관계 리스트 찾기 테스트");
         log.info(memberService.findMemberRelationshipListByCriteria("member_100",mrsc,3,5).toString());
+    }
+
+    @Test
+    void searchMemberByNickname() {
+        addSampleMember("sample-1", "samnick-1", "01012341200");
+        addSampleMember("sample-2", "samnick-2", "01012341201");
+        addSampleMember("sample-3", "samnick-3", "01012341202");
+        addSampleMember("sample-4", "samnick-4", "01012341203");
+        addSampleMember("sample-5", "samnick-5", "01012341204");
+        addSampleMember("sample-6", "samnick-6", "01012341205");
+        addSampleMember("sample-7", "samnick-7", "01012341206");
+        addSampleMember("sample-8", "samnick-8", "01012341207");
+        addSampleMember("sample-9", "samnick-9", "01012341208");
+
+        addSampleRelationship(findSampleMember("sample-1"), findSampleMember("sample-2"));
+        addSampleRelationship(findSampleMember("sample-3"), findSampleMember("sample-1"));
+
+        Page<SearchMemberResponseDto> result =
+                this.memberService.searchMemberByNickname("sample-1", "samnick", 1);
+        log.info("sample={}", result.getContent());
+        assertThat(result.getTotalElements()).isEqualTo(8);
+
+        SearchMemberResponseDto sample2 = result.stream().filter((m) -> m.getMemberId().equals("sample-2")).findAny().get();
+        SearchMemberResponseDto sample3 = result.stream().filter((m) -> m.getMemberId().equals("sample-3")).findAny().get();
+
+        assertThat(sample2.isFollower()).isFalse();
+        assertThat(sample2.isFollowing()).isTrue();
+        assertThat(sample3.isFollower()).isTrue();
+        assertThat(sample3.isFollowing()).isFalse();
+    }
+
+    private void addSampleMember(String memberId, String nickname, String phoneNumber) {
+        Member member = new Member();
+        member.setMemberId(memberId);
+        member.setNickname(nickname);
+        member.setPwd("samplepwd");
+        member.setPhoneNumber(phoneNumber);
+        this.memberRepository.addMember(member);
+    }
+
+    private void addSampleRelationship(Member from, Member to) {
+        MemberRelationship memberRelationship = new MemberRelationship();
+        memberRelationship.setFromMember(from);
+        memberRelationship.setToMember(to);
+        memberRelationship.setRelationshipType(RelationshipType.FOLLOW);
+        this.memberRepository.addMemberRelationship(memberRelationship);
+    }
+
+    private Member findSampleMember(String memberId) {
+        return this.memberRepository.findMemberById(memberId).get();
     }
 
     @Test

@@ -5,6 +5,7 @@ import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
+import com.kube.noon.member.dto.ResponseDto.SearchMemberResponseDto;
 import com.kube.noon.member.dto.member.*;
 import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
 import com.kube.noon.member.dto.memberRelationship.DeleteMemberRelationshipDto;
@@ -329,6 +330,16 @@ public class MemberServiceImpl implements MemberService {
             log.error("회원 관계 리스트 조회 중 오류 발생: fromId={}, dto={}, page={}, size={}", fromId, criteriaDto, page, size, e);
             throw e;
         }
+    }
+
+    @Override
+    public Page<SearchMemberResponseDto> searchMemberByNickname(String requesterId, String searchKeyword, int page) {
+        return this.memberRepository.findMemberByNickname(searchKeyword, requesterId, page)
+                .map((p) -> SearchMemberResponseDto.of(
+                        p,
+                        this.memberRepository.findMemberRelationship(p.getMemberId(), requesterId).isPresent(),
+                        this.memberRepository.findMemberRelationship(requesterId, p.getMemberId()).isPresent()
+                ));
     }
 
     @Override

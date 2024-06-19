@@ -21,6 +21,7 @@ public interface MemberJpaRepository extends JpaRepository<Member, String>, Memb
             WHERE m.nickname LIKE CONCAT('%', :nickname, '%')
                 AND m.unlockTime < NOW()
                 AND m.signedOff = FALSE
+                AND m.memberId != :requester
             """)
-    Page<Member> findMemberByNicknameLike(String nickname, Pageable pageable);
+    Page<Member> findMemberByNicknameLike(String nickname, String requester, Pageable pageable);
 }

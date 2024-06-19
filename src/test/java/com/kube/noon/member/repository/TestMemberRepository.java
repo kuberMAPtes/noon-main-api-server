@@ -115,9 +115,9 @@ public class TestMemberRepository {
             this.memberRepository.addMember(saveMember);
         }
 
-        Page<Member> result1 = this.memberRepository.findMemberByNickname("sample-nickname", 1);
-        Page<Member> result2 = this.memberRepository.findMemberByNickname("sample-nickname", 3);
-        Page<Member> result3 = this.memberRepository.findMemberByNickname("sample-nickname", 4);
+        Page<Member> result1 = this.memberRepository.findMemberByNickname("sample-nickname", "none", 1);
+        Page<Member> result2 = this.memberRepository.findMemberByNickname("sample-nickname", "none", 3);
+        Page<Member> result3 = this.memberRepository.findMemberByNickname("sample-nickname", "none", 4);
 
         assertThat(result1.getTotalPages()).isEqualTo(3);
         assertThat(result1.getTotalElements()).isEqualTo(25);
@@ -142,8 +142,8 @@ public class TestMemberRepository {
             this.memberRepository.addMember(saveMember);
         }
 
-        Page<Member> result1 = this.memberRepository.findMemberByNickname("sample-nickname", 0);
-        Page<Member> result2 = this.memberRepository.findMemberByNickname("sample-nickname", -1);
+        Page<Member> result1 = this.memberRepository.findMemberByNickname("sample-nickname", "none", 0);
+        Page<Member> result2 = this.memberRepository.findMemberByNickname("sample-nickname", "none", -1);
         assertThat(result1.getContent().size()).isZero();
         assertThat(result2.getContent().size()).isZero();
     }
