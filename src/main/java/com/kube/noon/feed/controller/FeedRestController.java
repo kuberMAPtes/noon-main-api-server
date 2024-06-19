@@ -127,9 +127,21 @@ public class FeedRestController {
         return mainFeedId;
     }
 
+    @Operation(summary = "피드 검색하기", description = "피드 제목이나 내용을 검색한 결과를 가져옵니다. 페이징이 적용됩니다.")
+    @GetMapping("/search/{page}")
+    public List<FeedSummaryDto> searchFeed(
+            @Parameter(description = "검색할 키워드") @RequestParam String keyword,
+            @Parameter(description = "페이지") @PathVariable("page") int page
+            ) {
+        List<FeedSummaryDto> result = feedService.searchFeedList(keyword, page - 1, PAGE_SIZE);
+
+        return result;
+    }
+
     @Operation(summary = "피드 검색하기", description = "피드 제목이나 내용을 검색한 결과를 가져옵니다.")
     @GetMapping("/search")
-    public List<FeedSummaryDto> searchFeed(@Parameter(description = "검색할 키워드") @RequestParam String keyword) {
+    public List<FeedSummaryDto> searchFeed(
+            @Parameter(description = "검색할 키워드") @RequestParam String keyword) {
         List<FeedSummaryDto> result = feedService.searchFeedList(keyword);
 
         return result;
@@ -198,7 +210,7 @@ public class FeedRestController {
     }
 
     @Operation(summary = "피드의 북마크 등록", description = "하나의 피드에 북마크를 등록합니다.")
-    @PostMapping("/addbookmark/{feedId}/{memberId}")
+    @PostMapping("/addBookmark/{feedId}/{memberId}")
     public int addFeedBookmark(
             @Parameter(description = "북마크를 등록할 피드 ID") @PathVariable("feedId") int feedId,
             @Parameter(description = "북마크를 등록하는 회원 ID") @PathVariable("memberId") String memberId) {
