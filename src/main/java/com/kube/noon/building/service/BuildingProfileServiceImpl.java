@@ -7,6 +7,7 @@ import com.kube.noon.building.dto.BuildingZzimDto;
 import com.kube.noon.building.repository.BuildingSummaryRepository;
 import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
 import com.kube.noon.building.repository.BuildingProfileRepository;
+import com.kube.noon.chat.dto.LiveliestChatroomDto;
 import com.kube.noon.common.constant.PagingConstants;
 import com.kube.noon.common.zzim.Zzim;
 import com.kube.noon.common.zzim.ZzimRepository;
@@ -299,6 +300,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
                 .map((building) -> {
                     BuildingSearchResponseDto dto = new BuildingSearchResponseDto();
                     BeanUtils.copyProperties(building, dto);
+                    dto.setLiveliestChatroomDto(new LiveliestChatroomDto("SAMPLE", "SAMPLE")); // TODO: Replace with real data in the future
                     return dto;
                 })
                 .toList();

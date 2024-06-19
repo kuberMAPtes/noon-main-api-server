@@ -1,5 +1,6 @@
 package com.kube.noon.building.dto;
 
+import com.kube.noon.chat.dto.LiveliestChatroomDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,4 +14,5 @@ public class BuildingSearchResponseDto {
     private String buildingName;
     private String roadAddr;
     private String feedAiSummary;
+    private LiveliestChatroomDto liveliestChatroomDto;
 }
