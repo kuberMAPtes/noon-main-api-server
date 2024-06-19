@@ -28,4 +28,12 @@ public interface BuildingProfileRepository extends JpaRepository<Building, Integ
     @Query("SELECT b FROM Building b WHERE b.roadAddr = :roadAddr AND b.profileActivated = true")
     Building findBuildingProfileByRoadAddr(String roadAddr);
 
+    @Query("""
+        SELECT b FROM Building b
+        WHERE b.buildingName LIKE CONCAT('%', :searchKeyword, '%')
+            AND b.profileActivated = TRUE
+        ORDER BY b.buildingName
+        LIMIT :rowCnt OFFSET :rowSkipCnt
+        """)
+    List<Building> findBuildingProfileBySearchKeyword(String searchKeyword, int rowSkipCnt, int rowCnt);
 }

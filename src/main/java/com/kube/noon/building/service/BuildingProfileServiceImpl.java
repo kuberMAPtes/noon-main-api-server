@@ -175,6 +175,9 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     public BuildingDto getBuildingProfileByPosition(Position position) throws PlaceNotFoundException {
         PlaceDto findPlace = this.placesService.getPlaceByPosition(position);
         Building building = this.buildingProfileRepository.findBuildingProfileByRoadAddr(findPlace.getRoadAddress());
+        if (building == null) {
+            throw new PlaceNotFoundException("No building");
+        }
         return BuildingDto.fromEntity(building);
     }
 
