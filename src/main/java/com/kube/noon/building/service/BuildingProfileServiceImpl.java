@@ -292,6 +292,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
     @Override
     public List<BuildingSearchResponseDto> searchBuilding(String searchKeyword, Integer page) {
+        page = page == null ? PagingConstants.DEFAULT_PAGE : page;
         return this.buildingProfileRepository
                 .findBuildingProfileBySearchKeyword(searchKeyword, PagingConstants.PAGE_SIZE * (page - 1), PagingConstants.PAGE_SIZE)
                 .stream()
