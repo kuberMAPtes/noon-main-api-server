@@ -10,6 +10,7 @@ import com.kube.noon.common.security.support.BearerTokenSupport;
 import com.kube.noon.common.security.support.InvalidRefreshTokenException;
 import com.kube.noon.common.security.support.KakaoTokenSupport;
 import com.kube.noon.member.dto.RequestDto.*;
+import com.kube.noon.member.dto.ResponseDto.SearchMemberResponseDto;
 import com.kube.noon.member.dto.auth.googleLoginRequestDto;
 import com.kube.noon.member.dto.member.*;
 import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
@@ -392,6 +393,15 @@ public class MemberRestController {
 //        addTokenToCookie();
 
         return ResponseEntity.ok(ApiResponseFactory.createResponse("로그인 업무", memberDtoAtomicReference.get()));
+    }
+
+    @GetMapping("/searchMember")
+    public ResponseEntity<ApiResponse<Page<SearchMemberResponseDto>>> searchMember(
+            @RequestParam("requesterId") String requesterId,
+            @RequestParam("searchKeyword") String searchKeyword,
+            @RequestParam("page") int page
+    ) {
+        return new ResponseEntity<>(ApiResponseFactory.createResponse("OK", this.memberService.searchMemberByNickname(requesterId, searchKeyword, page)), HttpStatus.OK);
     }
 
     @Operation(summary = "로그아웃", description = "사용자가 로그아웃합니다.")

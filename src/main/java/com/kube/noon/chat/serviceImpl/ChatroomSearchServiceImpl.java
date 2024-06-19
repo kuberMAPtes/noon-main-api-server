@@ -6,8 +6,11 @@ import com.kube.noon.chat.dto.ChatroomDto;
 import com.kube.noon.chat.repository.ChatEntranceRepository;
 import com.kube.noon.chat.repository.ChatroomRepository;
 import com.kube.noon.chat.service.ChatroomSearchService;
+import com.kube.noon.common.constant.PagingConstants;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -66,6 +69,21 @@ public class ChatroomSearchServiceImpl implements ChatroomSearchService {
         List<ChatroomDto> chatroomDtos = convertToChatroomDtoList(chatrooms);
 
         return chatroomDtos;
+    }
+
+    @Override
+    public Page<ChatroomDto> searchChatroomByChatroomName(String searchKeyword, int page) {
+        return this.chatroomRepository
+                .findByChatroomNameContaining(searchKeyword, PageRequest.of(page - 1, PagingConstants.PAGE_SIZE))
+                .map((c) -> {
+                    ChatroomDto dto = new ChatroomDto();
+                    dto.setChatroomID(c.getChatroomId());
+                    dto.setChatroomMinTemp(c.getChatroomMinTemp());
+                    dto.setChatroomName(c.getChatroomName());
+                    dto.setChatroomCreatorId(c.getChatroomCreatorId());
+                    dto.setChatroomType(c.getChatroomType().name());
+                    return dto;
+                });
     }
 
     @Override
