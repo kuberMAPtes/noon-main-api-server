@@ -242,6 +242,18 @@ public class FeedServiceImpl implements FeedService {
         return feedListByBuildingSubscription;
     }
 
+    @Override
+    public List<FeedSummaryDto> getAllFeedOrderByPopolarity(String memberId, int page, int pageSize) {
+        int offset = (page) * pageSize;
+        List<FeedSummaryDto> allFeedOrderByPopolarity = feedMyBatisRepository.getAllFeedOrderByPopolarity(pageSize, offset);
+
+        if (memberId == null || memberId.isEmpty()) { // 만약 memberId 정보가 없다면 그냥 리스트 출력
+            return allFeedOrderByPopolarity;
+        } else { // 만약 memberId 정보가 있다면 좋아요, 북마크 정보를 반영하고 출력
+            return setFeedSummaryDtoLikeAndBookmark(memberId, allFeedOrderByPopolarity);
+        }
+    }
+
     @Transactional
     @Override
     public int addFeed(FeedDto feedDto) {

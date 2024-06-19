@@ -19,6 +19,4 @@ public interface FeedStatisticsService {
     // 맴버가 어떤 태그의 글을 좋아요를 눌렀는지 개수를 확인한다.
     List<MemberLikeTagDto> getMemberLikeTag();
 
-    // 모든 피드를 인기도순으로 나열한다.
-    List<FeedSummaryDto> getAllFeedOrderByPopolarity(int page, int pageSize);
 }

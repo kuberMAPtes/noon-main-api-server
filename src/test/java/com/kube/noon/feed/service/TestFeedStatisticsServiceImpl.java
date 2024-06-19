@@ -68,19 +68,4 @@ public class TestFeedStatisticsServiceImpl {
             log.info(feedPopularityDto);
         }
     }
-
-    /**
-     * 인기도 별로 나열한 피드 목록을 가져옵니다.
-     */
-    @Transactional
-    @Test
-    public void getAllFeedOrderByPopolarityTest() {
-        List<FeedSummaryDto> result = feedStatisticsServiceImpl.getAllFeedOrderByPopolarity(1, 10);
-
-        assertThat(result).isNotNull();
-        assertThat(result.size()).isGreaterThan(0);
-        for (FeedSummaryDto feedSummaryDto : result) {
-            log.info(feedSummaryDto);
-        }
-    }
 }

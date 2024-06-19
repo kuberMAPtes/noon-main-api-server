@@ -90,6 +90,21 @@ public class TestFeedServiceImpl {
     }
 
     /**
+     * 인기도 별로 나열한 피드 목록을 가져옵니다.
+     */
+    @Transactional
+    @Test
+    public void getAllFeedOrderByPopolarityTest() {
+        List<FeedSummaryDto> result = feedServiceImpl.getAllFeedOrderByPopolarity("member_1", 1, 10);
+
+        assertThat(result).isNotNull();
+        assertThat(result.size()).isGreaterThan(0);
+        for (FeedSummaryDto feedSummaryDto : result) {
+            log.info(feedSummaryDto);
+        }
+    }
+
+    /**
      * 피드를 추가한다.
      * 글을 하나도 적지 않은 건물 내에서 긍을 처음 작성하는 유저 대상으로 테스트한다.
      * building_id = 10015, writer_id = 'member_15'

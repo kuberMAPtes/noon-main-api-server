@@ -33,10 +33,4 @@ public class FeedStatisticsServiceImpl implements FeedStatisticsService {
     public List<MemberLikeTagDto> getMemberLikeTag() {
         return feedMyBatisRepository.getMemberLikeTag();
     }
-
-    @Override
-    public List<FeedSummaryDto> getAllFeedOrderByPopolarity(int page, int pageSize) {
-        int offset = (page) * pageSize;
-        return feedMyBatisRepository.getAllFeedOrderByPopolarity(pageSize, offset);
-    }
 }
