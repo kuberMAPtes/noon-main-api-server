@@ -2,10 +2,12 @@ package com.kube.noon.building.service;
 
 import com.kube.noon.building.domain.Building;
 import com.kube.noon.building.dto.BuildingDto;
+import com.kube.noon.building.dto.BuildingSearchResponseDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
 import com.kube.noon.building.repository.BuildingSummaryRepository;
 import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
 import com.kube.noon.building.repository.BuildingProfileRepository;
+import com.kube.noon.common.constant.PagingConstants;
 import com.kube.noon.common.zzim.Zzim;
 import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
@@ -18,6 +20,7 @@ import com.kube.noon.places.exception.PlaceNotFoundException;
 import com.kube.noon.places.service.PlacesService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.web.config.SortHandlerMethodArgumentResolverCustomizer;
 import org.springframework.stereotype.Service;
 
@@ -287,5 +290,16 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
                 && (buildingLon >= range.getLowerLongitude() && buildingLon <= range.getUpperLongitude());
     }
 
-
+    @Override
+    public List<BuildingSearchResponseDto> searchBuilding(String searchKeyword, Integer page) {
+        return this.buildingProfileRepository
+                .findBuildingProfileBySearchKeyword(searchKeyword, PagingConstants.PAGE_SIZE * (page - 1), PagingConstants.PAGE_SIZE)
+                .stream()
+                .map((building) -> {
+                    BuildingSearchResponseDto dto = new BuildingSearchResponseDto();
+                    BeanUtils.copyProperties(building, dto);
+                    return dto;
+                })
+                .toList();
+    }
 }
