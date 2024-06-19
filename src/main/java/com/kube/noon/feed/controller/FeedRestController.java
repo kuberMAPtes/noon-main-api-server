@@ -210,7 +210,7 @@ public class FeedRestController {
     }
 
     @Operation(summary = "피드의 북마크 등록", description = "하나의 피드에 북마크를 등록합니다.")
-    @PostMapping("/addbookmark/{feedId}/{memberId}")
+    @PostMapping("/addBookmark/{feedId}/{memberId}")
     public int addFeedBookmark(
             @Parameter(description = "북마크를 등록할 피드 ID") @PathVariable("feedId") int feedId,
             @Parameter(description = "북마크를 등록하는 회원 ID") @PathVariable("memberId") String memberId) {

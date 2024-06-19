@@ -69,6 +69,6 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
      * @param zzimType
      * @return
      */
-    @Query("SELECT z.feedId FROM Zzim z WHERE z.memberId = :#{#memberId} AND z.zzimType = :#{#zzimType}")
+    @Query("SELECT z.feedId FROM Zzim z WHERE z.memberId = :#{#memberId} AND z.zzimType = :#{#zzimType} AND z.activated = true")
     List<Integer> getFeedIdByMemberIdAndZzimType(String memberId, ZzimType zzimType);
 }
