@@ -2,6 +2,7 @@ package com.kube.noon.feed.service;
 
 import com.kube.noon.feed.dto.FeedCntByTagDto;
 import com.kube.noon.feed.dto.FeedPopularityDto;
+import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.dto.FeedViewCntByBuildingDto;
 import com.kube.noon.feed.service.impl.FeedStatisticsServiceImpl;
 import com.kube.noon.feed.service.recommend.FeedRecommendationMemberId;
@@ -65,6 +66,21 @@ public class TestFeedStatisticsServiceImpl {
         assertThat(result.size()).isGreaterThan(0);
         for (FeedPopularityDto feedPopularityDto : result) {
             log.info(feedPopularityDto);
+        }
+    }
+
+    /**
+     * 인기도 별로 나열한 피드 목록을 가져옵니다.
+     */
+    @Transactional
+    @Test
+    public void getAllFeedOrderByPopolarityTest() {
+        List<FeedSummaryDto> result = feedStatisticsServiceImpl.getAllFeedOrderByPopolarity(1, 10);
+
+        assertThat(result).isNotNull();
+        assertThat(result.size()).isGreaterThan(0);
+        for (FeedSummaryDto feedSummaryDto : result) {
+            log.info(feedSummaryDto);
         }
     }
 }

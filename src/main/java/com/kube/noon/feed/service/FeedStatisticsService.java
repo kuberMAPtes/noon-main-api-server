@@ -1,9 +1,6 @@
 package com.kube.noon.feed.service;
 
-import com.kube.noon.feed.dto.FeedCntByTagDto;
-import com.kube.noon.feed.dto.FeedPopularityDto;
-import com.kube.noon.feed.dto.FeedViewCntByBuildingDto;
-import com.kube.noon.feed.dto.MemberLikeTagDto;
+import com.kube.noon.feed.dto.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,4 +18,7 @@ public interface FeedStatisticsService {
 
     // 맴버가 어떤 태그의 글을 좋아요를 눌렀는지 개수를 확인한다.
     List<MemberLikeTagDto> getMemberLikeTag();
+
+    // 모든 피드를 인기도순으로 나열한다.
+    List<FeedSummaryDto> getAllFeedOrderByPopolarity(int page, int pageSize);
 }

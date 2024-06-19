@@ -1,9 +1,6 @@
 package com.kube.noon.feed.service.impl;
 
-import com.kube.noon.feed.dto.FeedCntByTagDto;
-import com.kube.noon.feed.dto.FeedPopularityDto;
-import com.kube.noon.feed.dto.FeedViewCntByBuildingDto;
-import com.kube.noon.feed.dto.MemberLikeTagDto;
+import com.kube.noon.feed.dto.*;
 import com.kube.noon.feed.repository.mybatis.FeedMyBatisRepository;
 import com.kube.noon.feed.service.FeedStatisticsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,5 +32,11 @@ public class FeedStatisticsServiceImpl implements FeedStatisticsService {
     @Override
     public List<MemberLikeTagDto> getMemberLikeTag() {
         return feedMyBatisRepository.getMemberLikeTag();
+    }
+
+    @Override
+    public List<FeedSummaryDto> getAllFeedOrderByPopolarity(int page, int pageSize) {
+        int offset = (page) * pageSize;
+        return feedMyBatisRepository.getAllFeedOrderByPopolarity(pageSize, offset);
     }
 }

@@ -86,6 +86,14 @@ public class FeedRestController {
         return feedListByBuildingSubscription;
     }
 
+    @Operation(summary = "인기도 순으로 나열한 전체 피드 목록", description = "인기도가 높은 순서대로 피드 전체 목록을 출력합니다.")
+    @GetMapping("/getAllFeedOrderByPopolarity/{page}")
+    public List<FeedSummaryDto> getBuildingSubscriptionFeedList(@Parameter(description = "페이지") @PathVariable("page") int page) {
+        List<FeedSummaryDto> allFeedOrderByPoplarity = feedStatisticsService.getAllFeedOrderByPopolarity(page - 1, PAGE_SIZE);
+
+        return allFeedOrderByPoplarity;
+    }
+
     @Operation(summary = "피드 추가", description = "피드를 하나 추가합니다.")
     @PostMapping("/addFeed")
     public int addFeed(
