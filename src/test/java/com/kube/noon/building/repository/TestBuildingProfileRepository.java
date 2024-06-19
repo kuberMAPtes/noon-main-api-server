@@ -5,13 +5,13 @@ import com.kube.noon.building.dto.BuildingDto;
 import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
 import com.kube.noon.member.domain.Member;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -107,6 +107,100 @@ class TestBuildingProfileRepository {
         assertThat(findBuilding.getBuildingName()).isEqualTo(building.getBuildingName());
         assertThat(findBuilding.getFeedAiSummary()).isEqualTo(building.getFeedAiSummary());
         assertThat(findBuilding.getRoadAddr()).isEqualTo(building.getRoadAddr());
+    }
+
+    @Transactional
+    @Test
+    void findBuildingProfileBySearchKeyword() {
+        Building.BuildingBuilder buildingBuilder = Building.builder()
+                .profileActivated(true)
+                .roadAddr("addr")
+                .longitude(127.12521124)
+                .latitude(35.1525125)
+                .feedAiSummary("asdf");
+
+        String[] forTest = {
+                "h31hf99ea,fqeh31r",
+                "ghi3fh,eht0efaf",
+                "ghwa993h1r,asvihoosav",
+                "none,voiashvhr",
+                "vd83h1fav,none",
+                "none,none",
+                "never,n"
+        };
+
+        Arrays.stream(forTest)
+                .map((ps) -> ps.split(","))
+                .map((ps) -> {
+                    String prefix = ps[0];
+                    String suffix = ps[1];
+                    if (prefix.equals("never")) {
+                        return buildingBuilder.buildingName("NeverMind").build();
+                    }
+
+                    String fullName = "sample building";
+                    if (!prefix.equals("none")) {
+                        fullName = prefix + fullName;
+                    }
+                    if (!suffix.equals("none")) {
+                        fullName = fullName + suffix;
+                    }
+                    return buildingBuilder.buildingName(fullName).build();
+                }).forEach((b) -> this.buildingProfileRepository.save(b));
+
+        List<Building> sampleBuilding =
+                this.buildingProfileRepository.findBuildingProfileBySearchKeyword("sample building", 0, 1000);
+        assertThat(sampleBuilding.size()).isEqualTo(forTest.length - 1);
+        log.info("sampleBuilding={}", sampleBuilding);
+    }
+
+    @Transactional
+    @Test
+    void findBuildingProfileBySearchKeyword_pagination() {
+        Building.BuildingBuilder buildingBuilder = Building.builder()
+                .profileActivated(true)
+                .roadAddr("addr")
+                .longitude(127.12521124)
+                .latitude(35.1525125)
+                .feedAiSummary("asdf");
+
+        String[] forTest = {
+                "h31hf99ea,fqeh31r",
+                "ghi3fh,eht0efaf",
+                "ghwa993h1r,asvihoosav",
+                "none,voiashvhr",
+                "vd83h1fav,none",
+                "none,none",
+                "never,n"
+        };
+
+        for (int i = 0; i < 5; i++) {
+            Arrays.stream(forTest)
+                    .map((ps) -> ps.split(","))
+                    .map((ps) -> {
+                        String prefix = ps[0];
+                        String suffix = ps[1];
+                        if (prefix.equals("never")) {
+                            return buildingBuilder.buildingName("NeverMind").build();
+                        }
+
+                        String fullName = "sample building";
+                        if (!prefix.equals("none")) {
+                            fullName = prefix + fullName;
+                        }
+                        if (!suffix.equals("none")) {
+                            fullName = fullName + suffix;
+                        }
+                        return buildingBuilder.buildingName(fullName).build();
+                    }).forEach((b) -> this.buildingProfileRepository.save(b));
+        }
+
+        List<Building> first = this.buildingProfileRepository
+                .findBuildingProfileBySearchKeyword("sample building", 0, 10);
+        assertThat(first.size()).isEqualTo(10);
+        List<Building> second = this.buildingProfileRepository
+                .findBuildingProfileBySearchKeyword("sample building", 25, 10);
+        assertThat(second.size()).isEqualTo(5);
     }
 }
 

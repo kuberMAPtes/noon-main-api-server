@@ -1,6 +1,7 @@
 package com.kube.noon.building.service;
 
 import com.kube.noon.building.dto.BuildingDto;
+import com.kube.noon.building.dto.BuildingSearchResponseDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.places.domain.Position;
@@ -21,4 +22,5 @@ public interface BuildingProfileService {
     List<BuildingDto> getBuildingsWithinRange(PositionRange positionRange);
     String getFeedAISummary(int buildingId);
     int getSubscriberCnt(int buildingId);
+    List<BuildingSearchResponseDto> searchBuilding(String searchKeyword, Integer page);
 }

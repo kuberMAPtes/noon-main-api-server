@@ -8,6 +8,8 @@ import com.kube.noon.chat.service.ChatroomSearchService;
 import com.kube.noon.chat.service.ChatroomService;
 import com.kube.noon.member.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,7 +39,7 @@ public class ChatroomRestController {
         ChatroomDto reponseChatroom = chatroomService.addChatroom(requestChatroom);
         System.out.println("        🐬[Controller] 생성한 채팅방 정보 => " + reponseChatroom);
         List<ChatEntranceDto> responseChatEntranceList = chatroomService.getChatEntranceListByChatroom(reponseChatroom);
-        System.out.println("        🐬[Controller] 생성한 채팅방 참여멤버 => " + responseChatEntranceList );
+        System.out.println("        🐬[Controller] 생성한 채팅방 참여멤버 => " + responseChatEntranceList);
 
         Map<String, Object> result = new HashMap<>();
         result.put("ChatroomInfo", reponseChatroom);
@@ -58,7 +60,7 @@ public class ChatroomRestController {
 
         // roomID 에 해당하는 채팅멤버 정보
         List<ChatEntranceDto> searchedChatEntranceList = chatroomService.getChatEntranceListByChatroom(searchedChatroom);
-        System.out.println("        🐬[Controller] 가져온 채팅방 참여멤버 => " + searchedChatEntranceList.size()+"명 " +searchedChatEntranceList);
+        System.out.println("        🐬[Controller] 가져온 채팅방 참여멤버 => " + searchedChatEntranceList.size() + "명 " + searchedChatEntranceList);
 
         Map<String, Object> result = new HashMap<>();
         result.put("ChatroomInfo", searchedChatroom);
@@ -80,4 +82,9 @@ public class ChatroomRestController {
      * 채팅방조회할때 넣은 ID가 어떤 값인지 확인하고 화면에 현재 로그인 된 유저 정보 띄우면서 리팩
      */
 
+    @GetMapping("/searchChatroom")
+    public ResponseEntity<Page<ChatroomDto>> searchChatroom(@RequestParam("searchKeyword") String searchKeyword,
+                                                            @RequestParam("page") int page) {
+        return ResponseEntity.ok(this.chatroomSearchService.searchChatroomByChatroomName(searchKeyword, page));
+    }
 }
