@@ -72,7 +72,7 @@ public class ChatroomRestController {
     @GetMapping("getMyChatrooms")
     public List<ChatroomDto> getChatrooms(@RequestParam("memberId") String memberId) throws Exception {
         System.out.println("        🐬[Controller] (memberId) => " + memberId);
-        System.out.println("        🐬[Controller] getMyChatroms return => " + chatroomSearchService.getChatroomListByMemberId(memberId));
+        System.out.println("        🐬[Controller] getMyChatrooms return => " + chatroomSearchService.getChatroomListByMemberId(memberId));
         return chatroomSearchService.getChatroomListByMemberId(memberId);
     }
 
