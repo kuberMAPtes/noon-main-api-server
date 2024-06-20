@@ -244,7 +244,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
      */
     @Override
     public int getSubscriberCnt(int buildingId) {
-        return zzimRepository.countByBuildingId(buildingId);
+        return zzimRepository.countByBuildingIdAndActivated(buildingId, true);
     }
 
 

@@ -85,6 +85,8 @@ public class BuildingProfileRestController {
     }
 
 
+
+
     /**
      * 건물의 프로필 정보 가져오기
      */
@@ -103,12 +105,19 @@ public class BuildingProfileRestController {
         }
     }
 
+    /**
+     * 건물의 구독자 수 가져오기
+     */
+    @GetMapping("/getSubscriberCnt")
+    public int getSubscriberCnt(@RequestParam("buildingId") int buildingId) {
+        return buildingProfileService.getSubscriberCnt(buildingId);
+    }
 
     /**
      * 사용자의 화면 범위 내 건물 목록 보기
      */
-    @GetMapping("/getBuildingsWithinRange")
-    public List<BuildingDto> getBuildingsWithinRange(@ModelAttribute PositionRange positionRange){
+    @PostMapping("/getBuildingsWithinRange")
+    public List<BuildingDto> getBuildingsWithinRange(@RequestBody PositionRange positionRange){
 
         return  buildingProfileService.getBuildingsWithinRange(positionRange);
     }
@@ -121,5 +130,7 @@ public class BuildingProfileRestController {
     ) {
         return new ResponseEntity<>(this.buildingProfileService.searchBuilding(searchKeyword, page), HttpStatus.OK);
     }
+
+
 
 }

@@ -50,7 +50,14 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
      */
     Zzim findByBuildingIdAndMemberId(int buildingId, String memberId);
 
-    int countByBuildingId(int buildingId);
+
+    /**
+     * 구독자 수 조회
+     * @param buildingId 구독자 수를 조회하려는 건물 아이디
+     * @param activated 입력은 true. 구독중인 구독자만 조회한다.
+     * @return
+     */
+    int countByBuildingIdAndActivated(int buildingId, boolean activated);
 
 
 
