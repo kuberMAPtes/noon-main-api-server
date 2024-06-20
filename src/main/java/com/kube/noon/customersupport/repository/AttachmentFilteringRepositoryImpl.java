@@ -143,13 +143,13 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
 
 
     @Override
-    public String addBluredFile(String fileUrl) {
+    public String addBluredFile(String fileUrl, int attachmentId) {
 
         log.info("fileUrl={}",fileUrl);
 
         try {
             //블러 이미지 생성
-            String blurredImageLocation = makeBlurredImage(fileUrl);
+            String blurredImageLocation = makeBlurredImage(fileUrl,attachmentId);
 
             //블러 이미지 Object Storage에 저장
             String blurredFileUrl = objectStorageAWS3S.uploadFile(blurredImageLocation);
@@ -205,7 +205,7 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
      *
      * @author 허예지
      */
-    public String makeBlurredImage(String fileUrl) throws IOException {
+    public String makeBlurredImage(String fileUrl, int attachmentId) throws IOException {
 
         URL imageUrl = new URL(fileUrl);
         BufferedImage input = ImageIO.read(imageUrl);
@@ -256,7 +256,7 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
         }
 
         // 블러 사진을 일단 로컬에 저장
-        String blurredImageLocation = "./src/main/resources/images/blured-image.jpg";
+        String blurredImageLocation = "./src/main/resources/images/blured-"+attachmentId+".jpg";
         ImageIO.write(output, "jpg", new File(blurredImageLocation));
         log.info("블러 처리 완료. 블러 파일 경로={}",blurredImageLocation);
 
