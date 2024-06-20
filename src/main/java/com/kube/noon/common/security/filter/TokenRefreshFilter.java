@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -26,7 +27,6 @@ import static com.kube.noon.common.security.SecurityConstants.*;
  * @author PGD
  */
 @Slf4j
-@RequiredArgsConstructor
 public class TokenRefreshFilter extends OncePerRequestFilter {
     private static final Set<String> URI_NOT_REFRESH_TOKEN = Set.of(
             "/member/refresh",
@@ -36,6 +36,14 @@ public class TokenRefreshFilter extends OncePerRequestFilter {
     );
 
     private final List<BearerTokenSupport> tokenSupportList;
+
+    private final String clientDomain;
+
+
+    public TokenRefreshFilter(List<BearerTokenSupport> tokenSupportList, String clientDomain) {
+        this.tokenSupportList = tokenSupportList;
+        this.clientDomain = clientDomain;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -96,6 +104,7 @@ public class TokenRefreshFilter extends OncePerRequestFilter {
 
     private Cookie wrapWithCookie(String key, String value) {
         Cookie cookie = new Cookie(key, value);
+        cookie.setDomain(this.clientDomain);
         cookie.setPath("/");
         return cookie;
     }

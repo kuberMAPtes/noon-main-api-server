@@ -74,6 +74,9 @@ public class MemberRestController {
     private final View error;
     private final AuthRepositoryImpl authRepositoryImpl;
 
+    @Value("${client-server-domain}")
+    private String clientServerDomain;
+
     // Constructor
     public MemberRestController(@Qualifier("memberServiceImpl") MemberService memberService,
                                 @Qualifier("loginAttemptCheckerAgent") LoginAttemptCheckerAgent loginAttemptCheckerAgent,
@@ -438,6 +441,7 @@ public class MemberRestController {
     private Cookie getDestructionCookie(String key) {
         Cookie cookie = new Cookie(key, null);
         cookie.setMaxAge(0);
+        cookie.setDomain(this.clientServerDomain);
         cookie.setPath("/");
         return cookie;
     }
@@ -663,6 +667,7 @@ public class MemberRestController {
     private Cookie wrapWithCookie(String cookieName, String value) {
         Cookie cookie = new Cookie(cookieName, value);
         cookie.setHttpOnly(true);
+        cookie.setDomain(this.clientServerDomain);
         cookie.setPath("/");
         return cookie;
     }
