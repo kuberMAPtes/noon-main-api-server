@@ -4,6 +4,7 @@ import com.kube.noon.chat.domain.ChatEntrance;
 import com.kube.noon.chat.domain.Chatroom;
 import com.kube.noon.chat.dto.ChatEntranceDto;
 import com.kube.noon.chat.dto.ChatroomDto;
+import com.kube.noon.chat.dto.ChatroomSearchResponseDto;
 import com.kube.noon.chat.service.ChatroomSearchService;
 import com.kube.noon.chat.service.ChatroomService;
 import com.kube.noon.member.service.MemberService;
@@ -83,8 +84,8 @@ public class ChatroomRestController {
      */
 
     @GetMapping("/searchChatroom")
-    public ResponseEntity<Page<ChatroomDto>> searchChatroom(@RequestParam("searchKeyword") String searchKeyword,
-                                                            @RequestParam("page") int page) {
+    public ResponseEntity<Page<ChatroomSearchResponseDto>> searchChatroom(@RequestParam("searchKeyword") String searchKeyword,
+                                                                          @RequestParam("page") int page) {
         return ResponseEntity.ok(this.chatroomSearchService.searchChatroomByChatroomName(searchKeyword, page));
     }
 }
