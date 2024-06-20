@@ -149,7 +149,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     @Query("""
             SELECT m FROM Member m 
             INNER JOIN Zzim z ON m.memberId = z.memberId 
-            WHERE z.feedId = :#{#feed.feedId} AND z.zzimType = 'LIKE'
+            WHERE z.feedId = :#{#feed.feedId} AND z.zzimType = 'LIKE' AND z.activated = true
            """)
     List<Member> getFeedLikeList(@Param("feed") Feed feed);
 
@@ -209,4 +209,8 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
      */
     @Query("SELECT f FROM Feed f WHERE f.title LIKE %:#{#keyword}% OR f.feedText LIKE %:#{#keyword}%")
     List<Feed> searchFeedByKeyword(String keyword, Pageable pageable);
+
+    /**
+     *
+     */
 }

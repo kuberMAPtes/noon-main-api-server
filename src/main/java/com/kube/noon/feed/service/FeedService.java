@@ -39,6 +39,9 @@ public interface FeedService {
     List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId);
     List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId, int page, int pageSize);
 
+    // 모든 피드를 인기도순으로 나열한다.
+    List<FeedSummaryDto> getAllFeedOrderByPopolarity(String member, int page, int pageSize);
+
     // 피드를 추가한다. (return : feedId)
     int addFeed(FeedDto feedDto);
 
@@ -50,6 +53,7 @@ public interface FeedService {
 
     // 피드 하나를 상세보기한다.
     FeedDto getFeedById(int feedId);
+    FeedDto getFeedById(String memberId, int feedId); // 보는 사람의 정보가 추가된 메서드
 
     // 피드의 공개 범위를 설정한다.
     int setPublicRage(FeedDto feedDto);
