@@ -30,4 +30,7 @@ public interface FeedAttachmentRepository extends JpaRepository<FeedAttachment, 
      */
     List<FeedAttachment> findByFileType(FileType fileType);
     List<FeedAttachment> findByFileType(FileType fileType, Pageable pageable);
+
+    List<FeedAttachment> findByFileTypeAndActivated(FileType fileType, boolean activated);
+    List<FeedAttachment> findByFileTypeAndActivated(FileType fileType, boolean activated, Pageable pageable);
 }
