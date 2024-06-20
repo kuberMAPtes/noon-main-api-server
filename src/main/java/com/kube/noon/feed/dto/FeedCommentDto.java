@@ -19,6 +19,7 @@ public class FeedCommentDto {
     private int feedId;
     private int commentId;
     private String memberId;
+    private String memberProfile;
     private String commentText;
     private LocalDateTime writtenTime;
     private boolean activated;
@@ -28,6 +29,7 @@ public class FeedCommentDto {
                 .feedId(feedComment.getFeed().getFeedId())
                 .commentId(feedComment.getCommentId())
                 .memberId(feedComment.getMember().getMemberId())
+                .memberProfile(feedComment.getMember().getProfilePhotoUrl())
                 .commentText(feedComment.getCommentText())
                 .writtenTime(feedComment.getWrittenTime())
                 .activated(feedComment.isActivated())
