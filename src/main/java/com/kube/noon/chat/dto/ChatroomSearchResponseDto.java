@@ -25,7 +25,7 @@ public class ChatroomSearchResponseDto {
                 .participantCount(chatroom.getChatEntranceList().size())
                 .buildingName(chatroom.getBuilding().getBuildingName())
                 .roadAddr(chatroom.getBuilding().getRoadAddr())
-                .chatroomCreatorId(chatroom.getChatroomCreatorId())
+                .chatroomCreatorId(chatroom.getChatroomCreator().getMemberId())
                 .chatroomType(chatroom.getChatroomType())
                 .chatroomMinTemp(chatroom.getChatroomMinTemp())
                 .build();

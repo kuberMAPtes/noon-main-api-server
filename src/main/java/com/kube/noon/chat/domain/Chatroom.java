@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "chatroom")
@@ -40,4 +41,7 @@ public class Chatroom {
 
     @Column(name = "chatroom_dajung_temp_min")
     private Float chatroomMinTemp;
+
+    @OneToMany(mappedBy = "chatroom", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    private List<ChatEntrance> chatEntranceList;
 }
