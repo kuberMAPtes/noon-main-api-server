@@ -2,6 +2,7 @@
 
 package com.kube.noon.building.controller;
 import com.kube.noon.building.dto.BuildingDto;
+import com.kube.noon.building.dto.BuildingSearchResponseDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
 import com.kube.noon.building.service.BuildingProfileService;
 import com.kube.noon.chat.dto.ChatroomDto;
@@ -119,6 +120,15 @@ public class BuildingProfileRestController {
     public List<BuildingDto> getBuildingsWithinRange(@RequestBody PositionRange positionRange){
 
         return  buildingProfileService.getBuildingsWithinRange(positionRange);
+    }
+
+
+    @GetMapping("/searchBuilding")
+    public ResponseEntity<List<BuildingSearchResponseDto>> searchBuilding(
+            @RequestParam("searchKeyword") String searchKeyword,
+            @RequestParam(value = "page", required = false) Integer page
+    ) {
+        return new ResponseEntity<>(this.buildingProfileService.searchBuilding(searchKeyword, page), HttpStatus.OK);
     }
 
 
