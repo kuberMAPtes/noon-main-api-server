@@ -244,7 +244,7 @@ public class FeedServiceImpl implements FeedService {
 
     @Override
     public List<FeedSummaryDto> getAllFeedOrderByPopolarity(String memberId, int page, int pageSize) {
-        int offset = (page) * pageSize;
+        int offset = page * pageSize;
         List<FeedSummaryDto> allFeedOrderByPopolarity = feedMyBatisRepository.getAllFeedOrderByPopolarity(pageSize, offset);
 
         if (memberId == null || memberId.isEmpty()) { // 만약 memberId 정보가 없다면 그냥 리스트 출력

@@ -30,6 +30,7 @@ public class FeedCommentDto {
                 .memberId(feedComment.getMember().getMemberId())
                 .commentText(feedComment.getCommentText())
                 .writtenTime(feedComment.getWrittenTime())
+                .activated(feedComment.isActivated())
                 .build();
     }
 
@@ -40,6 +41,7 @@ public class FeedCommentDto {
                 .member(Member.builder().memberId(feedCommentDto.getMemberId()).build())
                 .commentText(feedCommentDto.getCommentText())
                 .writtenTime(feedCommentDto.getWrittenTime())
+                .activated(feedCommentDto.isActivated())
                 .build();
     }
 
