@@ -9,8 +9,12 @@ import com.kube.noon.chat.service.ChatroomSearchService;
 import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.member.dto.memberRelationship.MemberRelationshipDto;
+import com.kube.noon.places.domain.Position;
 import com.kube.noon.places.domain.PositionRange;
+import com.kube.noon.places.exception.PlaceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -80,12 +84,24 @@ public class BuildingProfileRestController {
     }
 
 
+
+
     /**
      * 건물의 프로필 정보 가져오기
      */
-    @GetMapping("/getBuildingProfile")
+    @GetMapping(value = "/getBuildingProfile", params = "buildingId")
     public BuildingDto getBuildingProfile(@RequestParam("buildingId") int buildingId) {
         return buildingProfileService.getBuildingProfile(buildingId);
+    }
+
+    @GetMapping(value = "/getBuildingProfile", params = { "latitude", "longitude" })
+    public ResponseEntity<Object> getBuildingProfile(@ModelAttribute Position position) {
+        try {
+            BuildingDto resp = this.buildingProfileService.getBuildingProfileByPosition(position);
+            return new ResponseEntity<>(resp, HttpStatus.OK);
+        } catch (PlaceNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     /**
