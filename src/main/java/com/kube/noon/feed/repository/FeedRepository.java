@@ -209,4 +209,8 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
      */
     @Query("SELECT f FROM Feed f WHERE f.title LIKE %:#{#keyword}% OR f.feedText LIKE %:#{#keyword}%")
     List<Feed> searchFeedByKeyword(String keyword, Pageable pageable);
+
+    /**
+     *
+     */
 }

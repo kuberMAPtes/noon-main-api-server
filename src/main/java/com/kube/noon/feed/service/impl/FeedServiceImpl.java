@@ -17,6 +17,7 @@ import com.kube.noon.feed.repository.TagRepository;
 import com.kube.noon.feed.repository.mybatis.FeedMyBatisRepository;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.feed.service.recommend.FeedRecommendationMemberId;
+import com.kube.noon.feed.util.CalculatorUtil;
 import com.kube.noon.member.domain.Member;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -375,6 +376,10 @@ public class FeedServiceImpl implements FeedService {
         Feed getFeed = feedRepository.findByFeedId(feedId);
         FeedDto resultFeed = FeedDto.toDto(getFeed);
 
+        // 좋아요, 북마크 개수 가져오기
+        resultFeed.setLikeCount(zzimRepository.getCountByFeedIdZzimType(feedId, ZzimType.LIKE));
+        resultFeed.setBookmarkCount(zzimRepository.getCountByFeedIdZzimType(feedId, ZzimType.BOOKMARK));
+
         // tag의 목록을 가져온다.
         List<Tag> tagList = tagRepository.getTagByFeedId(Feed.builder().feedId(feedId).build());
         resultFeed.setTags(TagDto.toDtoList(tagList));
@@ -386,6 +391,11 @@ public class FeedServiceImpl implements FeedService {
     public FeedDto getFeedById(String memberId, int feedId) {
         Feed getFeed = feedRepository.findByFeedId(feedId);
         FeedDto resultFeed = FeedDto.toDto(getFeed);
+
+        // 좋아요, 북마크 개수 가져오기
+        resultFeed.setLikeCount(zzimRepository.getCountByFeedIdZzimType(feedId, ZzimType.LIKE));
+        resultFeed.setBookmarkCount(zzimRepository.getCountByFeedIdZzimType(feedId, ZzimType.BOOKMARK));
+        resultFeed.setPopularity(CalculatorUtil.calPopularity(resultFeed));
 
         // tag의 목록을 가져온다.
         List<Tag> tagList = tagRepository.getTagByFeedId(Feed.builder().feedId(feedId).build());

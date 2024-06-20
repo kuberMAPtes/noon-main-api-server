@@ -35,7 +35,10 @@ public class FeedDto {
     private LocalDateTime writtenTime;
     private FeedCategory feedCategory;
     private boolean like;
+    private int likeCount;
     private boolean bookmark;
+    private int bookmarkCount;
+    private int popularity;
     private boolean modified;
     private boolean mainActivate;
     private boolean activate;
