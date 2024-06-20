@@ -1,6 +1,8 @@
 package com.kube.noon.chat.service;
 
 import com.kube.noon.chat.dto.ChatroomDto;
+import com.kube.noon.chat.dto.ChatroomSearchResponseDto;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -37,6 +39,8 @@ public interface ChatroomSearchService {
      * @throws Exception
      */
     public List<ChatroomDto> getChatroomListByChatroomName(String chatroomName) throws Exception;
+
+    public Page<ChatroomSearchResponseDto> searchChatroomByChatroomName(String searchKeyword, int page);
 
     /**
      * 활발한 채팅방 조회

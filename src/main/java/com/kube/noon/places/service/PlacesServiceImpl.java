@@ -1,6 +1,7 @@
 package com.kube.noon.places.service;
 
 import com.kube.noon.places.domain.Place;
+import com.kube.noon.places.domain.Position;
 import com.kube.noon.places.dto.PlaceDto;
 import com.kube.noon.places.exception.PlaceNotFoundException;
 import com.kube.noon.places.repository.PlacesRepository;
@@ -24,7 +25,7 @@ public class PlacesServiceImpl implements PlacesService {
 
     @Override
     public List<PlaceDto> getPlaceList(String searchKeyword) {
-        log.info("searchKeyword={}", searchKeyword);
+        log.trace("searchKeyword={}", searchKeyword);
 
         return this.placesRepository.findByPlaceName(searchKeyword)
                 .stream()
@@ -34,8 +35,14 @@ public class PlacesServiceImpl implements PlacesService {
 
     @Override
     public PlaceDto getPlaceByPosition(double latitude, double longitude) throws PlaceNotFoundException {
-        log.info("latitude={}, longitude={}", latitude, longitude);
+        log.trace("latitude={}, longitude={}", latitude, longitude);
         Place findPlace = this.placesRepository.findByPosition(latitude, longitude);
         return PlaceDto.from(findPlace);
+    }
+
+    @Override
+    public PlaceDto getPlaceByPosition(Position position) throws PlaceNotFoundException {
+        log.trace("position={}", position);
+        return getPlaceByPosition(position.getLatitude(), position.getLongitude());
     }
 }

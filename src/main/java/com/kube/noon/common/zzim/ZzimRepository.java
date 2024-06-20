@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 
 @Repository
 public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
@@ -24,7 +26,6 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
      * @author 허예지
      *
      */
-
     boolean existsByBuildingIdAndMemberIdAndSubscriptionProviderId(int buildingId, String memberId, String subscriptionProviderId);
 
 
@@ -49,6 +50,10 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
      */
     Zzim findByBuildingIdAndMemberId(int buildingId, String memberId);
 
+    int countByBuildingId(int buildingId);
+
+
+
     /**
      * 피드 아이디, 유저 아이디, 찜 타입을 통해 Zzim Table의 데이터를 확인한다.
      * @param feedId
@@ -57,4 +62,13 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
      * @return Zzim 해당하는 Zzim 하나를 가져온다.
      */
     Zzim findByFeedIdAndMemberIdAndZzimType(int feedId, String memberId, ZzimType zzimType);
+
+    /**
+     * 회원 아이디와 찜 타입을 통해 회원의 좋아요, 북마크 여부를 확인한다.
+     * @param memberId
+     * @param zzimType
+     * @return
+     */
+    @Query("SELECT z.feedId FROM Zzim z WHERE z.memberId = :#{#memberId} AND z.zzimType = :#{#zzimType} AND z.activated = true")
+    List<Integer> getFeedIdByMemberIdAndZzimType(String memberId, ZzimType zzimType);
 }

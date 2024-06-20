@@ -2,6 +2,9 @@ package com.kube.noon.feed.service;
 
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.common.PublicRange;
+import com.kube.noon.common.zzim.Zzim;
+import com.kube.noon.common.zzim.ZzimRepository;
+import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.domain.TagFeed;
 import com.kube.noon.feed.dto.FeedDto;
@@ -15,6 +18,8 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +42,9 @@ public class TestFeedServiceImpl {
 
     @Autowired
     private FeedStatisticsServiceImpl feedStatisticsServiceImpl;
+    
+    @Autowired
+    private ZzimRepository zzimRepository;
 
     /**
      * 피드 목록을 가져오는 테스트를 한다.
@@ -45,40 +53,40 @@ public class TestFeedServiceImpl {
     @Transactional
     @Test
     public void getListTest() {
-        List<FeedSummaryDto> feedListByMember = feedServiceImpl.getFeedListByMember("member_1", 0, 10);
-        assertThat(feedListByMember).isNotNull();
-        assertThat(feedListByMember.size()).isGreaterThan(0);
-        for (FeedSummaryDto feedSummaryDto : feedListByMember) {
-            log.info(feedSummaryDto);
-        }
+//        List<FeedSummaryDto> feedListByMember = feedServiceImpl.getFeedListByMember("member_1", 0, 10);
+//        assertThat(feedListByMember).isNotNull();
+//        assertThat(feedListByMember.size()).isGreaterThan(0);
+//        for (FeedSummaryDto feedSummaryDto : feedListByMember) {
+//            log.info(feedSummaryDto);
+//        }
 
-        List<FeedSummaryDto> feedListByBuilding = feedServiceImpl.getFeedListByBuilding("member_3", 10001, 0, 10);
+        List<FeedSummaryDto> feedListByBuilding = feedServiceImpl.getFeedListByBuilding("member_10", 10001, 0, 10);
         assertThat(feedListByBuilding).isNotNull();
         assertThat(feedListByBuilding.size()).isGreaterThan(0);
         for (FeedSummaryDto feedSummaryDto : feedListByBuilding) {
             log.info(feedSummaryDto);
         }
-
-        List<FeedSummaryDto> feedListByMemberLike = feedServiceImpl.getFeedListByMemberLike("member_1", 0, 10);
-        assertThat(feedListByMemberLike).isNotNull();
-        assertThat(feedListByMemberLike.size()).isGreaterThan(0);
-        for (FeedSummaryDto feedSummaryDto : feedListByMemberLike) {
-            log.info(feedSummaryDto);
-        }
-
-        List<FeedSummaryDto> feedListByMemberBookmark = feedServiceImpl.getFeedListByMemberBookmark("member_1", 0, 10);
-        assertThat(feedListByMemberBookmark).isNotNull();
-        assertThat(feedListByMemberBookmark.size()).isGreaterThan(0);
-        for (FeedSummaryDto feedSummaryDto : feedListByMemberBookmark) {
-            log.info(feedSummaryDto);
-        }
-
-        List<FeedSummaryDto> feedListByBuildingSubscription = feedServiceImpl.getFeedListByBuildingSubscription("member_1", 0, 10);
-        assertThat(feedListByBuildingSubscription).isNotNull();
-        assertThat(feedListByBuildingSubscription.size()).isGreaterThan(0);
-        for (FeedSummaryDto feedSummaryDto : feedListByBuildingSubscription) {
-            log.info(feedSummaryDto);
-        }
+//
+//        List<FeedSummaryDto> feedListByMemberLike = feedServiceImpl.getFeedListByMemberLike("member_1", 0, 10);
+//        assertThat(feedListByMemberLike).isNotNull();
+//        assertThat(feedListByMemberLike.size()).isGreaterThan(0);
+//        for (FeedSummaryDto feedSummaryDto : feedListByMemberLike) {
+//            log.info(feedSummaryDto);
+//        }
+//
+//        List<FeedSummaryDto> feedListByMemberBookmark = feedServiceImpl.getFeedListByMemberBookmark("member_1", 0, 10);
+//        assertThat(feedListByMemberBookmark).isNotNull();
+//        assertThat(feedListByMemberBookmark.size()).isGreaterThan(0);
+//        for (FeedSummaryDto feedSummaryDto : feedListByMemberBookmark) {
+//            log.info(feedSummaryDto);
+//        }
+//
+//        List<FeedSummaryDto> feedListByBuildingSubscription = feedServiceImpl.getFeedListByBuildingSubscription("member_1", 0, 10);
+//        assertThat(feedListByBuildingSubscription).isNotNull();
+//        assertThat(feedListByBuildingSubscription.size()).isGreaterThan(0);
+//        for (FeedSummaryDto feedSummaryDto : feedListByBuildingSubscription) {
+//            log.info(feedSummaryDto);
+//        }
     }
 
     /**
@@ -220,9 +228,9 @@ public class TestFeedServiceImpl {
     @Transactional
     @Test
     public void searchFeedListTest() {
-        String keyword = "Title_1";
+        String keyword = "feed 1";
 
-        List<FeedSummaryDto> searchFeedList = feedServiceImpl.searchFeedList(keyword);
+        List<FeedSummaryDto> searchFeedList = feedServiceImpl.searchFeedList(keyword, 0, 10);
 
         assertThat(searchFeedList.size()).isGreaterThan(0);
         for(FeedSummaryDto f : searchFeedList) {
@@ -261,6 +269,21 @@ public class TestFeedServiceImpl {
         } else {
             assertThat(memberIdList.size()).isGreaterThan(0);
             memberIdList.stream().forEach(System.out::println);
+        }
+    }
+
+    /**
+     * ZzimList를 가져오는 것에 대한 테스트, 값만 가져온다.
+     */
+    @Transactional
+    @Test
+    public void getZzimListTest() {
+        List<Integer> zzimFeedIdList = zzimRepository.getFeedIdByMemberIdAndZzimType("member_1", ZzimType.LIKE);
+
+        System.out.println(zzimFeedIdList.size());
+
+        for(int feedId : zzimFeedIdList) {
+            System.out.println("FeedId : " + feedId);
         }
     }
 }

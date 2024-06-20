@@ -12,6 +12,7 @@ import com.kube.noon.common.security.filter.TokenRefreshFilter;
 import com.kube.noon.common.security.support.BearerTokenSupport;
 import com.kube.noon.common.security.support.JwtSupport;
 import com.kube.noon.member.enums.Role;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -113,8 +114,8 @@ public class WebSecurityConfig {
 
     @Bean
     @Profile({"dev", "prod"})
-    public TokenRefreshFilter tokenRefreshFilter(List<BearerTokenSupport> tokenSupport) {
-        return new TokenRefreshFilter(tokenSupport);
+    public TokenRefreshFilter tokenRefreshFilter(List<BearerTokenSupport> tokenSupport, @Value("${client-server-domain}") String clientDomain) {
+        return new TokenRefreshFilter(tokenSupport, clientDomain);
     }
 
     @Bean

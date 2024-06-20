@@ -2,17 +2,15 @@ package com.kube.noon.feed.service.impl;
 
 import com.kube.noon.building.domain.Building;
 import com.kube.noon.common.FeedCategory;
-import com.kube.noon.common.FileType;
-import com.kube.noon.common.ObjectStorageAPI;
+import com.kube.noon.common.zzim.ZzimRepository;
+import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.Feed;
-import com.kube.noon.feed.domain.FeedAttachment;
 import com.kube.noon.feed.domain.Tag;
 import com.kube.noon.feed.domain.TagFeed;
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.dto.TagDto;
 import com.kube.noon.feed.dto.UpdateFeedDto;
-import com.kube.noon.feed.repository.FeedAttachmentRepository;
 import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.feed.repository.TagFeedRepository;
 import com.kube.noon.feed.repository.TagRepository;
@@ -24,17 +22,16 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.InputStreamEntity;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -45,11 +42,32 @@ public class FeedServiceImpl implements FeedService {
     private final FeedMyBatisRepository feedMyBatisRepository;
     private final TagRepository tagRepository;
     private final TagFeedRepository tagFeedRepository;
-    private final FeedAttachmentRepository feedAttachmentRepository;
-    private final ObjectStorageAPI objectStorageAPI;
+    private final ZzimRepository zzimRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    // FeedSumaryDto에 좋아요, 북마크 정보 저장
+    private List<FeedSummaryDto> setFeedSummaryDtoLikeAndBookmark(String memberId, List<FeedSummaryDto> feedList) {
+        List<Integer> zzimLikeList = zzimRepository.getFeedIdByMemberIdAndZzimType(memberId, ZzimType.LIKE);
+        List<Integer> zzimBookmarkList = zzimRepository.getFeedIdByMemberIdAndZzimType(memberId, ZzimType.BOOKMARK);
+
+        if(feedList == null) {
+            return new ArrayList<>();
+        }
+        
+        return feedList.stream()
+                .map(feed -> {
+                    if (zzimLikeList.contains(feed.getFeedId())) {
+                        feed.setLike(true);
+                    }
+                    if (zzimBookmarkList.contains(feed.getFeedId())) {
+                        feed.setBookmark(true);
+                    }
+                    return feed;
+                })
+                .collect(Collectors.toList());
+    }
 
     @Override
     public List<FeedSummaryDto> getFeedListByMember(String memberId) {
@@ -59,7 +77,7 @@ public class FeedServiceImpl implements FeedService {
                         .build()
         );
 
-        List<FeedSummaryDto> feedListByMember = FeedSummaryDto.toDtoList(entities);
+        List<FeedSummaryDto> feedListByMember = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entities));
 
         return feedListByMember;
     }
@@ -73,7 +91,7 @@ public class FeedServiceImpl implements FeedService {
                 pageable
         );
 
-        List<FeedSummaryDto> feedListByMember = FeedSummaryDto.toDtoList(entities);
+        List<FeedSummaryDto> feedListByMember = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entities));
 
         return feedListByMember;
     }
@@ -97,7 +115,7 @@ public class FeedServiceImpl implements FeedService {
             entities = feedRepository.findFeedWithLikesFirst(recommandMember, building);
         }
 
-        List<FeedSummaryDto> feedListByBuilding = FeedSummaryDto.toDtoList(entities);
+        List<FeedSummaryDto> feedListByBuilding = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entities));
 
         return feedListByBuilding;
     }
@@ -123,7 +141,7 @@ public class FeedServiceImpl implements FeedService {
             entities = feedRepository.findFeedWithLikesFirst(recommandMember, building, pageable);
         }
 
-        List<FeedSummaryDto> feedListByBuilding = FeedSummaryDto.toDtoList(entities);
+        List<FeedSummaryDto> feedListByBuilding = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entities));
 
         return feedListByBuilding;
     }
@@ -154,7 +172,7 @@ public class FeedServiceImpl implements FeedService {
                         .build()
         );
 
-        List<FeedSummaryDto> feedListByMemberLike = FeedSummaryDto.toDtoList(entites);
+        List<FeedSummaryDto> feedListByMemberLike = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByMemberLike;
     }
@@ -167,7 +185,7 @@ public class FeedServiceImpl implements FeedService {
                 Member.builder().memberId(memberId).build(), pageable
         );
 
-        List<FeedSummaryDto> feedListByMemberLike = FeedSummaryDto.toDtoList(entites);
+        List<FeedSummaryDto> feedListByMemberLike = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByMemberLike;
     }
@@ -180,7 +198,7 @@ public class FeedServiceImpl implements FeedService {
                         .build()
         );
 
-        List<FeedSummaryDto> feedListByMemberBookmark = FeedSummaryDto.toDtoList(entites);
+        List<FeedSummaryDto> feedListByMemberBookmark = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByMemberBookmark;
     }
@@ -193,7 +211,7 @@ public class FeedServiceImpl implements FeedService {
                 Member.builder().memberId(memberId).build(), pageable
         );
 
-        List<FeedSummaryDto> feedListByMemberBookmark = FeedSummaryDto.toDtoList(entites);
+        List<FeedSummaryDto> feedListByMemberBookmark = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByMemberBookmark;
     }
@@ -206,7 +224,7 @@ public class FeedServiceImpl implements FeedService {
                         .build()
         );
 
-        List<FeedSummaryDto> feedListByBuildingSubscription = FeedSummaryDto.toDtoList(entites);
+        List<FeedSummaryDto> feedListByBuildingSubscription = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByBuildingSubscription;
     }
@@ -219,7 +237,7 @@ public class FeedServiceImpl implements FeedService {
                 Member.builder().memberId(memberId).build(), pageable
         );
 
-        List<FeedSummaryDto> feedListByBuildingSubscription = FeedSummaryDto.toDtoList(entites);
+        List<FeedSummaryDto> feedListByBuildingSubscription = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByBuildingSubscription;
     }
@@ -380,6 +398,17 @@ public class FeedServiceImpl implements FeedService {
         List<FeedSummaryDto> searchFeedList = FeedSummaryDto.toDtoList(searchFeedTextList);
 
         return searchFeedList;
+    }
+
+    @Override
+    public List<FeedSummaryDto> searchFeedList(String keyword, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+
+        List<Feed> searchFeedList = feedRepository.searchFeedByKeyword(keyword, pageable);
+
+        List<FeedSummaryDto> resultSearchFeedList = FeedSummaryDto.toDtoList(searchFeedList);
+
+        return resultSearchFeedList;
     }
 
     @Override
