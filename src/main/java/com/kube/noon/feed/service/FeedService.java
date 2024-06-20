@@ -53,6 +53,7 @@ public interface FeedService {
 
     // 피드 하나를 상세보기한다.
     FeedDto getFeedById(int feedId);
+    FeedDto getFeedById(String memberId, int feedId); // 보는 사람의 정보가 추가된 메서드
 
     // 피드의 공개 범위를 설정한다.
     int setPublicRage(FeedDto feedDto);

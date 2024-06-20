@@ -118,10 +118,15 @@ public class FeedRestController {
 
     @Operation(summary = "피드 상세보기", description = "피드를 하나 상세보기합니다.")
     @GetMapping("/detail")
-    public FeedDto getFeed(@Parameter(description = "상세보기할 피드 ID") @RequestParam int feedId) {
-        FeedDto getFeedDto = feedService.getFeedById(feedId);
-
-        return getFeedDto;
+    public FeedDto getFeed(
+            @Parameter(description = "상세보기할 피드 ID") @RequestParam int feedId,
+            @Parameter(description = "보고 있는 회원의 ID") @RequestParam(required = false) String memberId
+    ) {
+        if(memberId == null || memberId.isEmpty()) {
+            return feedService.getFeedById(feedId);
+        } else {
+            return feedService.getFeedById(memberId, feedId);
+        }
     }
     
     @Operation(summary = "메인 피드 설정", description = "자신의 피드 중 메인 피드를 하나 설정합니다. (사용하는 정보 : 피드 ID, 회원 ID)")

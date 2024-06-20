@@ -69,6 +69,22 @@ public class FeedServiceImpl implements FeedService {
                 .collect(Collectors.toList());
     }
 
+    // FeedDto에 좋아요, 북마크 여부를 확인한다.
+    private FeedDto setFeedDtoLikeAndBookmark(String memberId, FeedDto feedDto) {
+        List<Integer> zzimLikeList = zzimRepository.getFeedIdByMemberIdAndZzimType(memberId, ZzimType.LIKE);
+        List<Integer> zzimBookmarkList = zzimRepository.getFeedIdByMemberIdAndZzimType(memberId, ZzimType.BOOKMARK);
+
+        if(zzimLikeList != null && zzimLikeList.contains(feedDto.getFeedId())) {
+            feedDto.setLike(true);
+        }
+
+        if(zzimBookmarkList != null && zzimBookmarkList.contains(feedDto.getFeedId())) {
+            feedDto.setBookmark(true);
+        }
+
+        return feedDto;
+    }
+
     @Override
     public List<FeedSummaryDto> getFeedListByMember(String memberId) {
         List<Feed> entities = feedRepository.findByWriterAndActivatedTrue(
@@ -364,6 +380,18 @@ public class FeedServiceImpl implements FeedService {
         resultFeed.setTags(TagDto.toDtoList(tagList));
 
         return resultFeed;
+    }
+
+    @Override
+    public FeedDto getFeedById(String memberId, int feedId) {
+        Feed getFeed = feedRepository.findByFeedId(feedId);
+        FeedDto resultFeed = FeedDto.toDto(getFeed);
+
+        // tag의 목록을 가져온다.
+        List<Tag> tagList = tagRepository.getTagByFeedId(Feed.builder().feedId(feedId).build());
+        resultFeed.setTags(TagDto.toDtoList(tagList));
+
+        return setFeedDtoLikeAndBookmark(memberId, resultFeed);
     }
 
     @Transactional

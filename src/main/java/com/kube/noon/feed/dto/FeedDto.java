@@ -34,6 +34,8 @@ public class FeedDto {
     private Long viewCnt;
     private LocalDateTime writtenTime;
     private FeedCategory feedCategory;
+    private boolean like;
+    private boolean bookmark;
     private boolean modified;
     private boolean mainActivate;
     private boolean activate;
