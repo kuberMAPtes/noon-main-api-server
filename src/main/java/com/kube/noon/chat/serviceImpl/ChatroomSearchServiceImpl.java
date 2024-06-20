@@ -80,7 +80,10 @@ public class ChatroomSearchServiceImpl implements ChatroomSearchService {
 
     @Override
     public List<ChatroomDto> getLivelistChatroomList(int buildingId) throws Exception {
-        return null; // 구현 고민중
+        List<Chatroom> chatrooms = chatroomRepository.findByBuildingId(buildingId);
+        List<ChatroomDto> chatroomDtos = convertToChatroomDtoList(chatrooms);
+
+        return chatroomDtos; // 구현 고민중
     }
 
 
@@ -91,10 +94,11 @@ public class ChatroomSearchServiceImpl implements ChatroomSearchService {
     private ChatroomDto convertToChatroomDto(Chatroom chatroom) {
         ChatroomDto dto = new ChatroomDto();
 
+        dto.setChatroomCreator(chatroom.getChatroomCreator());
         dto.setChatroomID(chatroom.getChatroomId());
         dto.setChatroomName(chatroom.getChatroomName());
         dto.setChatroomMinTemp(chatroom.getChatroomMinTemp());
-        dto.setChatroomCreatorId(chatroom.getChatroomCreatorId());
+        dto.setChatroomCreator(chatroom.getChatroomCreator());
         dto.setChatroomType(chatroom.getChatroomType().toString()); // Enum 값을 문자열로 변환하여 설정
         return dto;
     }

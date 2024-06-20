@@ -19,7 +19,7 @@ public class ScheduledTasks {
     BuildingProfileService buildingProfileService;
 
     // 피드 요약을 실행할 빌딩 목록
-    @Value("#{'${summary.buildingIds}'.split(',')}")
+//    @Value("#{'${summary.buildingIds}'.split(',')}")
     private List<Integer> buildingIds;
 
     //@Scheduled(cron = "0 0 0 * * ?") // 매일 밤 12시에 피드 요약 실행
