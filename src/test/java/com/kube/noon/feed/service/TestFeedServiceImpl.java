@@ -105,6 +105,19 @@ public class TestFeedServiceImpl {
     }
 
     /**
+     * 피드를 하나 가져온다.
+     */
+    @Transactional
+    @Test
+    public void getFeedTest() {
+        FeedDto feedDto = feedServiceImpl.getFeedById(10001);
+
+        assertThat(feedDto).isNotNull();
+        log.info(feedDto.getAttachments());
+        log.info(feedDto.getComments());
+    }
+
+    /**
      * 피드를 추가한다.
      * 글을 하나도 적지 않은 건물 내에서 긍을 처음 작성하는 유저 대상으로 테스트한다.
      * building_id = 10015, writer_id = 'member_15'

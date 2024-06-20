@@ -80,7 +80,7 @@ public class FeedDto {
                 .attachments(
                         feed.getAttachments() == null ?
                                 Collections.emptyList() :
-                                feed.getAttachments().stream().map(FeedAttachmentDto::toDto).filter(s->s.isActivated()).collect(Collectors.toList())
+                                feed.getAttachments().stream().map(FeedAttachmentDto::toDto).filter(s->(s.isActivated())).collect(Collectors.toList())
                 )
                 .comments(
                         feed.getComments() == null ?
