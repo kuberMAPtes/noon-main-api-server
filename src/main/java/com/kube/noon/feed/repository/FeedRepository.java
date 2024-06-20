@@ -149,7 +149,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     @Query("""
             SELECT m FROM Member m 
             INNER JOIN Zzim z ON m.memberId = z.memberId 
-            WHERE z.feedId = :#{#feed.feedId} AND z.zzimType = 'LIKE'
+            WHERE z.feedId = :#{#feed.feedId} AND z.zzimType = 'LIKE' AND z.activated = true
            """)
     List<Member> getFeedLikeList(@Param("feed") Feed feed);
 
@@ -180,7 +180,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
             SELECT f.*
             FROM feed f
             LEFT JOIN (
-                SELECT z.feed_id
+                SELECT DISTINCT z.feed_id
                 FROM zzim z
                 WHERE z.zzim_type = 'LIKE'
                   AND z.member_id = :#{#member.memberId}
@@ -199,6 +199,18 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
      * @return List<Feed>
      */
     List<Feed> findByFeedTextContainingIgnoreCase(String keyword);
-
     List<Feed> findByTitleContainingIgnoreCase(String keyword);
+
+    /**
+     * 제목이나 내용을 통해 피드를 검색할 수 있도록 합니다.
+     * 이 메서드를 이용하여 통합 검색과 페이징이 가능합니다.
+     * @param keyword
+     * @param pageable
+     */
+    @Query("SELECT f FROM Feed f WHERE f.title LIKE %:#{#keyword}% OR f.feedText LIKE %:#{#keyword}%")
+    List<Feed> searchFeedByKeyword(String keyword, Pageable pageable);
+
+    /**
+     *
+     */
 }

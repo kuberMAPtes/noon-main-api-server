@@ -2,18 +2,26 @@ package com.kube.noon.building.service;
 
 import com.kube.noon.building.domain.Building;
 import com.kube.noon.building.dto.BuildingDto;
+import com.kube.noon.building.dto.BuildingSearchResponseDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
 import com.kube.noon.building.repository.BuildingSummaryRepository;
 import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
 import com.kube.noon.building.repository.BuildingProfileRepository;
+import com.kube.noon.chat.dto.LiveliestChatroomDto;
+import com.kube.noon.common.constant.PagingConstants;
 import com.kube.noon.common.zzim.Zzim;
 import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.repository.FeedRepository;
+import com.kube.noon.places.domain.Position;
 import com.kube.noon.places.domain.PositionRange;
+import com.kube.noon.places.dto.PlaceDto;
+import com.kube.noon.places.exception.PlaceNotFoundException;
+import com.kube.noon.places.service.PlacesService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.web.config.SortHandlerMethodArgumentResolverCustomizer;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +48,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     private final BuildingProfileMapper buildingProfileMapper;
     private final BuildingSummaryRepository buildingSummaryRepository;
     private final FeedRepository feedRepository;
+    private final PlacesService placesService;
 
     public static final int SUMMARY_LENGTH_LIMIT = 2000;
     public static final int SUMMARY_FEED_COUNT_LIMIT  = 10;
@@ -167,6 +176,16 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     }
 
     @Override
+    public BuildingDto getBuildingProfileByPosition(Position position) throws PlaceNotFoundException {
+        PlaceDto findPlace = this.placesService.getPlaceByPosition(position);
+        Building building = this.buildingProfileRepository.findBuildingProfileByRoadAddr(findPlace.getRoadAddress());
+        if (building == null) {
+            throw new PlaceNotFoundException("No building");
+        }
+        return BuildingDto.fromEntity(building);
+    }
+
+    @Override
     public List<BuildingDto> getBuildingSubscriptionListByMemberId(String memberId) {
         List<Building> buildings = buildingProfileMapper.findBuildingSubscriptionListByMemberId(memberId);
         return buildings.stream()
@@ -239,13 +258,12 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     public List<BuildingDto> getBuildingsWithinRange(PositionRange positionRange) {
 
         Map<Building, Integer> subscriberCntMap = new HashMap<>();
-        Map<String,Double> range = getRange(positionRange);
         List<Building> buildings = buildingProfileRepository.findActivatedBuildings();
 
         // 지도 범위 내 건물별 구독자 수 기록
         for (Building building : buildings){
 
-            if(isWithinRange(range, building.getLongitude(), building.getLatitude())){
+            if(isWithinRange(positionRange, building.getLongitude(), building.getLatitude())){
                 subscriberCntMap.put(building, this.getSubscriberCnt(building.getBuildingId()));
             }
 
@@ -268,25 +286,23 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
     }
 
-
-    public Map<String,Double> getRange(PositionRange positionRange){
-        double minLat = Math.min(Math.min(positionRange.getNe().getLatitude(),positionRange.getNw().getLatitude()), Math.min(positionRange.getSe().getLatitude(), positionRange.getSw().getLatitude()));
-        double maxLat = Math.max(Math.max(positionRange.getNe().getLatitude(),positionRange.getNw().getLatitude()), Math.min(positionRange.getSe().getLatitude(), positionRange.getSw().getLatitude()));
-        double minLon = Math.min(Math.min(positionRange.getNe().getLatitude(),positionRange.getNw().getLatitude()), Math.min(positionRange.getSe().getLatitude(), positionRange.getSw().getLatitude()));
-        double maxLon = Math.max(Math.max(positionRange.getNe().getLatitude(),positionRange.getNw().getLatitude()), Math.max(positionRange.getSe().getLatitude(), positionRange.getSw().getLatitude()));
-
-        Map<String,Double> range = new HashMap<>();
-        range.put("minLat", minLat);
-        range.put("maxLat", maxLat);
-        range.put("minLon", minLon);
-        range.put("maxLon", maxLon);
-
-        return range;
+    public static boolean isWithinRange(PositionRange range, double buildingLon, double buildingLat) {
+        return (buildingLat >= range.getLowerLatitude() && buildingLat <= range.getUpperLatitude())
+                && (buildingLon >= range.getLowerLongitude() && buildingLon <= range.getUpperLongitude());
     }
 
-    public static boolean isWithinRange(Map<String,Double> range, double buildingLon, double buildingLat) {
-        return (buildingLat >= range.get("minLat") && buildingLat <= range.get("maxLat")) && (buildingLon >= range.get("minLon") && buildingLon <= range.get("maxLon"));
+    @Override
+    public List<BuildingSearchResponseDto> searchBuilding(String searchKeyword, Integer page) {
+        page = page == null ? PagingConstants.DEFAULT_PAGE : page;
+        return this.buildingProfileRepository
+                .findBuildingProfileBySearchKeyword(searchKeyword, PagingConstants.PAGE_SIZE * (page - 1), PagingConstants.PAGE_SIZE)
+                .stream()
+                .map((building) -> {
+                    BuildingSearchResponseDto dto = new BuildingSearchResponseDto();
+                    BeanUtils.copyProperties(building, dto);
+                    dto.setLiveliestChatroomDto(new LiveliestChatroomDto("SAMPLE", "SAMPLE")); // TODO: Replace with real data in the future
+                    return dto;
+                })
+                .toList();
     }
-
-
 }

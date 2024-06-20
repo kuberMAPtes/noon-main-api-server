@@ -10,6 +10,7 @@ import com.kube.noon.common.security.support.BearerTokenSupport;
 import com.kube.noon.common.security.support.InvalidRefreshTokenException;
 import com.kube.noon.common.security.support.KakaoTokenSupport;
 import com.kube.noon.member.dto.RequestDto.*;
+import com.kube.noon.member.dto.ResponseDto.SearchMemberResponseDto;
 import com.kube.noon.member.dto.auth.googleLoginRequestDto;
 import com.kube.noon.member.dto.member.*;
 import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
@@ -72,6 +73,9 @@ public class MemberRestController {
     private final List<BearerTokenSupport> tokenSupport;
     private final View error;
     private final AuthRepositoryImpl authRepositoryImpl;
+
+    @Value("${client-server-domain}")
+    private String clientServerDomain;
 
     // Constructor
     public MemberRestController(@Qualifier("memberServiceImpl") MemberService memberService,
@@ -394,6 +398,15 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("로그인 업무", memberDtoAtomicReference.get()));
     }
 
+    @GetMapping("/searchMember")
+    public ResponseEntity<ApiResponse<Page<SearchMemberResponseDto>>> searchMember(
+            @RequestParam("requesterId") String requesterId,
+            @RequestParam("searchKeyword") String searchKeyword,
+            @RequestParam("page") int page
+    ) {
+        return new ResponseEntity<>(ApiResponseFactory.createResponse("OK", this.memberService.searchMemberByNickname(requesterId, searchKeyword, page)), HttpStatus.OK);
+    }
+
     @Operation(summary = "로그아웃", description = "사용자가 로그아웃합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그아웃 성공"),
@@ -428,6 +441,7 @@ public class MemberRestController {
     private Cookie getDestructionCookie(String key) {
         Cookie cookie = new Cookie(key, null);
         cookie.setMaxAge(0);
+        cookie.setDomain(this.clientServerDomain);
         cookie.setPath("/");
         return cookie;
     }
@@ -653,6 +667,7 @@ public class MemberRestController {
     private Cookie wrapWithCookie(String cookieName, String value) {
         Cookie cookie = new Cookie(cookieName, value);
         cookie.setHttpOnly(true);
+        cookie.setDomain(this.clientServerDomain);
         cookie.setPath("/");
         return cookie;
     }

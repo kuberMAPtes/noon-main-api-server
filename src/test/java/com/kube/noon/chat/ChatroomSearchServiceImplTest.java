@@ -1,10 +1,10 @@
 package com.kube.noon.chat;
 
+import com.kube.noon.building.domain.Building;
 import com.kube.noon.chat.domain.Chatroom;
 import com.kube.noon.chat.domain.ChatroomType;
 import com.kube.noon.chat.dto.ChatroomDto;
 import com.kube.noon.chat.repository.ChatroomRepository;
-import com.kube.noon.chat.service.ChatroomSearchService;
 import com.kube.noon.chat.serviceImpl.ChatroomSearchServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -97,7 +96,12 @@ public class ChatroomSearchServiceImplTest {
         Chatroom chatroom = new Chatroom();
         chatroom.setChatroomId(id);
         chatroom.setChatroomCreatorId(creatorId);
-        chatroom.setBuildingId(buildingId);
+        chatroom.setBuilding(Building.builder()
+                .buildingId(buildingId)
+                .buildingName("sample")
+                .profileActivated(true)
+                .roadAddr("roadAddr")
+                .build());
         chatroom.setChatroomName(name);
         chatroom.setChatroomType(type);
         chatroom.setActivated(activated);
