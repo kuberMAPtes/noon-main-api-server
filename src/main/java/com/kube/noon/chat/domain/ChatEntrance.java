@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Table(name = "chat_entrance")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "chatroom")
 public class ChatEntrance {
 
     @Id

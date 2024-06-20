@@ -78,7 +78,7 @@ class TestChatroomRepository {
                                    Float chatroomMinTemp) {
         Chatroom chatroom = new Chatroom();
         chatroom.setChatroomCreatorId(chatroomCreatorId);
-        chatroom.setBuildingId(buildingId);
+        chatroom.setBuilding(this.buildingProfileRepository.findBuildingProfileByBuildingId(buildingId));
         chatroom.setChatroomName(chatroomName);
         chatroom.setChatroomType(chatroomType);
         chatroom.setChatroomMinTemp(chatroomMinTemp);
