@@ -27,6 +27,21 @@
         <result property = "tagCount" column = "tag_count" jdbcType = "NUMERIC"/>
     </resultMap>
 
+    <resultMap id="feedSummaryMap" type="com.kube.noon.feed.dto.FeedSummaryDto">
+        <result property="feedId" column="feed_id" jdbcType = "NUMERIC"/>
+        <result property="writerId" column="writer_id" jdbcType = "VARCHAR"/>
+        <result property="writerNickname" column="nickname" jdbcType = "VARCHAR"/>
+        <result property="title" column="title" jdbcType = "VARCHAR"/>
+        <result property="feedText" column="feed_text" jdbcType = "VARCHAR"/>
+        <result property="buildingId" column="building_id" jdbcType = "NUMERIC"/>
+        <result property="buildingName" column="building_name" jdbcType = "VARCHAR"/>
+        <result property="writtenTime" column="written_time" jdbcType="TIMESTAMP"/>
+        <result property="feedAttachementURL" column="feed_attachment_url" jdbcType = "VARCHAR"/>
+        <result property="like" column="like" jdbcType="BOOLEAN"/>
+        <result property="bookmark" column="bookmark" jdbcType="BOOLEAN"/>
+        <result property="mainActivated" column="main_activated" jdbcType="BOOLEAN"/>
+    </resultMap>
+
     <select id = "getFeedViewCntByBuilding" parameterType = "int" resultMap = "feedViewCntByBuildingMap">
         SELECT feed_id, title, view_cnt from feed  WHERE building_id = #{buildingId} ORDER BY view_cnt desc limit 5;
     </select>
@@ -67,4 +82,22 @@
         WHERE z.zzim_type = 'LIKE'
         GROUP BY r.tag_text, z.member_id;
     </select>
+
+    <select id = "getAllFeedOrderByPopolarity" resultMap="feedSummaryMap">
+        SELECT f.*, m.nickname, b.building_name, f.view_cnt + 3 * COALESCE(like_count, 0) + 5 * COALESCE(bookmark_count, 0) AS popularity
+        FROM feed f
+                 LEFT JOIN (
+            SELECT f.feed_id, COUNT(*) like_count FROM feed f INNER JOIN zzim z ON f.feed_id = z.feed_id WHERE z.zzim_type = 'LIKE' GROUP BY f.feed_id
+        ) likes ON f.feed_id = likes.feed_id
+                 LEFT JOIN (
+            SELECT f.feed_id, COUNT(*) bookmark_count FROM feed f INNER JOIN zzim z ON f.feed_id = z.feed_id WHERE z.zzim_type = 'BOOKMARK' GROUP BY f.feed_id
+        ) bookmarks ON f.feed_id = bookmarks.feed_id
+                 LEFT JOIN
+             members m ON f.writer_id = m.member_id
+                 LEFT JOIN
+             building b ON f.building_id = b.building_id
+        ORDER BY popularity DESC
+        LIMIT #{limit} OFFSET #{offset};
+    </select>
+
 </mapper>

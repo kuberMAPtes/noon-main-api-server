@@ -71,4 +71,11 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
      */
     @Query("SELECT z.feedId FROM Zzim z WHERE z.memberId = :#{#memberId} AND z.zzimType = :#{#zzimType} AND z.activated = true")
     List<Integer> getFeedIdByMemberIdAndZzimType(String memberId, ZzimType zzimType);
+
+    /**
+     * zzimType에 맞는 개수를 가지고 온다.
+     * 예시 : 피드 당 좋아요 개수
+     */
+    @Query("SELECT COUNT(z) FROM Zzim z WHERE z.feedId = :#{#feedId} AND z.zzimType = :#{#zzimType} AND z.activated = true")
+    int getCountByFeedIdZzimType(int feedId, ZzimType zzimType);
 }

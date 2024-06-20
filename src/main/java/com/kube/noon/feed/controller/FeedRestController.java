@@ -1,7 +1,5 @@
 package com.kube.noon.feed.controller;
 
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.kube.noon.common.ObjectStorageAPI;
 import com.kube.noon.feed.dto.*;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.feed.service.FeedStatisticsService;
@@ -11,16 +9,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 @Log4j2
@@ -86,6 +78,19 @@ public class FeedRestController {
         return feedListByBuildingSubscription;
     }
 
+    @Operation(summary = "인기도 순으로 나열한 전체 피드 목록", description = "인기도가 높은 순서대로 피드 전체 목록을 출력합니다.")
+    @GetMapping("/getAllFeedOrderByPopolarity")
+    public List<FeedSummaryDto> getAllFeedOrderByPopolarity(
+            @Parameter(description = "회원 ID") @RequestParam(required = false) String memberId,
+            @Parameter(description = "가져올 페이지(default = 1)") @RequestParam(required = false, defaultValue = "1") int page) {
+        if(memberId == null) {
+            memberId = "";
+        }
+        List<FeedSummaryDto> allFeedOrderByPoplarity = feedService.getAllFeedOrderByPopolarity(memberId, page - 1, PAGE_SIZE);
+
+        return allFeedOrderByPoplarity;
+    }
+
     @Operation(summary = "피드 추가", description = "피드를 하나 추가합니다.")
     @PostMapping("/addFeed")
     public int addFeed(
@@ -113,10 +118,15 @@ public class FeedRestController {
 
     @Operation(summary = "피드 상세보기", description = "피드를 하나 상세보기합니다.")
     @GetMapping("/detail")
-    public FeedDto getFeed(@Parameter(description = "상세보기할 피드 ID") @RequestParam int feedId) {
-        FeedDto getFeedDto = feedService.getFeedById(feedId);
-
-        return getFeedDto;
+    public FeedDto getFeed(
+            @Parameter(description = "상세보기할 피드 ID") @RequestParam int feedId,
+            @Parameter(description = "보고 있는 회원의 ID") @RequestParam(required = false) String memberId
+    ) {
+        if(memberId == null || memberId.isEmpty()) {
+            return feedService.getFeedById(feedId);
+        } else {
+            return feedService.getFeedById(memberId, feedId);
+        }
     }
     
     @Operation(summary = "메인 피드 설정", description = "자신의 피드 중 메인 피드를 하나 설정합니다. (사용하는 정보 : 피드 ID, 회원 ID)")

@@ -2,6 +2,7 @@ package com.kube.noon.feed.service;
 
 import com.kube.noon.feed.dto.FeedCntByTagDto;
 import com.kube.noon.feed.dto.FeedPopularityDto;
+import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.dto.FeedViewCntByBuildingDto;
 import com.kube.noon.feed.service.impl.FeedStatisticsServiceImpl;
 import com.kube.noon.feed.service.recommend.FeedRecommendationMemberId;

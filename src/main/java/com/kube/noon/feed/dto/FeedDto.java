@@ -26,6 +26,7 @@ public class FeedDto {
     private int feedId;
     private String writerId;
     private String writerNickname;
+    private String writerProfile;
     private int buildingId;
     private String buildingName;
     private PublicRange publicRange;
@@ -34,6 +35,11 @@ public class FeedDto {
     private Long viewCnt;
     private LocalDateTime writtenTime;
     private FeedCategory feedCategory;
+    private boolean like;
+    private int likeCount;
+    private boolean bookmark;
+    private int bookmarkCount;
+    private int popularity;
     private boolean modified;
     private boolean mainActivate;
     private boolean activate;
@@ -59,6 +65,7 @@ public class FeedDto {
                 .feedId(feed.getFeedId())
                 .writerId(writer.getMemberId())
                 .writerNickname(writer.getNickname())
+                .writerProfile(writer.getProfilePhotoUrl())
                 .buildingId(building.getBuildingId())
                 .buildingName(building.getBuildingName())
                 .publicRange(feed.getPublicRange())
@@ -73,12 +80,12 @@ public class FeedDto {
                 .attachments(
                         feed.getAttachments() == null ?
                                 Collections.emptyList() :
-                                feed.getAttachments().stream().map(FeedAttachmentDto::toDto).collect(Collectors.toList())
+                                feed.getAttachments().stream().map(FeedAttachmentDto::toDto).filter(s->(s.isActivated())).collect(Collectors.toList())
                 )
                 .comments(
                         feed.getComments() == null ?
                                 Collections.emptyList() :
-                                feed.getComments().stream().map(FeedCommentDto::toDto).collect(Collectors.toList())
+                                feed.getComments().stream().map(FeedCommentDto::toDto).filter(s-> (s.isActivated())).collect(Collectors.toList())
                 )
                 .tagFeeds(
                         feed.getTagFeeds() == null ?

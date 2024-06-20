@@ -1,9 +1,6 @@
 package com.kube.noon.feed.service.impl;
 
-import com.kube.noon.feed.dto.FeedCntByTagDto;
-import com.kube.noon.feed.dto.FeedPopularityDto;
-import com.kube.noon.feed.dto.FeedViewCntByBuildingDto;
-import com.kube.noon.feed.dto.MemberLikeTagDto;
+import com.kube.noon.feed.dto.*;
 import com.kube.noon.feed.repository.mybatis.FeedMyBatisRepository;
 import com.kube.noon.feed.service.FeedStatisticsService;
 import org.springframework.beans.factory.annotation.Autowired;
