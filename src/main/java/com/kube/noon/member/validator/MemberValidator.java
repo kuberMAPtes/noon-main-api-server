@@ -105,11 +105,11 @@ public class MemberValidator {
 
 
 
-    public void updateDajungScore(String memberId, int dajungScore) {
-        memberRepository.findMemberById(memberId).orElseThrow(() -> new IllegalServiceCallException("존재하지 않는 회원입니다."));
-        memberScanner.imoDataNotNull(memberId);
-        memberScanner.imoDataNotNull(dajungScore);
-        memberScanner.imoDajungScorePatternO(dajungScore);
+    public void updateDajungScore(UpdateMemberDajungScoreDto dto) {
+        memberRepository.findMemberById(dto.getMemberId()).orElseThrow(() -> new IllegalServiceCallException("존재하지 않는 회원입니다."));
+        memberScanner.imoDataNotNull(dto.getMemberId());
+        memberScanner.imoDataNotNull(dto.getDajungScore());
+        memberScanner.imoDajungScorePatternO(dto.getDajungScore());
     }
 
     public void deleteMemberRelationship(DeleteMemberRelationshipDto dto) {
