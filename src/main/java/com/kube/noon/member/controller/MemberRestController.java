@@ -15,6 +15,7 @@ import com.kube.noon.member.dto.member.*;
 import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
 import com.kube.noon.member.dto.memberRelationship.DeleteMemberRelationshipDto;
 import com.kube.noon.member.dto.memberRelationship.MemberRelationshipDto;
+import com.kube.noon.member.dto.memberRelationship.MemberRelationshipSimpleDto;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import com.kube.noon.member.dto.util.RandomData;
@@ -47,6 +48,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static com.kube.noon.member.controller.AESUtil.*;
 
@@ -103,8 +106,8 @@ public class MemberRestController {
     @GetMapping("/sendAuthentificationNumber")
     public ResponseEntity<ApiResponse<Boolean>> sendAuthentificationNumber(@RequestParam String phoneNumber) {
         log.info("sendAuthentificationNumber :: " + phoneNumber);
-//        Boolean isSended = authService.sendAuthentificationNumber(phoneNumber);
-        Boolean isSended = true;
+        Boolean isSended = authService.sendAuthentificationNumber(phoneNumber);
+//        Boolean isSended = true;
         if(isSended) {
             return ResponseEntity.ok(ApiResponseFactory.createResponse(phoneNumber + "로 인증 번호가 전송되었습니다.", true));
         }else{
@@ -619,12 +622,17 @@ public class MemberRestController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 관계 목록 조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원 관계 목록 조회 실패")
     })
-    @GetMapping("/getMemberRelationshipList")
-    public ResponseEntity<Page<MemberRelationshipDto>> getMemberRelationshipList(@ModelAttribute MemberRelationshipSearchCriteriaRequestDto requestDto) {
+    @PostMapping("/getMemberRelationshipList")
+    public ResponseEntity<ApiResponse<List<MemberRelationshipSimpleDto>>> getMemberRelationshipList(@RequestBody MemberRelationshipSearchCriteriaRequestDto requestDto) {
         log.info("getMemberRelationshipList" + requestDto);
         MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto = DtoEntityBinder.INSTANCE.toOtherDto(requestDto);
-        Page<MemberRelationshipDto> relationships = memberService.findMemberRelationshipListByCriteria(requestDto.getFromId(), memberRelationshipSearchCriteriaDto, requestDto.getPageUnit(), requestDto.getPageSize());
-        return ResponseEntity.ok(relationships);
+
+        Page<MemberRelationshipDto> relationships = memberService.findMemberRelationshipListByCriteria(requestDto.getFromId(), memberRelationshipSearchCriteriaDto, requestDto.getPage(), requestDto.getSize());
+        List<MemberRelationshipSimpleDto> relationshipSimpleDtoList = relationships.getContent()
+                .stream()
+                .map(memberRelationshipDto -> DtoEntityBinder.INSTANCE.toDto(memberRelationshipDto, MemberRelationshipSimpleDto.class))
+                .toList();
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회",relationshipSimpleDtoList));
     }
 
     @Operation(summary = "회원 관계 삭제", description = "사용자 간의 관계를 삭제합니다.")

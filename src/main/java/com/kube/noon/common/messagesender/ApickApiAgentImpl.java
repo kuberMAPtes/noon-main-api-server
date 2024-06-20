@@ -45,7 +45,7 @@ public class ApickApiAgentImpl implements ApickApiAgent {
 
         try{
             JsonNode root = objectMapper.readTree(response);
-            boolean validity = root.path("data").path("valid").asBoolean();
+            boolean validity = root.path("data").path("유효성").asBoolean();
             return validity;
         }catch( JsonProcessingException e){
             log.error("JsonProcessingException", e);
