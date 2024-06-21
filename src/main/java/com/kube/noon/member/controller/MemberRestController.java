@@ -371,6 +371,7 @@ public class MemberRestController {
         cookie.setMaxAge(60 * 60 * 24 * 7);
         cookie.setHttpOnly(false);
         cookie.setSecure(false);
+        cookie.setDomain(this.clientServerDomain);
         response.addCookie(cookie);
 
         Cookie cookie2 = new Cookie("Member-ID", encryptedMemberId.get(1));
@@ -378,6 +379,7 @@ public class MemberRestController {
         cookie2.setMaxAge(60 * 60 * 24 * 7);
         cookie2.setHttpOnly(false);
         cookie2.setSecure(false);
+        cookie2.setDomain(this.clientServerDomain);
         response.addCookie(cookie2);
 
         String redirectClientUrl;
