@@ -77,6 +77,9 @@ public class MemberRestController {
     private final View error;
     private final AuthRepositoryImpl authRepositoryImpl;
 
+    private final String clientServerHost;
+
+    private final String clientServerPort;
     @Value("${client-server-domain}")
     private String clientServerDomain;
 
@@ -85,7 +88,9 @@ public class MemberRestController {
                                 @Qualifier("loginAttemptCheckerAgent") LoginAttemptCheckerAgent loginAttemptCheckerAgent,
                                 KakaoService kakaoService,
                                 AuthService authService,
-                                List<BearerTokenSupport> tokenSupport, View error, AuthRepositoryImpl authRepositoryImpl) {
+                                List<BearerTokenSupport> tokenSupport, View error, AuthRepositoryImpl authRepositoryImpl,
+                                @Value("${client.server.host}") String clientServerHost,
+                                @Value("${client.server.port}") String clientServerPort) {
         this.authService = authService;
         log.info("생성자 :: " + this.getClass());
         this.kakaoService = kakaoService;
@@ -94,6 +99,8 @@ public class MemberRestController {
         this.tokenSupport = tokenSupport;
         this.error = error;
         this.authRepositoryImpl = authRepositoryImpl;
+        this.clientServerHost = clientServerHost;
+        this.clientServerPort = clientServerPort;
     }
 
     @Operation(summary = "문자날리기", description = "문자날립니다")
@@ -372,8 +379,13 @@ public class MemberRestController {
         cookie2.setSecure(false);
         response.addCookie(cookie2);
 
+        String redirectClientUrl;
+        if(!clientServerPort.isEmpty()) {
+            redirectClientUrl = clientServerHost + ":" + clientServerPort + "/member/kakaoNav?loginWay=" + "kakao";
+        }else{//비었으면 Host만
+            redirectClientUrl = clientServerHost + "/member/kakaoNav?loginWay=" + "kakao";
+        }
 
-        final String redirectClientUrl = "http://127.0.0.1:3000/member/kakaoNav?loginWay=" + "kakao";
         return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
                 .header(HttpHeaders.LOCATION, redirectClientUrl)
                 .build();
