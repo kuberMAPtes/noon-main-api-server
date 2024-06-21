@@ -124,32 +124,17 @@ public class ObjectStorageAWS3S {
     public String uploadFile(String filePath){
         log.info("filePath={}", filePath);
 
-        String folderName = "sample-folder/";
-
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(0L);
-        objectMetadata.setContentType("application/x-directory");
-        PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, folderName, new ByteArrayInputStream(new byte[0]), objectMetadata);
-
-        try {
-            s3.putObject(putObjectRequest);
-            System.out.format("Folder %s has been created.\n", folderName);
-        } catch (AmazonS3Exception e) {
-            e.printStackTrace();
-        } catch(SdkClientException e) {
-            e.printStackTrace();
-        }
-
-
-
-        //Object Storage에 파일 업로드
+        //Object Storage에 블러 파일 업로드
         String objectName = filePath.substring(filePath.lastIndexOf('/') + 1);
         log.info("Object Name={}",objectName);
 
         try {
-            
-            s3.putObject(bucketName+"/blured-images", objectName, new File(filePath));
-            System.out.format("Object %s has been created.\n", objectName);
+
+            PutObjectRequest putObjectRequestWithACL = new PutObjectRequest(bucketName + "/blured-images", objectName, new File(filePath))
+                    .withCannedAcl(CannedAccessControlList.PublicRead);
+
+            s3.putObject(putObjectRequestWithACL);
+            System.out.format("Object %s has been created with public-read ACL.\n", objectName);
 
             
             String uploadedFileUrl = "https://kr.object.ncloudstorage.com/"+
@@ -186,4 +171,12 @@ public class ObjectStorageAWS3S {
         }
 
     }/// end of deleteFile
+
+
+    /**
+     * Object Storage 접근 권한 주기
+     */
+    public void putObjectACL(){
+
+    }
 }
