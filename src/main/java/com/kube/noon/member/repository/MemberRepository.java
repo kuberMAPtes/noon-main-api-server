@@ -2,6 +2,7 @@ package com.kube.noon.member.repository;
 
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
+import com.kube.noon.member.dto.memberRelationship.FindMemberRelationshipListByCriteriaDto;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import org.springframework.data.domain.Page;
@@ -34,7 +35,7 @@ public interface MemberRepository {
 
     List<MemberRelationship> findAllMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria);
 
-    Page<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria, int page, int size);
+    FindMemberRelationshipListByCriteriaDto findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria, int page, int size);
 
     void updateMember(Member member);
 

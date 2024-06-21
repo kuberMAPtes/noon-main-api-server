@@ -11,14 +11,12 @@ import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.common.security.support.BearerTokenSupport;
 import com.kube.noon.common.security.support.InvalidRefreshTokenException;
 import com.kube.noon.common.security.support.KakaoTokenSupport;
+import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.RequestDto.*;
 import com.kube.noon.member.dto.ResponseDto.SearchMemberResponseDto;
 import com.kube.noon.member.dto.auth.googleLoginRequestDto;
 import com.kube.noon.member.dto.member.*;
-import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
-import com.kube.noon.member.dto.memberRelationship.DeleteMemberRelationshipDto;
-import com.kube.noon.member.dto.memberRelationship.MemberRelationshipDto;
-import com.kube.noon.member.dto.memberRelationship.MemberRelationshipSimpleDto;
+import com.kube.noon.member.dto.memberRelationship.*;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import com.kube.noon.member.dto.util.RandomData;
@@ -86,13 +84,11 @@ public class MemberRestController {
     private final AuthService authService;
     private final List<BearerTokenSupport> tokenSupport;
     private final View error;
-    private final AuthRepositoryImpl authRepositoryImpl;
 
     private final String clientServerHost;
 
     private final String clientServerPort;
 
-    private final ObjectStorageAPI objectStorageAPI;
 
     @Value("${client-server-domain}")
     private String clientServerDomain;
@@ -106,14 +102,12 @@ public class MemberRestController {
                                 @Value("${client.server.host}") String clientServerHost,
                                 @Value("${client.server.port}") String clientServerPort, ObjectStorageAPI objectStorageAPI) {
         this.authService = authService;
-        this.objectStorageAPI = objectStorageAPI;
         log.info("생성자 :: " + this.getClass());
         this.kakaoService = kakaoService;
         this.memberService = memberService;
         this.loginAttemptCheckerAgent = loginAttemptCheckerAgent;
         this.tokenSupport = tokenSupport;
         this.error = error;
-        this.authRepositoryImpl = authRepositoryImpl;
         this.clientServerHost = clientServerHost;
         this.clientServerPort = clientServerPort;
     }
@@ -714,16 +708,24 @@ public class MemberRestController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원 관계 목록 조회 실패")
     })
     @PostMapping("/getMemberRelationshipList")
-    public ResponseEntity<ApiResponse<List<MemberRelationshipSimpleDto>>> getMemberRelationshipList(@RequestBody MemberRelationshipSearchCriteriaRequestDto requestDto) {
+    public ResponseEntity<ApiResponse<Map<String,Object>>> getMemberRelationshipList(@RequestBody MemberRelationshipSearchCriteriaRequestDto requestDto) {
         log.info("getMemberRelationshipList" + requestDto);
         MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto = DtoEntityBinder.INSTANCE.toOtherDto(requestDto);
 
-        Page<MemberRelationshipDto> relationships = memberService.findMemberRelationshipListByCriteria(requestDto.getFromId(), memberRelationshipSearchCriteriaDto, requestDto.getPage(), requestDto.getSize());
-        List<MemberRelationshipSimpleDto> relationshipSimpleDtoList = relationships.getContent()
+        FindMemberRelationshipListByCriteriaResponseDto responseDto = memberService.findMemberRelationshipListByCriteria(requestDto.getFromId(), memberRelationshipSearchCriteriaDto, requestDto.getPage(), requestDto.getSize());
+
+        List<MemberRelationshipSimpleDto> relationshipSimpleDtoList = responseDto.getMemberRelationshipDtoPage().getContent()
                 .stream()
                 .map(memberRelationshipDto -> DtoEntityBinder.INSTANCE.toDto(memberRelationshipDto, MemberRelationshipSimpleDto.class))
                 .toList();
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회",relationshipSimpleDtoList));
+
+        Map<String,Object> map = new HashMap<>();
+        map.put("dtoList",relationshipSimpleDtoList);
+        map.put("totalFollowingCount",responseDto.getMemberRelationshipCountDto().getFollowingCount());
+        map.put("totalFollowerCount",responseDto.getMemberRelationshipCountDto().getFollowerCount());
+        map.put("totalBlockingCount",responseDto.getMemberRelationshipCountDto().getBlockingCount());//내가 차단한 회원
+        map.put("totalBlockerCount",responseDto.getMemberRelationshipCountDto().getBlockerCount());//얘는 관리자만 사용
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회",map));
     }
 
     @Operation(summary = "회원 관계 삭제", description = "사용자 간의 관계를 삭제합니다.")
@@ -772,23 +774,8 @@ public class MemberRestController {
     @Operation(summary = "회원 프로필 사진 조회", description = "회원의 프로필 사진을 조회합니다.")
     @GetMapping("/getProfilePhoto")
     public ResponseEntity<byte[]> getProfilePhoto(@Parameter(description = "회원 ID") @RequestParam String memberId) {
-        MemberProfileDto memberProfileDto = DtoEntityBinder.INSTANCE.toDto(memberService.findMemberById(memberId), MemberProfileDto.class);
 
-        String[] fileNames = memberProfileDto.getProfilePhotoUrl().split("/");
-        String fileName = fileNames[fileNames.length - 1];
-
-        S3ObjectInputStream inputStream = objectStorageAPI.getObject(fileName);
-
-        try {
-            byte[] imageBytes = inputStream.readAllBytes();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.IMAGE_JPEG);
-
-            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+         return memberService.findMemberProfilePhoto(memberId);
     }
 
     @Operation(summary = "회원 프로필 사진 추가", description = "회원의 프로필 사진을 추가합니다.")
