@@ -22,7 +22,8 @@ public class AccessDefinition {
             "/member/sendAuthentificationNumber",
             "/member/confirmAuthentificationNumber",
             "/member/refresh",
-            "/actuator/health"
+            "/actuator/health",
+            "/healthCheck"
     );
 
     public static final List<String> ALLOWED_TO_MEMBER = List.of(

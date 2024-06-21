@@ -1,5 +1,6 @@
 package com.kube.noon.places.service;
 
+import com.kube.noon.places.domain.Position;
 import com.kube.noon.places.dto.PlaceDto;
 import com.kube.noon.places.exception.PlaceNotFoundException;
 import com.kube.noon.places.repository.PlacesNaverMapsApiRepositoryImpl;
@@ -35,4 +36,12 @@ public interface PlacesService {
      * @throws PlaceNotFoundException 주어진 latitude, longitude에 위치한 장소가 없을 경우
      */
     public PlaceDto getPlaceByPosition(double latitude, double longitude) throws PlaceNotFoundException;
+
+    /**
+     * 주어진 위도, 경도에 위치한 장소 정보를 얻는다.
+     * @param position 위도 및 경도 좌표가 담긴 Position 객체. 위도는 33~43 사이의 실수, 경도는 124~132 사이의 실수여야 한다
+     * @return position에 위치한 장소의 정보
+     * @throws PlaceNotFoundException 주어진 position에 위치한 장소가 없을 경우
+     */
+    public PlaceDto getPlaceByPosition(Position position) throws PlaceNotFoundException;
 }

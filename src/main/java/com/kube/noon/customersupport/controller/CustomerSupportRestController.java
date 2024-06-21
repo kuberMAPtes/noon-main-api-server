@@ -1,22 +1,13 @@
 package com.kube.noon.customersupport.controller;
-import com.kube.noon.building.dto.BuildingDto;
-import com.kube.noon.building.dto.BuildingZzimDto;
-import com.kube.noon.building.service.BuildingProfileService;
-import com.kube.noon.chat.service.ChatroomService;
 import com.kube.noon.customersupport.domain.ChatbotConversation;
-import com.kube.noon.customersupport.domain.Report;
 import com.kube.noon.customersupport.dto.notice.NoticeDto;
 import com.kube.noon.customersupport.dto.report.ReportDto;
 import com.kube.noon.customersupport.dto.report.ReportProcessingDto;
 import com.kube.noon.customersupport.service.ChatbotService;
 import com.kube.noon.customersupport.service.CustomerSupportService;
-import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.dto.FeedAttachmentDto;
 import com.kube.noon.feed.dto.FeedDto;
-import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.service.FeedService;
-import com.kube.noon.notification.domain.NotificationType;
-import com.kube.noon.notification.dto.NotificationDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -52,17 +43,13 @@ public class CustomerSupportRestController {
 
     /**
      * 신고 처리하기
+     * @param reportProcessingDto 관리자가 지정한 (다정수치감소량, 계정잠금일수, 신고상태) 및 신고 아이디가 반영된 신고 처리 정보
      * @return 신고 처리한 신고 정보
      */
     @PostMapping("/updateReport")
     public ReportProcessingDto updateReport(@RequestBody ReportProcessingDto reportProcessingDto) {
 
         log.info("reportProcessingDto={}",reportProcessingDto);
-
-        reportProcessingDto.setReportedTime(LocalDateTime.now());
-
-        //신고 처리 알림
-        customerSupportService.sendReportNotification(reportProcessingDto);
 
         return customerSupportService.updateReport(reportProcessingDto);
     }
@@ -129,7 +116,7 @@ public class CustomerSupportRestController {
      * 공지 상세보기
      */
     @GetMapping("/getNoticeByNoticeId")
-    public FeedDto getNoticeByNoticeId(int noticeId) {
+    public FeedDto getNoticeByNoticeId(@RequestParam int noticeId) {
 
         log.info("noticeId={}",noticeId);
 
@@ -176,6 +163,7 @@ public class CustomerSupportRestController {
         log.info("pageNumber={}",pageNumber);
 
         if(pageNumber==null){
+            log.info("이미지목록={}",customerSupportService.getImageList());
             return customerSupportService.getImageList();
         }
         return customerSupportService.getImageListByPageable(pageNumber);
@@ -229,18 +217,17 @@ public class CustomerSupportRestController {
 
 
     /**
-     * 피드 삭제하기
+     * 유해피드 삭제 및 작성자 계정잠금일수 연장
+     *
      * @param feedDto 유해 첨부파일이 포함된 피드 아이디가 담긴 Dto
      * @return 삭제(activated=false) 처리된 피드 정보
      */
-    @Deprecated //==> 피드 컨트롤러로 대체될 수 있음.
     @PostMapping("/deleteBadFeed")
-    public FeedDto deleteBadFeed(@RequestBody FeedDto feedDto) {
+    public FeedDto deleteBadFeed(@RequestBody FeedDto feedDto, @RequestParam String reqUnlockDuration) {
 
         log.info("feedDto={}",feedDto);
-        
-        int feedId = feedService.deleteFeed(feedDto.getFeedId());
-        return feedService.getFeedById(feedId);
+
+        return customerSupportService.deleteBadFeed(feedDto, reqUnlockDuration);
     }
 
 }

@@ -112,6 +112,50 @@ public class TestMemberRepository {
     }
 
     @Test
+    void findMemberByNickname_paging() {
+        for (int i = 1; i <= 25; i++) {
+            Member saveMember = new Member();
+            saveMember.setMemberId("sample-" + i);
+            saveMember.setNickname("sample-nickname-" + i);
+            saveMember.setPhoneNumber("010591243" + (i < 10 ? "0" + i : i));
+            saveMember.setPwd("samplepwd");
+            this.memberRepository.addMember(saveMember);
+        }
+
+        Page<Member> result1 = this.memberRepository.findMemberByNickname("sample-nickname", "none", 1);
+        Page<Member> result2 = this.memberRepository.findMemberByNickname("sample-nickname", "none", 3);
+        Page<Member> result3 = this.memberRepository.findMemberByNickname("sample-nickname", "none", 4);
+
+        assertThat(result1.getTotalPages()).isEqualTo(3);
+        assertThat(result1.getTotalElements()).isEqualTo(25);
+        assertThat(result2.getTotalPages()).isEqualTo(3);
+        assertThat(result2.getTotalElements()).isEqualTo(25);
+        assertThat(result3.getTotalPages()).isEqualTo(3);
+        assertThat(result3.getTotalElements()).isEqualTo(25);
+
+        assertThat(result1.getContent().size()).isEqualTo(10);
+        assertThat(result2.getContent().size()).isEqualTo(5);
+        assertThat(result3.getContent().isEmpty()).isTrue();
+    }
+
+    @Test
+    void findMemberByNickname_paging_negativePage() {
+        for (int i = 1; i <= 25; i++) {
+            Member saveMember = new Member();
+            saveMember.setMemberId("sample-" + i);
+            saveMember.setNickname("sample-nickname-" + i);
+            saveMember.setPhoneNumber("010591243" + (i < 10 ? "0" + i : i));
+            saveMember.setPwd("samplepwd");
+            this.memberRepository.addMember(saveMember);
+        }
+
+        Page<Member> result1 = this.memberRepository.findMemberByNickname("sample-nickname", "none", 0);
+        Page<Member> result2 = this.memberRepository.findMemberByNickname("sample-nickname", "none", -1);
+        assertThat(result1.getContent().size()).isZero();
+        assertThat(result2.getContent().size()).isZero();
+    }
+
+    @Test
     @DisplayName("회원 리스트 조회 테스트")
     void findMemberListByCriteria() {
         Page<Member> foundMemberList = memberRepository.findMemberListByCriteria(

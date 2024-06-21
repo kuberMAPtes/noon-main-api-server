@@ -76,8 +76,10 @@ public class MemberValidationRule {
         validationChain.addRule(UpdateMemberDto.class, dto -> {
             memberScanner.imoTwoDataNotNullSimul(dto.getMemberId(), dto.getNickname());
             memberScanner.imoNotBadWord(dto.getMemberId());
-            memberScanner.imoNotBadWord(dto.getNickname());
 
+            if (dto.getNickname() != null) {
+                memberScanner.imoNotBadWord(dto.getNickname());
+            }
             if (dto.getMemberId() != null) {
                 memberScanner.imoMemberIdPatternO(dto.getMemberId());
             }

@@ -11,7 +11,7 @@
     <groupId>com.kube.noon</groupId>
     <artifactId>noon-main-api-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <name>noon-main-api-server</name>
     <description>noon-main-api-server</description>
     <properties>

@@ -29,6 +29,7 @@ public class FeedAttachmentDto {
                 .fileUrl(feedAttachment.getFileUrl())
                 .fileType(feedAttachment.getFileType())
                 .blurredFileUrl(feedAttachment.getBlurredFileUrl())
+                .activated(feedAttachment.isActivated())
                 .build();
     }
 
@@ -39,6 +40,7 @@ public class FeedAttachmentDto {
                 .fileUrl(feedAttachmentDto.getFileUrl())
                 .fileType(feedAttachmentDto.getFileType())
                 .blurredFileUrl(feedAttachmentDto.getBlurredFileUrl())
+                .activated(feedAttachmentDto.isActivated())
                 .build();
     }
 

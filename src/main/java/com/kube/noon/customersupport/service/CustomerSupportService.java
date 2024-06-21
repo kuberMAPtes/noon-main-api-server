@@ -4,6 +4,8 @@ import com.kube.noon.customersupport.dto.notice.NoticeDto;
 import com.kube.noon.customersupport.dto.report.ReportDto;
 import com.kube.noon.customersupport.dto.report.ReportProcessingDto;
 import com.kube.noon.feed.dto.FeedAttachmentDto;
+import com.kube.noon.feed.dto.FeedDto;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -19,10 +21,15 @@ public interface CustomerSupportService {
     ReportDto addReport(ReportDto reportDto);
     ReportProcessingDto updateReport(ReportProcessingDto reportProcessingDto);
 
+    void updateUnlockTime(String memberId, String reqUnlockDuration);
     List<FeedAttachmentDto> getImageList();
     List<FeedAttachmentDto> getImageListByPageable(int pageNumber);
+    List<FeedAttachmentDto> getAllImageListByPageable(int pageNumber);
+    List<FeedAttachmentDto> getAllImageList();
+
     FeedAttachmentDto getImageByAttatchmentId(int attachmentId);
     FeedAttachmentDto addBluredImage(FeedAttachmentDto attachmentDto) throws IOException;
+    FeedDto deleteBadFeed(FeedDto feedDto, String reqUnlockDuration);
     List<FeedAttachmentDto> getFilteredListByAI();
     List<FeedAttachmentDto> getFilteredListByAIAndPageable(int pageNumber);
 
