@@ -376,8 +376,13 @@ public class MemberRestController {
         cookie2.setSecure(false);
         response.addCookie(cookie2);
 
+        String redirectClientUrl;
+        if(!clientServerPort.isEmpty()) {
+            redirectClientUrl = clientServerHost + ":" + clientServerPort + "/member/kakaoNav?loginWay=" + "kakao";
+        }else{//비었으면 Host만
+            redirectClientUrl = clientServerHost + "/member/kakaoNav?loginWay=" + "kakao";
+        }
 
-        final String redirectClientUrl = clientServerHost+clientServerPort+"/member/kakaoNav?loginWay=" + "kakao";
         return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
                 .header(HttpHeaders.LOCATION, redirectClientUrl)
                 .build();
