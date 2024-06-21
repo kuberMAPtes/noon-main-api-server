@@ -364,48 +364,50 @@ public class MemberRestController {
             memberId = memberService.findMemberById(memberId).get().getMemberId();
         }
 
-        List<String> encryptedMemberId = encryptAES(memberId);
+//        List<String> encryptedMemberId = encryptAES(memberId);
 
-        Cookie cookie = new Cookie("IV", encryptedMemberId.get(0));
-        cookie.setPath("/");
-        cookie.setMaxAge(60 * 60 * 24 * 7);
-        cookie.setHttpOnly(false);
 
-        if(this.clientServerDomain.equals("localhost")) {
-            cookie.setSecure(false);
-        }else {
-            cookie.setSecure(true);
-
-        }
-
-        cookie.setDomain(this.clientServerDomain);
-        cookie.setAttribute("SameSite", "None"); // SameSite 설정
-
-        response.addCookie(cookie);
-
-        Cookie cookie2 = new Cookie("Member-ID", encryptedMemberId.get(1));
-        cookie2.setPath("/");
-        cookie2.setMaxAge(60 * 60 * 24 * 7);
-        cookie2.setHttpOnly(false);
-
-        if(this.clientServerDomain.equals("localhost")) {
-            cookie.setSecure(false);
-        }else {
-            cookie.setSecure(true);
-        }
-
-        cookie2.setDomain(this.clientServerDomain);
-        cookie.setAttribute("SameSite", "None"); // SameSite 설정
-        response.addCookie(cookie2);
-
+//        Cookie cookie = new Cookie("IV", encryptedMemberId.get(0));
+//        cookie.setPath("/");
+//        cookie.setMaxAge(60 * 60 * 24 * 7);
+//        cookie.setHttpOnly(false);
+//
+//        if(this.clientServerDomain.equals("localhost")) {
+//            cookie.setSecure(false);
+//        }else {
+//            cookie.setSecure(true);
+//
+//        }
+//
+//        cookie.setDomain(this.clientServerDomain);
+//        cookie.setAttribute("SameSite", "None"); // SameSite 설정
+//
+//        response.addCookie(cookie);
+//
+//        Cookie cookie2 = new Cookie("Member-ID", encryptedMemberId.get(1));
+//        cookie2.setPath("/");
+//        cookie2.setMaxAge(60 * 60 * 24 * 7);
+//        cookie2.setHttpOnly(false);
+//
+//        if(this.clientServerDomain.equals("localhost")) {
+//            cookie.setSecure(false);
+//        }else {
+//            cookie.setSecure(true);
+//        }
+//        System.out.println("도메인 : " + this.clientServerDomain);
+//        cookie2.setDomain(this.clientServerDomain);
+//        cookie2.setAttribute("SameSite", "None"); // SameSite 설정
+//        response.addCookie(cookie2);
+//        String secretId = encryptedMemberId.get(0);
+//        String secretIv = encryptedMemberId.get(1);
         String redirectClientUrl;
         String trimmedHost = clientServerHost.trim();
         String trimmedPort = clientServerPort.trim();
 
         if(!clientServerPort.isEmpty()) {
-            redirectClientUrl = trimmedHost + ":" + trimmedPort + "/member/kakaoNav?loginWay=" + "kakao";
+            redirectClientUrl = trimmedHost + ":" + trimmedPort + "/member/kakaoNav/"+memberId+"?loginWay=" + "kakao";
         }else{//비었으면 Host만
-            redirectClientUrl = trimmedHost + "/member/kakaoNav?loginWay=" + "kakao";
+            redirectClientUrl = trimmedHost + "/member/kakaoNav/"+memberId+"?loginWay=" + "kakao";
         }
 
         System.out.println("리다이렉트 합니다 " + redirectClientUrl);
