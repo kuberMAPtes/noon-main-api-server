@@ -6,15 +6,12 @@ import com.kube.noon.common.security.TokenPair;
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.auth.KakaoResponseDto;
-import com.kube.noon.member.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
@@ -117,7 +114,7 @@ public class KakaoTokenSupport implements BearerTokenSupport {
                     ? responseBody.getString("refresh_token")
                     : refreshToken;
             return new TokenPair(newAccessToken, newRefreshToken);
-        } catch (HttpClientErrorException.BadRequest | JSONException e) {
+        } catch (Exception e) {
             throw new InvalidRefreshTokenException("Invalid refresh token=" + refreshToken, e);
         }
     }

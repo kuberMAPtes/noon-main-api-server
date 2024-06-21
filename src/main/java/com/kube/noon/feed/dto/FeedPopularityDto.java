@@ -14,6 +14,6 @@ import lombok.*;
 public class FeedPopularityDto {
     private int feedId;
     private String title;
-    private int buildingId;
+    private String nickname;
     private int popularity;
 }

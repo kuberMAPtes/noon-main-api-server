@@ -3,11 +3,15 @@ package com.kube.noon.chat.serviceImpl;
 import com.kube.noon.chat.domain.ChatEntrance;
 import com.kube.noon.chat.domain.Chatroom;
 import com.kube.noon.chat.dto.ChatroomDto;
+import com.kube.noon.chat.dto.ChatroomSearchResponseDto;
 import com.kube.noon.chat.repository.ChatEntranceRepository;
 import com.kube.noon.chat.repository.ChatroomRepository;
 import com.kube.noon.chat.service.ChatroomSearchService;
+import com.kube.noon.common.constant.PagingConstants;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,7 +40,7 @@ public class ChatroomSearchServiceImpl implements ChatroomSearchService {
     public List<ChatroomDto> getBuildingChatroomListByChatroomName(int buildingId, String searchKeywordChatroom) throws Exception {
         List<Chatroom> chatrooms = chatroomRepository.findByBuildingIdAndChatroomNameContaining(buildingId, searchKeywordChatroom);
 
-        List <ChatroomDto> chatroomDtos = convertToChatroomDtoList(chatrooms);
+        List<ChatroomDto> chatroomDtos = convertToChatroomDtoList(chatrooms);
 
         return chatroomDtos;
     }
@@ -69,10 +73,18 @@ public class ChatroomSearchServiceImpl implements ChatroomSearchService {
     }
 
     @Override
-    public List<ChatroomDto> getLivelistChatroomList(int buildingId) throws Exception {
-        return null; // 구현 고민중
+    public Page<ChatroomSearchResponseDto> searchChatroomByChatroomName(String searchKeyword, int page) {
+      return this.chatroomRepository.findByChatroomNameContaining(searchKeyword, PageRequest.of(page - 1, PagingConstants.PAGE_SIZE))
+                .map(ChatroomSearchResponseDto::of);
     }
 
+    @Override
+    public List<ChatroomDto> getLivelistChatroomList(int buildingId) throws Exception {
+        List<Chatroom> chatrooms = chatroomRepository.findByBuildingId(buildingId);
+        List<ChatroomDto> chatroomDtos = convertToChatroomDtoList(chatrooms);
+
+        return chatroomDtos; // 구현 고민중
+    }
 
 
     private List<ChatroomDto> convertToChatroomDtoList(List<Chatroom> chatrooms) {
@@ -82,10 +94,11 @@ public class ChatroomSearchServiceImpl implements ChatroomSearchService {
     private ChatroomDto convertToChatroomDto(Chatroom chatroom) {
         ChatroomDto dto = new ChatroomDto();
 
+        dto.setChatroomCreator(chatroom.getChatroomCreator());
         dto.setChatroomID(chatroom.getChatroomId());
         dto.setChatroomName(chatroom.getChatroomName());
         dto.setChatroomMinTemp(chatroom.getChatroomMinTemp());
-        dto.setChatroomCreatorId(chatroom.getChatroomCreatorId());
+        dto.setChatroomCreator(chatroom.getChatroomCreator());
         dto.setChatroomType(chatroom.getChatroomType().toString()); // Enum 값을 문자열로 변환하여 설정
         return dto;
     }

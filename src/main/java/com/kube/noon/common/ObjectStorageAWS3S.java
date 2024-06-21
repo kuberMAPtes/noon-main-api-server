@@ -148,12 +148,12 @@ public class ObjectStorageAWS3S {
 
         try {
             
-            s3.putObject(bucketName, objectName, new File(filePath));
+            s3.putObject(bucketName+"/blured-images", objectName, new File(filePath));
             System.out.format("Object %s has been created.\n", objectName);
 
             
             String uploadedFileUrl = "https://kr.object.ncloudstorage.com/"+
-                    bucketName+
+                    bucketName+"/blured-images/"+
                     filePath.substring(filePath.lastIndexOf('/') + 1);
             log.info("uploadedFileUrl={}", uploadedFileUrl);
 

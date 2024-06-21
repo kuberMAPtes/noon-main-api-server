@@ -2,24 +2,33 @@ package com.kube.noon.building.service;
 
 import com.kube.noon.building.domain.Building;
 import com.kube.noon.building.dto.BuildingDto;
+import com.kube.noon.building.dto.BuildingSearchResponseDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
 import com.kube.noon.building.repository.BuildingSummaryRepository;
 import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
 import com.kube.noon.building.repository.BuildingProfileRepository;
+import com.kube.noon.chat.dto.LiveliestChatroomDto;
+import com.kube.noon.common.constant.PagingConstants;
 import com.kube.noon.common.zzim.Zzim;
 import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.repository.FeedRepository;
+import com.kube.noon.places.domain.Position;
+import com.kube.noon.places.domain.PositionRange;
+import com.kube.noon.places.dto.PlaceDto;
+import com.kube.noon.places.exception.PlaceNotFoundException;
+import com.kube.noon.places.service.PlacesService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.beans.BeanUtils;
+import org.springframework.data.web.config.SortHandlerMethodArgumentResolverCustomizer;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -39,9 +48,11 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     private final BuildingProfileMapper buildingProfileMapper;
     private final BuildingSummaryRepository buildingSummaryRepository;
     private final FeedRepository feedRepository;
+    private final PlacesService placesService;
 
     public static final int SUMMARY_LENGTH_LIMIT = 2000;
     public static final int SUMMARY_FEED_COUNT_LIMIT  = 10;
+    private final SortHandlerMethodArgumentResolverCustomizer sortCustomizer;
 
     ///Method
     /**
@@ -165,13 +176,22 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     }
 
     @Override
+    public BuildingDto getBuildingProfileByPosition(Position position) throws PlaceNotFoundException {
+        PlaceDto findPlace = this.placesService.getPlaceByPosition(position);
+        Building building = this.buildingProfileRepository.findBuildingProfileByRoadAddr(findPlace.getRoadAddress());
+        if (building == null) {
+            throw new PlaceNotFoundException("No building");
+        }
+        return BuildingDto.fromEntity(building);
+    }
+
+    @Override
     public List<BuildingDto> getBuildingSubscriptionListByMemberId(String memberId) {
         List<Building> buildings = buildingProfileMapper.findBuildingSubscriptionListByMemberId(memberId);
         return buildings.stream()
                 .map(BuildingDto::fromEntity)
                 .collect(Collectors.toList());
     }
-
 
     /**
      * buildingId로 조회한 빌딩의 모든 피드를 가져와 3줄로 요약
@@ -214,5 +234,75 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
         buildingProfileRepository.save(building);
 
         return feedAiSummary;
+    }
+
+
+    /**
+     * 건물별 구독자 수를 조회한다.
+     * @param buildingId 구독자 수를 조회할 건물 아이디
+     * @return 구독자 수
+     */
+    @Override
+    public int getSubscriberCnt(int buildingId) {
+        return zzimRepository.countByBuildingIdAndActivated(buildingId, true);
+    }
+
+
+    /**
+     * 위치범위(사용자 화면) 내 건물 중 구독자가 많은 10개의 건물을 가져온다.
+     *
+     * @param positionRange 사용자의 화면 범위
+     * @return
+     */
+    @Override
+    public List<BuildingDto> getBuildingsWithinRange(PositionRange positionRange) {
+
+        Map<Building, Integer> subscriberCntMap = new HashMap<>();
+        List<Building> buildings = buildingProfileRepository.findActivatedBuildings();
+
+        // 지도 범위 내 건물별 구독자 수 기록
+        for (Building building : buildings){
+
+            if(isWithinRange(positionRange, building.getLongitude(), building.getLatitude())){
+                subscriberCntMap.put(building, this.getSubscriberCnt(building.getBuildingId()));
+            }
+
+        }
+
+        // 구독자 많은순으로 정렬
+        List<Map.Entry<Building, Integer>> listForSorting = new ArrayList<>(subscriberCntMap.entrySet());
+        listForSorting.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
+
+
+        // 결과 추출
+        List<Building> popularBuildings = new ArrayList<>();
+        for (int i = 0; i < Math.min(10, listForSorting.size()); i++) {
+            popularBuildings.add(listForSorting.get(i).getKey());
+        }
+
+        return popularBuildings.stream()
+                .map(BuildingDto::fromEntity)
+                .collect(Collectors.toList());
+
+    }
+
+    public static boolean isWithinRange(PositionRange range, double buildingLon, double buildingLat) {
+        return (buildingLat >= range.getLowerLatitude() && buildingLat <= range.getUpperLatitude())
+                && (buildingLon >= range.getLowerLongitude() && buildingLon <= range.getUpperLongitude());
+    }
+
+    @Override
+    public List<BuildingSearchResponseDto> searchBuilding(String searchKeyword, Integer page) {
+        page = page == null ? PagingConstants.DEFAULT_PAGE : page;
+        return this.buildingProfileRepository
+                .findBuildingProfileBySearchKeyword(searchKeyword, PagingConstants.PAGE_SIZE * (page - 1), PagingConstants.PAGE_SIZE)
+                .stream()
+                .map((building) -> {
+                    BuildingSearchResponseDto dto = new BuildingSearchResponseDto();
+                    BeanUtils.copyProperties(building, dto);
+                    dto.setLiveliestChatroomDto(new LiveliestChatroomDto("SAMPLE", "SAMPLE")); // TODO: Replace with real data in the future
+                    return dto;
+                })
+                .toList();
     }
 }

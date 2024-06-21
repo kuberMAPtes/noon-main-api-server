@@ -1,17 +1,22 @@
 package com.kube.noon.building.service;
+import com.kube.noon.building.domain.Building;
 import com.kube.noon.building.dto.BuildingDto;
+import com.kube.noon.building.dto.BuildingSearchResponseDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
-import com.kube.noon.building.repository.BuildingSummaryRepository;
-import lombok.RequiredArgsConstructor;
+import com.kube.noon.building.repository.BuildingProfileRepository;
+import com.kube.noon.places.domain.Position;
+import com.kube.noon.places.domain.PositionRange;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -82,5 +87,81 @@ public class TestBuildingService {
         log.info("빌딩피드 요약내용={}", buildingProfileService.getFeedAISummary(10099));
       //  Thread.sleep(30000); Scheduled 테스트를 위함. 5초마다 호출하는 것을 확인하기 위해 대기.(실제 앱에서는 매일 24시마다 업데이트)
 
+    }
+
+    @Test
+    void getSubscriberCnt(){
+        log.info("구독자수={}",buildingProfileService.getSubscriberCnt(10089));
+    }
+
+
+    @Test
+    void getBuildingsWithinRange(){
+
+        Position ne = new Position(37.7749, -122.4194); // 북동 (임의의 위도와 경도)
+        Position nw = new Position(37.7749, -122.4244); // 북서 (임의의 위도와 경도)
+        Position se = new Position(37.7680, -122.4194); // 남동 (임의의 위도와 경도)
+        Position sw = new Position(37.7680, -122.4244); // 남서 (임의의 위도와 경도)
+
+        PositionRange positionRange = new PositionRange(37.7680, -122.4194, 37.7749, -122.4244);
+        List<BuildingDto> buildingDtos = buildingProfileService.getBuildingsWithinRange(positionRange);
+        log.info("buildingDtos={}", buildingDtos);
+    }
+
+    @Autowired
+    BuildingProfileRepository buildingProfileRepository;
+
+    @Transactional
+    @Test
+    void searchBuilding() {
+        Building.BuildingBuilder buildingBuilder = Building.builder()
+                .profileActivated(true)
+                .roadAddr("addr")
+                .longitude(127.12521124)
+                .latitude(35.1525125)
+                .feedAiSummary("asdf");
+
+        String[] forTest = {
+                "h31hf99ea,fqeh31r",
+                "ghi3fh,eht0efaf",
+                "ghwa993h1r,asvihoosav",
+                "none,voiashvhr",
+                "vd83h1fav,none",
+                "none,none",
+                "never,n"
+        };
+
+        for (int i = 0; i < 5; i++) {
+            Arrays.stream(forTest)
+                    .map((ps) -> ps.split(","))
+                    .map((ps) -> {
+                        String prefix = ps[0];
+                        String suffix = ps[1];
+                        if (prefix.equals("never")) {
+                            return buildingBuilder.buildingName("NeverMind").build();
+                        }
+
+                        String fullName = "sample building";
+                        if (!prefix.equals("none")) {
+                            fullName = prefix + fullName;
+                        }
+                        if (!suffix.equals("none")) {
+                            fullName = fullName + suffix;
+                        }
+                        return buildingBuilder.buildingName(fullName).build();
+                    }).forEach((b) -> this.buildingProfileRepository.save(b));
+        }
+
+        List<BuildingSearchResponseDto> sampleBuildingPage1 =
+                this.buildingProfileService.searchBuilding("sample building", 1);
+        Assertions.assertThat(sampleBuildingPage1.size()).isEqualTo(10);
+
+        List<BuildingSearchResponseDto> sampleBuildingPage3 =
+                this.buildingProfileService.searchBuilding("sample building", 3);
+        Assertions.assertThat(sampleBuildingPage3.size()).isEqualTo(10);
+
+        List<BuildingSearchResponseDto> sampleBuildingPage4 =
+                this.buildingProfileService.searchBuilding("sample building", 4);
+        Assertions.assertThat(sampleBuildingPage4).isEmpty();
     }
 }

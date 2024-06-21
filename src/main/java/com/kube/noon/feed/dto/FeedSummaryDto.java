@@ -23,6 +23,9 @@ public class FeedSummaryDto {
     private String buildingName;
     private LocalDateTime writtenTime;
     private String feedAttachementURL;
+    private boolean like;
+    private boolean bookmark;
+    private boolean mainActivated;
 
     public static FeedSummaryDto toDto(Feed feed) {
         return FeedSummaryDto.builder()
@@ -34,6 +37,7 @@ public class FeedSummaryDto {
                 .buildingId(feed.getBuilding().getBuildingId())
                 .buildingName(feed.getBuilding().getBuildingName())
                 .writtenTime(feed.getWrittenTime())
+                .mainActivated(feed.isMainActivated())
                 .feedAttachementURL((feed.getAttachments() == null || feed.getAttachments().size() == 0) ? null : feed.getAttachments().get(0).getFileUrl())
                 .build();
     }

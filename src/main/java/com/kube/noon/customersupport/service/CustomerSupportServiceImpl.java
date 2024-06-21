@@ -13,8 +13,11 @@ import com.kube.noon.customersupport.repository.ReportRepository;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.domain.FeedAttachment;
 import com.kube.noon.feed.dto.FeedAttachmentDto;
+import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.repository.FeedAttachmentRepository;
+import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.member.domain.Member;
+import com.kube.noon.member.dto.member.UpdateMemberDajungScoreDto;
 import com.kube.noon.member.dto.member.UpdateMemberDto;
 import com.kube.noon.member.service.MemberService;
 import com.kube.noon.notification.domain.NotificationType;
@@ -53,6 +56,8 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
     private final FeedAttachmentRepository feedAttachmentRepository;
     private final NoticeRepository noticeRepository;
     private final NotificationServiceImpl notificationService;
+    private final FeedService feedService;
+
 
 
     /**
@@ -180,34 +185,65 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
     @Override
     public ReportProcessingDto updateReport(ReportProcessingDto reportProcessingDto) {
 
+        Report report = reportRepository.findReportByReportId(reportProcessingDto.getReportId());
+        report.setReportStatus(reportProcessingDto.getReportStatus());
+        report.setProcessingText(reportProcessingDto.getProcessingText());
+        log.info("처리된 신고정보={}",report);
 
         //신고 상태 변경, 신고처리 텍스트 추가
-        reportRepository.save(reportProcessingDto.toEntity());
-
-
+        reportRepository.save(report);
+        
         //피신고자 계정 잠금 일수 연장
-        Optional<Member> reportee = memberService.findMemberById(reportProcessingDto.getReporteeId());
-        log.info("피신고자 정보={}", reportee.toString());
+        updateUnlockTime(report.getReporteeId(), reportProcessingDto.getUnlockDuration());
+
+        //피신고자 다정수치 감소
+        UpdateMemberDajungScoreDto updateMemberDajungScoreDto = new UpdateMemberDajungScoreDto();
+        updateMemberDajungScoreDto.setDajungScore(reportProcessingDto.getDajungScoreReduction());
+        updateMemberDajungScoreDto.setMemberId(report.getReporteeId());
+        log.info((updateMemberDajungScoreDto.toString()));
+        memberService.updateDajungScore(updateMemberDajungScoreDto);
+
+        //신고 처리 알림
+        this.sendReportNotification(ReportProcessingDto.fromEntity(report));
+
+        return ReportProcessingDto.fromEntity(reportRepository.findReportByReportId(report.getReportId()));
+        
+    }
+
+    /**
+     * 계정 잠금 일수 연장
+     * @param memberId 잠금 연장 대상자 아이디
+     * @param reqUnlockDuration 관리자가 선택한 연장 일수
+     */
+    public void updateUnlockTime(String memberId, String reqUnlockDuration){
+
+        Optional<Member> reportee = memberService.findMemberById(memberId);
+        log.info("계정잠금연장 대상자 정보={}", reportee.toString());
+        log.info("잠금 추가 일수={}",reqUnlockDuration);
+
         UpdateMemberDto updateMemberDto = new UpdateMemberDto();
         BeanUtils.copyProperties(reportee.orElseThrow(), updateMemberDto);
 
-        LocalDateTime reporteeUnlockTime = reportee.orElseThrow().getUnlockTime();
-        int unlockDuration = UnlockDuration.valueOf(reportProcessingDto.getUnlockDuration()).getDays();
+        LocalDateTime memberUnlockTime = reportee.orElseThrow().getUnlockTime();
+        int unlockDuration = UnlockDuration.valueOf(reqUnlockDuration).getDays();
 
-        if(reporteeUnlockTime.isBefore(LocalDateTime.now())){
+        if(memberUnlockTime.isBefore(LocalDateTime.now())){
             updateMemberDto.setUnlockTime(LocalDateTime.now().plusDays(unlockDuration));
         }else{
-            updateMemberDto.setUnlockTime(reporteeUnlockTime.plusDays(unlockDuration));
+            updateMemberDto.setUnlockTime(memberUnlockTime.plusDays(unlockDuration));
         }
 
         memberService.updateMember(updateMemberDto);
 
-        return ReportProcessingDto.fromEntity(reportRepository.findReportByReportId(reportProcessingDto.getReportId()));
-        
     }
 
+
+    /**
+     * 모든 이미지 리스트 가져오기 (페이지 X, 삭제여부구분 X)
+     * @return 이미지 리스트
+     */
     @Override
-    public List<FeedAttachmentDto> getImageList() {
+    public List<FeedAttachmentDto> getAllImageList() {
 
         return feedAttachmentRepository.findByFileType(FileType.PHOTO).stream()
                 .map(FeedAttachmentDto::toDto)
@@ -216,10 +252,27 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
     }
 
     /**
-     * 모든 피드의 이미지 목록 가져오기
+     * 활성화된 모든 이미지 리스트 가져오기 (페이지 X, 삭제여부구분 O)
+     * @return 이미지 리스트
      */
     @Override
-    public List<FeedAttachmentDto> getImageListByPageable(int pageNumber) {
+    public List<FeedAttachmentDto> getImageList() {
+
+        log.info("임플에서 이미지목록={}", feedAttachmentRepository.findByFileTypeAndActivated(FileType.PHOTO, true).stream()
+                .map(FeedAttachmentDto::toDto)
+                .collect(Collectors.toList()));
+
+        return feedAttachmentRepository.findByFileTypeAndActivated(FileType.PHOTO, true).stream()
+                .map(FeedAttachmentDto::toDto)
+                .collect(Collectors.toList());
+
+    }
+
+    /**
+     * 모든 이미지 목록 페이지별로 가져오기 (페이지 O, 삭제여부구분 X)
+     */
+    @Override
+    public List<FeedAttachmentDto> getAllImageListByPageable(int pageNumber) {
         Pageable pageable = PageRequest.of(pageNumber, 2);
         return feedAttachmentRepository.findByFileType(FileType.PHOTO, pageable).stream()
                 .map(FeedAttachmentDto::toDto)
@@ -227,7 +280,18 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
     }
 
     /**
-     * 페이지별로 모든 피드의 이미지 목록 가져오기
+     * 활성화된 모든 이미지(삭제되지 않은) 목록 페이지별로 가져오기 - (페이지 O, 삭제여부구분 O) Default
+     */
+    @Override
+    public List<FeedAttachmentDto> getImageListByPageable(int pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber, 2);
+        return feedAttachmentRepository.findByFileTypeAndActivated(FileType.PHOTO, true, pageable).stream()
+                .map(FeedAttachmentDto::toDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 이미지 상세보기
      */
     @Override
     public FeedAttachmentDto getImageByAttatchmentId(int attachmentId) {
@@ -245,7 +309,7 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
     public FeedAttachmentDto addBluredImage(FeedAttachmentDto attachmentDto) throws IOException {
 
         // 블러 파일 생성 및 Object Storage 저장, 저장 url 요청
-        String blurredFileUrl = attachmentFilteringRepository.addBluredFile(attachmentDto.getFileUrl());
+        String blurredFileUrl = attachmentFilteringRepository.addBluredFile(attachmentDto.getFileUrl(), attachmentDto.getAttachmentId());
 
         attachmentDto.setBlurredFileUrl(blurredFileUrl);
         feedAttachmentRepository.save(FeedAttachmentDto.toEntity(attachmentDto));
@@ -253,10 +317,30 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
         return attachmentDto;
     }
 
+    /**
+     * 유해 이미지 포함된 피드 삭제 & 작성자 계정 잠금일수 연장
+     * @param feedDto 유해 이미지가 포함된 feed의 정보
+     * @param reqUnlockDuration 관리자가 설정한 계정 잠금 연장 일수
+     * @return 삭제 처리된 피드 정보
+     */
+    @Override
+    public FeedDto deleteBadFeed(FeedDto feedDto, String reqUnlockDuration) {
+        int feedId = feedService.deleteFeed(feedDto.getFeedId());
+        feedDto = feedService.getFeedById(feedId);
+
+        //작성자 계정 잠금일수 연장
+        this.updateUnlockTime(feedDto.getWriterId(), reqUnlockDuration);
+
+        return feedDto;
+    }
+
+    /**
+     * 활성화된 모든 유해 이미지(삭제되지 않은) 목록 가져오기 - (페이지 X, 삭제여부구분 O) Default
+     */
     @Override
     public List<FeedAttachmentDto> getFilteredListByAI() {
 
-        List<FeedAttachment> feedAttachmentList = feedAttachmentRepository.findByFileType(FileType.PHOTO);
+        List<FeedAttachment> feedAttachmentList = feedAttachmentRepository.findByFileTypeAndActivated(FileType.PHOTO, true);
 
         List<FeedAttachmentDto> filteredList = attachmentFilteringRepository.findBadImageListByAI(feedAttachmentList).stream()
                 .map(FeedAttachmentDto::toDto)
@@ -265,11 +349,14 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
         return filteredList;
     }
 
+    /**
+     * 활성화된 모든 유해 이미지(삭제되지 않은) 목록 페이지별로 가져오기 - (페이지 O, 삭제여부구분 O) Default
+     */
     @Override
     public List<FeedAttachmentDto> getFilteredListByAIAndPageable(int pageNumber) {
         Pageable pageable = PageRequest.of(pageNumber, 2);
 
-        List<FeedAttachment> feedAttachmentList = feedAttachmentRepository.findByFileType(FileType.PHOTO);
+        List<FeedAttachment> feedAttachmentList = feedAttachmentRepository.findByFileTypeAndActivated(FileType.PHOTO, true, pageable);
         Page<FeedAttachment> feedAttachmentPage = attachmentFilteringRepository.findBadImageListByAI(feedAttachmentList, pageable);
 
         List<FeedAttachmentDto> filteredList = feedAttachmentPage.getContent().stream()

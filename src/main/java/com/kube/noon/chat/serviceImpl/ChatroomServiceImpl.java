@@ -1,5 +1,8 @@
 package com.kube.noon.chat.serviceImpl;
 
+import com.kube.noon.building.domain.Building;
+import com.kube.noon.building.dto.BuildingDto;
+import com.kube.noon.building.service.BuildingProfileService;
 import com.kube.noon.chat.domain.ChatEntrance;
 import com.kube.noon.chat.domain.Chatroom;
 import com.kube.noon.chat.domain.ChatroomMemberType;
@@ -9,6 +12,8 @@ import com.kube.noon.chat.dto.ChatroomDto;
 import com.kube.noon.chat.repository.ChatEntranceRepository;
 import com.kube.noon.chat.repository.ChatroomRepository;
 import com.kube.noon.chat.service.ChatroomService;
+import com.kube.noon.member.domain.Member;
+import com.kube.noon.member.service.MemberService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service("chatroomService")
@@ -28,17 +34,43 @@ public class ChatroomServiceImpl implements ChatroomService {
     @Autowired
     private ChatEntranceRepository chatEntranceRepository;
 
+    @Autowired
+    private MemberService memberService;
+
+    @Autowired
+    private BuildingProfileService buildingProfileService;
+
     // 채팅방 생성
     @Override
     public ChatroomDto addChatroom(ChatroomDto requestChatroom) {
-        // 명령받은 채팅방정보 DTO를 entity로 만듦
+
+        // 채팅방 저장할 chatroom entity 제작해서 저장
         Chatroom chatroom = new Chatroom();
+
+        System.out.println("        🦐[addChatroom ServiceImpl] 채팅 생성자Id => " + requestChatroom.getChatroomCreatorId());
         chatroom.setChatroomName(requestChatroom.getChatroomName());
-        chatroom.setChatroomCreatorId(requestChatroom.getChatroomCreatorId());
+        // requestChatroom.getChatroomID() 로 멤버를 조회하여 멤버 ID 아닌 멤버 객체를 addChatroom 에 넣어주기
+        Optional<Member> optionalMember = memberService.findMemberById(requestChatroom.getChatroomCreatorId());
+        if (optionalMember.isPresent()) {
+            Member member = optionalMember.get();
+            System.out.println("        🦐[addChatroom ServiceImpl] memberservice 로 조회한 채팅 생성자 => " + member);
+            chatroom.setChatroomCreator(member);
+        } else {
+            // Member를 찾지 못한 경우 처리
+            System.out.println("누구세요? 신청 안바다여");
+        }
+        // addChatroom 시 빌딩에 대한 정보도 넣어함
+        System.out.println("        🦐[addChatroom ServiceImpl] 채팅방을 세울 빌딩Id => " + requestChatroom.getBuildingId());
+        Building building = new Building();
+        building.setBuildingId(requestChatroom.getBuildingId());
+        chatroom.setBuilding(building);
+
         chatroom.setChatroomMinTemp(requestChatroom.getChatroomMinTemp());
         ChatroomType roomType = ChatroomType.valueOf(requestChatroom.getChatroomType()); // String 을 Enum으로 변환해서 Entity 삽입
         chatroom.setChatroomType(roomType);
         Chatroom savedChatroom = chatroomRepository.save(chatroom);
+
+
 
         // 채팅생성자가 채팅참여멤버에 안들어갓누
         ChatEntrance chatEntrance = new ChatEntrance();
@@ -142,7 +174,7 @@ public class ChatroomServiceImpl implements ChatroomService {
         dto.setChatroomID(chatroom.getChatroomId());
         dto.setChatroomName(chatroom.getChatroomName());
         dto.setChatroomMinTemp(chatroom.getChatroomMinTemp());
-        dto.setChatroomCreatorId(chatroom.getChatroomCreatorId());
+        dto.setChatroomCreatorId(chatroom.getChatroomCreator().getMemberId());
         dto.setChatroomType(chatroom.getChatroomType().toString()); // Enum 값을 문자열로 변환하여 설정
         return dto;
     }
