@@ -116,8 +116,8 @@ public class BuildingProfileRestController {
     /**
      * 사용자의 화면 범위 내 건물 목록 보기
      */
-    @PostMapping("/getBuildingsWithinRange")
-    public List<BuildingDto> getBuildingsWithinRange(@RequestBody PositionRange positionRange){
+    @GetMapping("/getBuildingsWithinRange")
+    public List<BuildingDto> getBuildingsWithinRange(@ModelAttribute PositionRange positionRange){
 
         return  buildingProfileService.getBuildingsWithinRange(positionRange);
     }
