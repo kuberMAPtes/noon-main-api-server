@@ -11,6 +11,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class BuildingSearchResponseDto {
+    private int buildingId;
     private String buildingName;
     private String roadAddr;
     private String feedAiSummary;
