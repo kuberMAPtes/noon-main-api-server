@@ -1,5 +1,7 @@
 package com.kube.noon.member.controller;
 
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.kube.noon.common.ObjectStorageAPI;
 import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.common.messagesender.ApickApiAgent;
 import com.kube.noon.common.messagesender.ApickApiAgentImpl;
@@ -28,6 +30,7 @@ import com.kube.noon.member.service.KakaoService;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
@@ -39,11 +42,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.View;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +87,8 @@ public class MemberRestController {
 
     private final String clientServerPort;
 
+    private final ObjectStorageAPI objectStorageAPI;
+
     @Value("${client-server-domain}")
     private String clientServerDomain;
 
@@ -91,8 +99,9 @@ public class MemberRestController {
                                 AuthService authService,
                                 List<BearerTokenSupport> tokenSupport, View error, AuthRepositoryImpl authRepositoryImpl,
                                 @Value("${client.server.host}") String clientServerHost,
-                                @Value("${client.server.port}") String clientServerPort) {
+                                @Value("${client.server.port}") String clientServerPort, ObjectStorageAPI objectStorageAPI) {
         this.authService = authService;
+        this.objectStorageAPI = objectStorageAPI;
         log.info("생성자 :: " + this.getClass());
         this.kakaoService = kakaoService;
         this.memberService = memberService;
@@ -592,6 +601,7 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 정보 변경 업무", true));
     }
 
+
     /**
      * 관리자가 사용
      */
@@ -612,7 +622,11 @@ public class MemberRestController {
         log.info("getMemberByPhoneNumber :: " + phoneNumber);
         MemberDto dto = memberService.findMemberByPhoneNumber(phoneNumber);
         System.out.println("회원조회업무 :: " + dto);
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("", dto.getMemberId()));
+        if(dto!=null) {
+            return ResponseEntity.ok(ApiResponseFactory.createResponse("", dto.getMemberId()));
+        }else{
+            return ResponseEntity.ok(ApiResponseFactory.createResponse("", null));
+        }
     }
 
     @Operation(summary = "회원 프로필 조회", description = "사용자의 프로필을 조회합니다.")
@@ -727,6 +741,42 @@ public class MemberRestController {
         } catch (Exception e) {
             log.warn("Exception in processing token", e);
             return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid access token",false), HttpStatus.FORBIDDEN);
+        }
+    }
+
+    @Operation(summary = "회원 프로필 사진 조회", description = "회원의 프로필 사진을 조회합니다.")
+    @GetMapping("/getProfilePhoto")
+    public ResponseEntity<byte[]> getProfilePhoto(@Parameter(description = "회원 ID") @RequestParam String memberId) {
+        MemberProfileDto memberProfileDto = DtoEntityBinder.INSTANCE.toDto(memberService.findMemberById(memberId), MemberProfileDto.class);
+
+        String[] fileNames = memberProfileDto.getProfilePhotoUrl().split("/");
+        String fileName = fileNames[fileNames.length - 1];
+
+        S3ObjectInputStream inputStream = objectStorageAPI.getObject(fileName);
+
+        try {
+            byte[] imageBytes = inputStream.readAllBytes();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_JPEG);
+
+            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Operation(summary = "회원 프로필 사진 추가", description = "회원의 프로필 사진을 추가합니다.")
+    @PostMapping("/updateProfilePhoto/{memberId}")
+    public ResponseEntity<String> updateProfilePhoto(
+            @RequestParam("multipartFile") MultipartFile multipartFile,
+            @Parameter(description = "회원 ID") @PathVariable("memberId") String memberId) {
+        try {
+            String profilePhotoUrl = memberService.updateMemberProfilePhotoUrl(memberId, multipartFile);
+            return new ResponseEntity<>(profilePhotoUrl, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
