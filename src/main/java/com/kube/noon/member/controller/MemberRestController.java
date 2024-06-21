@@ -370,16 +370,32 @@ public class MemberRestController {
         cookie.setPath("/");
         cookie.setMaxAge(60 * 60 * 24 * 7);
         cookie.setHttpOnly(false);
-        cookie.setSecure(false);
+
+        if(this.clientServerDomain.equals("localhost")) {
+            cookie.setSecure(false);
+        }else {
+            cookie.setSecure(true);
+
+        }
+
         cookie.setDomain(this.clientServerDomain);
+        cookie.setAttribute("SameSite", "None"); // SameSite 설정
+
         response.addCookie(cookie);
 
         Cookie cookie2 = new Cookie("Member-ID", encryptedMemberId.get(1));
         cookie2.setPath("/");
         cookie2.setMaxAge(60 * 60 * 24 * 7);
         cookie2.setHttpOnly(false);
-        cookie2.setSecure(false);
+
+        if(this.clientServerDomain.equals("localhost")) {
+            cookie.setSecure(false);
+        }else {
+            cookie.setSecure(true);
+        }
+
         cookie2.setDomain(this.clientServerDomain);
+        cookie.setAttribute("SameSite", "None"); // SameSite 설정
         response.addCookie(cookie2);
 
         String redirectClientUrl;
