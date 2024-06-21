@@ -80,7 +80,7 @@ public class MemberRestController {
     private final String clientServerHost;
 
     private final String clientServerPort;
-
+    
     @Value("${client-server-domain}")
     private String clientServerDomain;
 
