@@ -4,6 +4,7 @@ import com.kube.noon.common.PublicRange;
 import com.kube.noon.common.constant.PagingConstants;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
+import com.kube.noon.member.dto.memberRelationship.FindMemberRelationshipListByCriteriaDto;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import com.kube.noon.member.enums.Role;
@@ -150,20 +151,20 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
-    public Page<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria, int page, int size) {
+    public FindMemberRelationshipListByCriteriaDto findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria, int page, int size) {
         try {
-            Page<MemberRelationship> lm = memberRelationshipJpaRepository.findMemberRelationshipListByCriteria(criteria, PageRequest.of(page, size));
-            if (lm.isEmpty()) {
+            FindMemberRelationshipListByCriteriaDto dto = memberRelationshipJpaRepository.findMemberRelationshipListByCriteria(criteria, PageRequest.of(page, size));
+            if (dto.getMemberRelationshipPage().getTotalElements()==0) {
                 log.info("조건에 맞는 회원 관계가 없음");
             } else {
-                for (MemberRelationship mr : lm) {
+                for (MemberRelationship mr : dto.getMemberRelationshipPage().toList()) {
                     log.info("member_1의 FromId 리스트 출력 : {}", mr.getFromMember().getMemberId());
                 }
-                for (MemberRelationship mr : lm) {
+                for (MemberRelationship mr : dto.getMemberRelationshipPage().toList()) {
                     log.info("member_1의 ToId 리스트 출력 : {}", mr.getToMember().getMemberId());
                 }
             }
-            return lm;
+            return dto;
         } catch (DataAccessException e) {
             log.error("회원 관계 조회 중 오류 발생", e);
             throw new MemberRelationshipNotFoundException("회원 관계 조회 중 오류 발생", e);

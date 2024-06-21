@@ -5,6 +5,7 @@ import com.kube.noon.member.dto.ResponseDto.SearchMemberResponseDto;
 import com.kube.noon.member.dto.member.*;
 import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
 import com.kube.noon.member.dto.memberRelationship.DeleteMemberRelationshipDto;
+import com.kube.noon.member.dto.memberRelationship.FindMemberRelationshipListByCriteriaResponseDto;
 import com.kube.noon.member.dto.memberRelationship.MemberRelationshipDto;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
@@ -35,7 +36,7 @@ public interface MemberService {
 
     Page<MemberDto> findMemberListByCriteria(String fromId, MemberSearchCriteriaDto memberSearchCriteriaDto, int page, int size);//JPA
 
-    Page<MemberRelationshipDto> findMemberRelationshipListByCriteria(String fromId, MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto, int page, int size);
+    FindMemberRelationshipListByCriteriaResponseDto findMemberRelationshipListByCriteria(String fromId, MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto, int page, int size);
 
     MemberRelationshipDto findMemberRelationship(String fromId, String toId);
 
