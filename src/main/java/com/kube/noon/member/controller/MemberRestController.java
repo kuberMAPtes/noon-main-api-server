@@ -80,6 +80,7 @@ public class MemberRestController {
     private final String clientServerHost;
 
     private final String clientServerPort;
+
     @Value("${client-server-domain}")
     private String clientServerDomain;
 
@@ -380,11 +381,16 @@ public class MemberRestController {
         response.addCookie(cookie2);
 
         String redirectClientUrl;
+        String trimmedHost = clientServerHost.trim();
+        String trimmedPort = clientServerPort.trim();
+
         if(!clientServerPort.isEmpty()) {
-            redirectClientUrl = clientServerHost + ":" + clientServerPort + "/member/kakaoNav?loginWay=" + "kakao";
+            redirectClientUrl = trimmedHost + ":" + trimmedPort + "/member/kakaoNav?loginWay=" + "kakao";
         }else{//비었으면 Host만
-            redirectClientUrl = clientServerHost + "/member/kakaoNav?loginWay=" + "kakao";
+            redirectClientUrl = trimmedHost + "/member/kakaoNav?loginWay=" + "kakao";
         }
+
+        System.out.println("리다이렉트 합니다 " + redirectClientUrl);
 
         return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
                 .header(HttpHeaders.LOCATION, redirectClientUrl)
