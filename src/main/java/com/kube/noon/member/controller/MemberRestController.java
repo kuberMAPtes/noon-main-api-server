@@ -731,6 +731,7 @@ public class MemberRestController {
     }
 
     private Cookie wrapWithCookie(String cookieName, String value) {
+        log.info("client-server-domain={}", this.clientServerDomain);
         Cookie cookie = new Cookie(cookieName, value);
         cookie.setHttpOnly(true);
         cookie.setDomain(this.clientServerDomain);
