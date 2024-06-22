@@ -738,6 +738,7 @@ public class MemberRestController {
                 .httpOnly(true)
                 .path("/")
                 .secure(true)
+                .domain(this.clientServerDomain)
                 .maxAge(7 * 24 * 60 * 60)
                 .sameSite("None")
                 .build();
