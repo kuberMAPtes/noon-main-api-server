@@ -684,10 +684,11 @@ public class MemberRestController {
     })
     @PostMapping("/getMemberRelationshipList")
     public ResponseEntity<ApiResponse<Map<String,Object>>> getMemberRelationshipList(@RequestBody MemberRelationshipSearchCriteriaRequestDto requestDto) {
-        log.info("getMemberRelationshipList" + requestDto);
+        log.info("getMemberRelationshipList{}", requestDto);
         MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto = DtoEntityBinder.INSTANCE.toOtherDto(requestDto);
 
         FindMemberRelationshipListByCriteriaResponseDto responseDto = memberService.findMemberRelationshipListByCriteria(requestDto.getFromId(), memberRelationshipSearchCriteriaDto, requestDto.getPage(), requestDto.getSize());
+        log.info("responseDto :: {}", responseDto.toString());
 
         List<MemberRelationshipSimpleDto> relationshipSimpleDtoList = responseDto.getMemberRelationshipDtoPage().getContent()
                 .stream()
