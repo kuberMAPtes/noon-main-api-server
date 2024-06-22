@@ -156,6 +156,53 @@ public class ObjectStorageAWS3S {
 
 
     /**
+     * 공지사항 이미지 업로드
+     * @param filePath
+     * @return
+     */
+    public String uploadNoticeFile(String filePath){ // TODO: uploadFile로 통합(코드 중복)
+        log.info("filePath={}", filePath);
+
+        // 경로 입력 두가지 경우 고려: /, \
+        int lastIndexForwardSlash = filePath.lastIndexOf('/');
+        int lastIndexBackSlash = filePath.lastIndexOf('\\');
+        int lastIndex = Math.max(lastIndexForwardSlash, lastIndexBackSlash);
+
+        //Object Storage에 블러 파일 업로드
+        String objectName = filePath.substring(lastIndex + 1);
+        log.info("Object Name={}",objectName);
+
+        try {
+
+            PutObjectRequest putObjectRequestWithACL = new PutObjectRequest(bucketName + "/feed-attachment", objectName, new File(filePath))
+                    .withCannedAcl(CannedAccessControlList.PublicRead);
+
+            s3.putObject(putObjectRequestWithACL);
+            System.out.format("Object %s has been created with public-read ACL.\n", objectName);
+
+
+            String uploadedFileUrl = "https://kr.object.ncloudstorage.com/"+
+                    bucketName+"/feed-attachment/"+objectName;
+            log.info("uploadedFileUrl={}", uploadedFileUrl);
+
+            return uploadedFileUrl;
+
+        } catch (AmazonS3Exception e) {
+            e.printStackTrace();
+        } catch(SdkClientException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }/// end of uploadNoticeFile
+
+
+
+
+
+
+    /**
      * Object Storage에서 파일 삭제
      *
      */

@@ -5,6 +5,7 @@ import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.domain.FeedAttachment;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -33,4 +34,13 @@ public interface FeedAttachmentRepository extends JpaRepository<FeedAttachment, 
 
     List<FeedAttachment> findByFileTypeAndActivated(FileType fileType, boolean activated);
     List<FeedAttachment> findByFileTypeAndActivated(FileType fileType, boolean activated, Pageable pageable);
+
+
+    /**
+     * 가장 최근에 추가한  attachmentId를 가져온다.
+     * @return FeedAttachmentId
+     */
+    @Query("SELECT MAX(fa.attachmentId) FROM FeedAttachment fa")
+    Integer findMaxId();
+
 }
