@@ -2,6 +2,7 @@
 
 package com.kube.noon.building.controller;
 import com.kube.noon.building.dto.BuildingDto;
+import com.kube.noon.building.dto.BuildingNotFoundResponseDto;
 import com.kube.noon.building.dto.BuildingSearchResponseDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
 import com.kube.noon.building.service.BuildingProfileService;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/buildingProfile")
@@ -101,7 +103,15 @@ public class BuildingProfileRestController {
             BuildingDto resp = this.buildingProfileService.getBuildingProfileByPosition(position);
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (PlaceNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(
+                    new BuildingNotFoundResponseDto(false, "해당 좌표에 건물이 없음"),
+                    HttpStatus.NOT_FOUND
+            );
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(
+                    new BuildingNotFoundResponseDto(true,"등록되지 않은 건물"),
+                    HttpStatus.NOT_FOUND
+            );
         }
     }
 
@@ -116,8 +126,8 @@ public class BuildingProfileRestController {
     /**
      * 사용자의 화면 범위 내 건물 목록 보기
      */
-    @PostMapping("/getBuildingsWithinRange")
-    public List<BuildingDto> getBuildingsWithinRange(@RequestBody PositionRange positionRange){
+    @GetMapping("/getBuildingsWithinRange")
+    public List<BuildingDto> getBuildingsWithinRange(@ModelAttribute PositionRange positionRange){
 
         return  buildingProfileService.getBuildingsWithinRange(positionRange);
     }

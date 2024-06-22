@@ -8,6 +8,7 @@ import com.kube.noon.member.repository.MemberRelationshipJpaRepositoryQuery;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -17,27 +18,33 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelationshipJpaRepositoryQuery {
 
     private final JPAQueryFactory queryFactory;
 
     @Override
     public Page<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria, Pageable pageable) {
+
+        log.info(criteria.toString());
+        log.info(pageable.toString());
+
         QMemberRelationship ms = QMemberRelationship.memberRelationship;
 
         BooleanBuilder builder = new BooleanBuilder();
 
-        if (criteria.getFollowing() != null) {
-            builder.and(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
+
+        if (Boolean.TRUE.equals(criteria.getFollowing())) {
+            builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
         }
-        if (criteria.getFollower() != null) {
-            builder.and(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
+        if (Boolean.TRUE.equals(criteria.getFollower())){
+            builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
         }
-        if (criteria.getBlocking() != null) {
-            builder.and(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
+        if (Boolean.TRUE.equals(criteria.getBlocking())) {
+            builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
         }
-        if (criteria.getBlocker() != null) {
-            builder.and(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
+        if (Boolean.TRUE.equals(criteria.getBlocker())) {
+            builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
         }
 
         List<MemberRelationship> results = queryFactory.selectFrom(ms)
@@ -45,6 +52,8 @@ public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelations
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+
+        log.info(results.toString());
 
         long total = queryFactory.selectFrom(ms)
                 .where(builder)

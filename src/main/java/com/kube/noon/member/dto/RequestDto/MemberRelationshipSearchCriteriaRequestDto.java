@@ -18,9 +18,9 @@ public class MemberRelationshipSearchCriteriaRequestDto {
 
     @NonNull
     private String fromId;
-    private String memberId;
-    private int pageSize;
-    private int pageUnit;
+    private String toId;
+    private int page;//현재 페이지
+    private int size;//페이지당 항목 수
     private Boolean following;
     private Boolean follower;
     private Boolean blocking;

@@ -16,6 +16,7 @@ import com.kube.noon.member.dto.member.*;
 import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
 import com.kube.noon.member.dto.memberRelationship.DeleteMemberRelationshipDto;
 import com.kube.noon.member.dto.memberRelationship.MemberRelationshipDto;
+import com.kube.noon.member.dto.memberRelationship.MemberRelationshipSimpleDto;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import com.kube.noon.member.dto.util.RandomData;
@@ -38,6 +39,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +50,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static com.kube.noon.member.controller.AESUtil.*;
 
@@ -74,6 +78,10 @@ public class MemberRestController {
     private final View error;
     private final AuthRepositoryImpl authRepositoryImpl;
 
+    private final String clientServerHost;
+
+    private final String clientServerPort;
+
     @Value("${client-server-domain}")
     private String clientServerDomain;
 
@@ -82,7 +90,9 @@ public class MemberRestController {
                                 @Qualifier("loginAttemptCheckerAgent") LoginAttemptCheckerAgent loginAttemptCheckerAgent,
                                 KakaoService kakaoService,
                                 AuthService authService,
-                                List<BearerTokenSupport> tokenSupport, View error, AuthRepositoryImpl authRepositoryImpl) {
+                                List<BearerTokenSupport> tokenSupport, View error, AuthRepositoryImpl authRepositoryImpl,
+                                @Value("${client.server.host}") String clientServerHost,
+                                @Value("${client.server.port}") String clientServerPort) {
         this.authService = authService;
         log.info("생성자 :: " + this.getClass());
         this.kakaoService = kakaoService;
@@ -91,6 +101,8 @@ public class MemberRestController {
         this.tokenSupport = tokenSupport;
         this.error = error;
         this.authRepositoryImpl = authRepositoryImpl;
+        this.clientServerHost = clientServerHost;
+        this.clientServerPort = clientServerPort;
     }
 
     @Operation(summary = "문자날리기", description = "문자날립니다")
@@ -107,8 +119,8 @@ public class MemberRestController {
     @GetMapping("/sendAuthentificationNumber")
     public ResponseEntity<ApiResponse<Boolean>> sendAuthentificationNumber(@RequestParam String phoneNumber) {
         log.info("sendAuthentificationNumber :: " + phoneNumber);
-//        Boolean isSended = authService.sendAuthentificationNumber(phoneNumber);
-        Boolean isSended = true;
+        Boolean isSended = authService.sendAuthentificationNumber(phoneNumber);
+//        Boolean isSended = true;
         if(isSended) {
             return ResponseEntity.ok(ApiResponseFactory.createResponse(phoneNumber + "로 인증 번호가 전송되었습니다.", true));
         }else{
@@ -146,11 +158,23 @@ public class MemberRestController {
     @GetMapping("/checkMemberId")
     public ResponseEntity<ApiResponse<Boolean>> checkMemberId(@RequestParam String memberId) {
         log.info("checkMemberId :: " + memberId);
+        //회원가입전 체크하는 것
         memberService.checkMemberId(memberId);
         memberService.checkBadWord(memberId);
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 ID를 사용할 수 있습니다.", true));
     }
-
+    @GetMapping("/checkMemberIdExisted")
+    public ResponseEntity<ApiResponse<Boolean>> checkMemberIdExisted(@RequestParam String memberId){
+        log.info("checkMemberIdExisted :: " + memberId);
+        memberService.checkMemberIdExisted(memberId);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 ID를 사용할 수 있습니다.", true));
+    }
+    @GetMapping("/checkPhoneNumberAndMemberId")
+    public ResponseEntity<ApiResponse<Boolean>> checkPhoneNumberAndMemberId(@RequestParam String phoneNumber, @RequestParam String memberId){
+        log.info("checkPhoneNumberAndMemberId :: " + phoneNumber + " " + memberId);
+        memberService.checkPhoneNumberAndMemberId(phoneNumber, memberId);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("입력한 전화번호가 회원정보에 있는 전화번호와 일치합니다.", true));
+    }
 
     @Operation(summary = "닉네임 확인", description = "닉네임의 유효성을 확인합니다.")
     @ApiResponses({
@@ -295,9 +319,9 @@ public class MemberRestController {
     }
 
     private void addTokenToCookie(HttpServletResponse response, TokenPair tokenPair, TokenType tokenType) {
-        response.addCookie(wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), tokenPair.getAccessToken()));
-        response.addCookie(wrapWithCookie(SecurityConstants.REFRESH_TOKEN_COOKIE_KEY.get(), tokenPair.getRefreshToken()));
-        response.addCookie(wrapWithCookie(SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get(), tokenType.name()));
+        response.addHeader("Set-Cookie", wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), tokenPair.getAccessToken()));
+        response.addHeader("Set-Cookie", wrapWithCookie(SecurityConstants.REFRESH_TOKEN_COOKIE_KEY.get(), tokenPair.getRefreshToken()));
+        response.addHeader("Set-Cookie", wrapWithCookie(SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get(), tokenType.name()));
     }
 
     /**
@@ -341,24 +365,54 @@ public class MemberRestController {
             memberId = memberService.findMemberById(memberId).get().getMemberId();
         }
 
-        List<String> encryptedMemberId = encryptAES(memberId);
-
-        Cookie cookie = new Cookie("IV", encryptedMemberId.get(0));
-        cookie.setPath("/");
-        cookie.setMaxAge(60 * 60 * 24 * 7);
-        cookie.setHttpOnly(false);
-        cookie.setSecure(false);
-        response.addCookie(cookie);
-
-        Cookie cookie2 = new Cookie("Member-ID", encryptedMemberId.get(1));
-        cookie2.setPath("/");
-        cookie2.setMaxAge(60 * 60 * 24 * 7);
-        cookie2.setHttpOnly(false);
-        cookie2.setSecure(false);
-        response.addCookie(cookie2);
+//        List<String> encryptedMemberId = encryptAES(memberId);
 
 
-        final String redirectClientUrl = "http://127.0.0.1:3000/member/kakaoNav?loginWay=" + "kakao";
+//        Cookie cookie = new Cookie("IV", encryptedMemberId.get(0));
+//        cookie.setPath("/");
+//        cookie.setMaxAge(60 * 60 * 24 * 7);
+//        cookie.setHttpOnly(false);
+//
+//        if(this.clientServerDomain.equals("localhost")) {
+//            cookie.setSecure(false);
+//        }else {
+//            cookie.setSecure(true);
+//
+//        }
+//
+//        cookie.setDomain(this.clientServerDomain);
+//        cookie.setAttribute("SameSite", "None"); // SameSite 설정
+//
+//        response.addCookie(cookie);
+//
+//        Cookie cookie2 = new Cookie("Member-ID", encryptedMemberId.get(1));
+//        cookie2.setPath("/");
+//        cookie2.setMaxAge(60 * 60 * 24 * 7);
+//        cookie2.setHttpOnly(false);
+//
+//        if(this.clientServerDomain.equals("localhost")) {
+//            cookie.setSecure(false);
+//        }else {
+//            cookie.setSecure(true);
+//        }
+//        System.out.println("도메인 : " + this.clientServerDomain);
+//        cookie2.setDomain(this.clientServerDomain);
+//        cookie2.setAttribute("SameSite", "None"); // SameSite 설정
+//        response.addCookie(cookie2);
+//        String secretId = encryptedMemberId.get(0);
+//        String secretIv = encryptedMemberId.get(1);
+        String redirectClientUrl;
+        String trimmedHost = clientServerHost.trim();
+        String trimmedPort = clientServerPort.trim();
+
+        if(!clientServerPort.isEmpty()) {
+            redirectClientUrl = trimmedHost + ":" + trimmedPort + "/member/kakaoNav/"+memberId+"?loginWay=" + "kakao";
+        }else{//비었으면 Host만
+            redirectClientUrl = trimmedHost + "/member/kakaoNav/"+memberId+"?loginWay=" + "kakao";
+        }
+
+        System.out.println("리다이렉트 합니다 " + redirectClientUrl);
+
         return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
                 .header(HttpHeaders.LOCATION, redirectClientUrl)
                 .build();
@@ -386,6 +440,7 @@ public class MemberRestController {
             addMemberDto.setPwd("social_sign_up");
             //만약 존재하는 아이디라면 GlobalExceptionHandler에서 처리된다.
             //프론트엔드에서 info를 받았을 때 memberId가 있는지 보면 된다.
+            addMemberDto.setSocialSignUp(true);
             memberService.addMember(addMemberDto);
 
             MemberDto memberDto = memberService.findMemberById(dto.getMemberId(), dto.getMemberId());
@@ -476,9 +531,9 @@ public class MemberRestController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "비밀번호 변경 실패")
     })
-    @PostMapping("/updatePassword")
+    @PostMapping("/updatePwd")
     public ResponseEntity<ApiResponse<Boolean>> updatePassword(@RequestBody UpdatePasswordDto requestDto) {
-        log.info("updatePassword" + requestDto);
+        log.info("updatePwd" + requestDto);
         memberService.updatePassword(requestDto);
         return ResponseEntity.ok(ApiResponseFactory.createResponse("비밀번호 변경 업무", true));
     }
@@ -553,6 +608,13 @@ public class MemberRestController {
         System.out.println("회원조회업무 :: " + dto);
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 조회 업무", dto));
     }
+    @GetMapping("/getMemberIdByPhoneNumber")
+    public ResponseEntity<ApiResponse<String>> getMemberByPhoneNumber(@RequestParam String phoneNumber){
+        log.info("getMemberByPhoneNumber :: " + phoneNumber);
+        MemberDto dto = memberService.findMemberByPhoneNumber(phoneNumber);
+        System.out.println("회원조회업무 :: " + dto);
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("", dto.getMemberId()));
+    }
 
     @Operation(summary = "회원 프로필 조회", description = "사용자의 프로필을 조회합니다.")
     @ApiResponses({
@@ -613,12 +675,17 @@ public class MemberRestController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 관계 목록 조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원 관계 목록 조회 실패")
     })
-    @GetMapping("/getMemberRelationshipList")
-    public ResponseEntity<Page<MemberRelationshipDto>> getMemberRelationshipList(@ModelAttribute MemberRelationshipSearchCriteriaRequestDto requestDto) {
+    @PostMapping("/getMemberRelationshipList")
+    public ResponseEntity<ApiResponse<List<MemberRelationshipSimpleDto>>> getMemberRelationshipList(@RequestBody MemberRelationshipSearchCriteriaRequestDto requestDto) {
         log.info("getMemberRelationshipList" + requestDto);
         MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto = DtoEntityBinder.INSTANCE.toOtherDto(requestDto);
-        Page<MemberRelationshipDto> relationships = memberService.findMemberRelationshipListByCriteria(requestDto.getFromId(), memberRelationshipSearchCriteriaDto, requestDto.getPageUnit(), requestDto.getPageSize());
-        return ResponseEntity.ok(relationships);
+
+        Page<MemberRelationshipDto> relationships = memberService.findMemberRelationshipListByCriteria(requestDto.getFromId(), memberRelationshipSearchCriteriaDto, requestDto.getPage(), requestDto.getSize());
+        List<MemberRelationshipSimpleDto> relationshipSimpleDtoList = relationships.getContent()
+                .stream()
+                .map(memberRelationshipDto -> DtoEntityBinder.INSTANCE.toDto(memberRelationshipDto, MemberRelationshipSimpleDto.class))
+                .toList();
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회",relationshipSimpleDtoList));
     }
 
     @Operation(summary = "회원 관계 삭제", description = "사용자 간의 관계를 삭제합니다.")
@@ -664,11 +731,18 @@ public class MemberRestController {
         }
     }
 
-    private Cookie wrapWithCookie(String cookieName, String value) {
-        Cookie cookie = new Cookie(cookieName, value);
-        cookie.setHttpOnly(true);
-        cookie.setDomain(this.clientServerDomain);
-        cookie.setPath("/");
-        return cookie;
+    private String wrapWithCookie(String cookieName, String value) {
+        log.info("client-server-domain={}", this.clientServerDomain);
+
+        ResponseCookie built = ResponseCookie.from(cookieName, value)
+                .httpOnly(true)
+                .path("/")
+                .secure(true)
+                .domain(this.clientServerDomain)
+                .maxAge(7 * 24 * 60 * 60)
+                .sameSite("None")
+                .build();
+        log.info("response cookie={}", built);
+        return built.toString();
     }
 }

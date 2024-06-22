@@ -81,6 +81,8 @@ public class PlacesNaverMapsApiRepositoryImpl implements PlacesRepository {
             return places;
         } catch (URISyntaxException e) {
             throw new InvalidDataAccessResourceUsageException("URI syntax error for Naver Maps", e); // TODO
+        } catch (Exception e) {
+            return List.of();
         }
     }
 
