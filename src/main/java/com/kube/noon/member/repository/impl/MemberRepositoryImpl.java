@@ -158,10 +158,7 @@ public class MemberRepositoryImpl implements MemberRepository {
                 log.info("조건에 맞는 회원 관계가 없음");
             } else {
                 for (MemberRelationship mr : dto.getMemberRelationshipPage().toList()) {
-                    log.info("member_1의 FromId 리스트 출력 : {}", mr.getFromMember().getMemberId());
-                }
-                for (MemberRelationship mr : dto.getMemberRelationshipPage().toList()) {
-                    log.info("member_1의 ToId 리스트 출력 : {}", mr.getToMember().getMemberId());
+                    log.info("member_1의 FromId 리스트 출력 : {}", mr);
                 }
             }
             return dto;
