@@ -27,7 +27,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins(allowedOrigins.toArray(new String[0]))
                 .allowedOriginPatterns("http://192.168.*.*:3000")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-                .allowedHeaders("Cookie","Content-Type","Content-Length","Host","Accept","Accept-Encoding")
                 .allowCredentials(true)
                 .maxAge(3600);
     }

@@ -25,10 +25,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.web.config.SortHandlerMethodArgumentResolverCustomizer;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -176,11 +173,12 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     }
 
     @Override
-    public BuildingDto getBuildingProfileByPosition(Position position) throws PlaceNotFoundException {
+    public BuildingDto getBuildingProfileByPosition(Position position)
+            throws PlaceNotFoundException, NoSuchElementException {
         PlaceDto findPlace = this.placesService.getPlaceByPosition(position);
         Building building = this.buildingProfileRepository.findBuildingProfileByRoadAddr(findPlace.getRoadAddress());
         if (building == null) {
-            throw new PlaceNotFoundException("No building");
+            throw new NoSuchElementException("No building");
         }
         return BuildingDto.fromEntity(building);
     }

@@ -40,7 +40,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+<<<<<<< HEAD
 import org.springframework.http.MediaType;
+=======
+import org.springframework.http.ResponseCookie;
+>>>>>>> b0ead53dd579a627b46e15c94f8ddfa215bd2c01
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -321,9 +325,9 @@ public class MemberRestController {
     }
 
     private void addTokenToCookie(HttpServletResponse response, TokenPair tokenPair, TokenType tokenType) {
-        response.addCookie(wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), tokenPair.getAccessToken()));
-        response.addCookie(wrapWithCookie(SecurityConstants.REFRESH_TOKEN_COOKIE_KEY.get(), tokenPair.getRefreshToken()));
-        response.addCookie(wrapWithCookie(SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get(), tokenType.name()));
+        response.addHeader("Set-Cookie", wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), tokenPair.getAccessToken()));
+        response.addHeader("Set-Cookie", wrapWithCookie(SecurityConstants.REFRESH_TOKEN_COOKIE_KEY.get(), tokenPair.getRefreshToken()));
+        response.addHeader("Set-Cookie", wrapWithCookie(SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get(), tokenType.name()));
     }
 
     /**
@@ -803,11 +807,18 @@ public class MemberRestController {
         }
     }
 
-    private Cookie wrapWithCookie(String cookieName, String value) {
-        Cookie cookie = new Cookie(cookieName, value);
-        cookie.setHttpOnly(true);
-        cookie.setDomain(this.clientServerDomain);
-        cookie.setPath("/");
-        return cookie;
+    private String wrapWithCookie(String cookieName, String value) {
+        log.info("client-server-domain={}", this.clientServerDomain);
+
+        ResponseCookie built = ResponseCookie.from(cookieName, value)
+                .httpOnly(true)
+                .path("/")
+                .secure(true)
+                .domain(this.clientServerDomain)
+                .maxAge(7 * 24 * 60 * 60)
+                .sameSite("None")
+                .build();
+        log.info("response cookie={}", built);
+        return built.toString();
     }
 }
