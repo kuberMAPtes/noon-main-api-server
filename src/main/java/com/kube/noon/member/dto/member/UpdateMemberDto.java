@@ -25,7 +25,7 @@ public class UpdateMemberDto {
 
     private LocalDateTime unlockTime;
 
-//    private String profilePhotoUrl;
+    private String profilePhotoUrl;
 
     private String profileIntro;
 

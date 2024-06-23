@@ -12,7 +12,6 @@ public interface AddMemberDtoBinder extends Binder<AddMemberDto,Member> {
     @Override
     @Mapping(target = "memberRole", ignore = true)
     @Mapping(target = "unlockTime", ignore = true)
-    @Mapping(target = "profilePhotoUrl", ignore = true)
     @Mapping(target = "profileIntro", ignore = true)
     @Mapping(target = "dajungScore", ignore = true)
     @Mapping(target = "signedOff", ignore = true)

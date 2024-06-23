@@ -253,12 +253,21 @@ public class MemberScanner {
         }
     }
     public void imoPhoneNumberRealNumber(String phoneNumber) {
-        if(!apickApiAgent.checkPhoneNumber(phoneNumber)) {
-            log.info("실제 존재하는 전화번호가 아닙니다.");
-            throw new IllegalServiceCallException("실제 존재하는 전화번호가 아닙니다.", new Problems(Map.of("phoneNumber", phoneNumber)));
+        Object result = apickApiAgent.checkPhoneNumber(phoneNumber);
+
+        if (result instanceof Boolean) {
+            boolean isValid = (Boolean) result;
+            if (!isValid) {
+                log.info("실제 존재하는 전화번호가 아닙니다.");
+                throw new IllegalServiceCallException("실제 존재하는 전화번호가 아닙니다.", new Problems(Map.of("phoneNumber", phoneNumber)));
+            }
+        } else if (result instanceof String errorResponse) {
+            log.error("API 호출 중 오류 발생: {}", errorResponse);
+            throw new IllegalServiceCallException(errorResponse, new Problems(Map.of("phoneNumber", phoneNumber, "error", errorResponse)));
+        } else {
+            log.error("알 수 없는 응답 타입: {}", result);
+            throw new IllegalServiceCallException("알 수 없는 응답 타입입니다.", new Problems(Map.of("phoneNumber", phoneNumber)));
         }
-
-
     }
 
     public void imoPwdPatternO(String password) {
