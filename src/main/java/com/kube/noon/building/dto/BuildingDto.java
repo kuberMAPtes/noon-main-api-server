@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @Builder
 public class BuildingDto {
-    private int buildingId;
+    private Integer buildingId;
     private String buildingName;
     private boolean profileActivated;
     private String roadAddr;
