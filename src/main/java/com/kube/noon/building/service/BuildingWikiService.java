@@ -12,4 +12,6 @@ public interface BuildingWikiService {
      * @param title 생성할 건물 위키 페이지의 제목
      */
     public void addPage(String title);
+
+    public String getPageInHtml(int buildingId);
 }

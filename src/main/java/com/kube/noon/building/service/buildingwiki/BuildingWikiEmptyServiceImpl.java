@@ -15,4 +15,10 @@ public class BuildingWikiEmptyServiceImpl implements BuildingWikiService {
     public void addPage(String title) {
         log.info("Wiki page of {} has been created", title);
     }
+
+    @Override
+    public String getPageInHtml(int buildingId) {
+        log.info("Wiki page of id - {}", buildingId);
+        return "";
+    }
 }

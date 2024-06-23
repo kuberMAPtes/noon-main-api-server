@@ -1,5 +1,6 @@
 package com.kube.noon.building.service.buildingwiki;
 
+import com.kube.noon.building.repository.BuildingProfileRepository;
 import com.kube.noon.building.service.BuildingWikiService;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
@@ -27,10 +28,13 @@ import java.net.URI;
 @Service
 @Profile("prod")
 public class BuildingWikiRestTemplateServiceImpl implements BuildingWikiService {
+    private final BuildingProfileRepository buildingProfileRepository;
     private final String buildingWikiUrl;
     private final RestTemplate restTemplate;
 
-    public BuildingWikiRestTemplateServiceImpl(@Value("${building-wiki-url}") String buildingWikiUrl) {
+    public BuildingWikiRestTemplateServiceImpl(BuildingProfileRepository buildingProfileRepository,
+                                               @Value("${building-wiki-url}") String buildingWikiUrl) {
+        this.buildingProfileRepository = buildingProfileRepository;
         this.buildingWikiUrl = buildingWikiUrl;
         this.restTemplate = new RestTemplate();
     }
@@ -83,5 +87,11 @@ public class BuildingWikiRestTemplateServiceImpl implements BuildingWikiService 
         } catch (JSONException e) {
             return true;
         }
+    }
+
+    @Override
+    public String getPageInHtml(int buildingId) {
+
+        return null;
     }
 }

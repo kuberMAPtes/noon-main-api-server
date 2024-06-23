@@ -26,7 +26,7 @@ class TestBuildingWikiRestTemplateServiceImpl {
 
     @BeforeEach
     void beforeEach() {
-        this.wikiService = new BuildingWikiRestTemplateServiceImpl(properties.getProperty("building-wiki-url"));
+        this.wikiService = new BuildingWikiRestTemplateServiceImpl(null, properties.getProperty("building-wiki-url"));
     }
 
     @DisplayName("직접 위키 페이지 확인해 보면서 테스트")
