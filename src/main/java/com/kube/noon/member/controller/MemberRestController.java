@@ -40,11 +40,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-<<<<<<< HEAD
 import org.springframework.http.MediaType;
-=======
 import org.springframework.http.ResponseCookie;
->>>>>>> b0ead53dd579a627b46e15c94f8ddfa215bd2c01
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -806,7 +803,6 @@ public class MemberRestController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
     private String wrapWithCookie(String cookieName, String value) {
         log.info("client-server-domain={}", this.clientServerDomain);
 
