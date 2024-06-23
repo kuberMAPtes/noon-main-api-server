@@ -73,7 +73,6 @@ public class MemberRepositoryImpl implements MemberRepository {
             throw new MemberRelationshipCreationException("회원 관계 추가 중 오류 발생", e);
         }
     }
-
     @Override
     public Optional<Member> findMemberById(String memberId) {
         try {

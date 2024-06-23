@@ -322,6 +322,9 @@ public class MemberServiceImpl implements MemberService {
 
     private boolean fromMemberIsBlocked(String memberId, String fromId) {
         MemberRelationshipDto blockRelationshipDto = findMemberRelationship(memberId, fromId);
+        if(blockRelationshipDto == null){
+            return false;
+        }
         return blockRelationshipDto.getRelationshipType() == RelationshipType.BLOCK;
     }
 
@@ -359,15 +362,34 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MemberRelationshipDto findMemberRelationship(String fromId, String toId) {
         try {
-            return DtoEntityBinder.INSTANCE.toDto(memberRepository.findMemberRelationship(fromId, toId)
-                            .orElse(null)
-                    , MemberRelationshipDto.class);
+            log.info("회원 관계 조회 중: fromId={}, toId={}", fromId, toId);
+
+            return memberRepository.findMemberRelationship(fromId, toId)
+                    .map(mr -> DtoEntityBinder.INSTANCE.toDto(mr, MemberRelationshipDto.class))
+                    .orElse(null);
         } catch (MemberRelationshipNotFoundException e) {
             log.error("회원 관계 조회 중 오류 발생: fromId={}, toId={}", fromId, toId, e);
             throw e;
         }
     }
-
+    @Override
+    public MemberRelationshipSimpleDto findMemberRelationshipSimple(String fromId, String toId) {
+        try {
+            MemberRelationship memberRelationship = memberRepository.findMemberRelationship(fromId, toId)
+                    .orElse(null);
+            if(memberRelationship != null){
+                return DtoEntityBinder.INSTANCE.toDto(
+                        DtoEntityBinder.INSTANCE.toDto(memberRelationship, MemberRelationshipDto.class),
+                        MemberRelationshipSimpleDto.class
+                );
+            }else{
+                return null;
+            }
+        } catch (MemberRelationshipNotFoundException e) {
+            log.error("회원 관계 조회 중 오류 발생: fromId={}, toId={}", fromId, toId, e);
+            throw e;
+        }
+    }
     @Override
     public FindMemberRelationshipListByCriteriaResponseDto findMemberRelationshipListByCriteria(String fromId, MemberRelationshipSearchCriteriaDto criteriaDto, int page, int size) {
         try {
@@ -384,6 +406,9 @@ public class MemberServiceImpl implements MemberService {
             throw e;
         }
     }
+
+
+
 
     @Override
     public Page<SearchMemberResponseDto> searchMemberByNickname(String requesterId, String searchKeyword, int page) {

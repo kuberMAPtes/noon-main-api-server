@@ -465,6 +465,7 @@ public class MemberRestController {
             addMemberDto.setMemberId(dto.getMemberId());
             addMemberDto.setNickname(dto.getNickname());
             addMemberDto.setPwd("social_sign_up");
+            addMemberDto.setProfilePhotoUrl(dto.getProfilePhotoUrl());
             //만약 존재하는 아이디라면 GlobalExceptionHandler에서 처리된다.
             //프론트엔드에서 info를 받았을 때 memberId가 있는지 보면 된다.
             addMemberDto.setSocialSignUp(true);
@@ -729,12 +730,43 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회",map));
     }
 
+    @GetMapping("/getFollowRelationship")
+    public ResponseEntity<ApiResponse<Map<String,Object>>> getFollowRelationship(@RequestParam String fromId, String toId) {
+        log.info("getMemberRelationship :: " + fromId + " " + toId);
+        MemberRelationshipSimpleDto dto1 = memberService.findMemberRelationshipSimple(fromId, toId);
+
+        //getRelationshipType이 FOLLOW가 아니면 null을 리턴
+        if(dto1!=null) {
+            if (dto1.getRelationshipType() != RelationshipType.FOLLOW) {
+                dto1 = null;
+            }else if( Boolean.FALSE.equals(dto1.getActivated())){
+                dto1 = null;
+            }
+        }
+
+        MemberRelationshipSimpleDto dto2 = memberService.findMemberRelationshipSimple(toId, fromId);
+
+        if(dto2!=null) {
+            if (dto2.getRelationshipType() != RelationshipType.FOLLOW) {
+                dto2 = null;
+            }else if( Boolean.FALSE.equals(dto2.getActivated())){
+                dto2 = null;
+            }
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("from", dto1);
+        map.put("to", dto2);
+
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회", map));
+    }
+
     @Operation(summary = "회원 관계 삭제", description = "사용자 간의 관계를 삭제합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 관계 삭제 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원 관계 삭제 실패")
     })
-    @PostMapping("/deleteMemberRelationship/{fromId}/{toId}")
+    @PostMapping("/deleteMemberRelationship")
     public ResponseEntity<ApiResponse<Boolean>> deleteMemberRelationship(
             @RequestBody DeleteMemberRelationshipDto requestDto,
             @CookieValue(value = "token", required = false) String accessToken,
@@ -742,34 +774,37 @@ public class MemberRestController {
             @CookieValue(value = "refresh_token", required = false) String refreshToken,
             HttpServletResponse response
     ) {
-        log.info("deleteMemberRelationship" + requestDto);
-        // JWT 토큰 검증
-        if (accessToken == null) {
-            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("access token is null",false), HttpStatus.FORBIDDEN);
-        }
-
-        TokenType tokenType;
-        try {
-            tokenType = TokenType.valueOf(tokenTypeStr);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Not supported token type=" + tokenTypeStr,false), HttpStatus.FORBIDDEN);
-        }
-
-        try {
-            for (BearerTokenSupport ts : this.tokenSupport) {
-                if (ts.supports(tokenType)) {
-                    String fromId = ts.extractMemberId(accessToken);
-                    requestDto.setFromId(fromId);
-                    memberService.deleteMemberRelationship(requestDto);
-                    String message = requestDto.getRelationshipType() == RelationshipType.FOLLOW ? "팔로우가 해제되었습니다." : "차단이 해제되었습니다.";
-                    return ResponseEntity.ok(ApiResponseFactory.createResponse(message, true));
-                }
-            }
-            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Not supported token type=" + tokenTypeStr,false), HttpStatus.FORBIDDEN);
-        } catch (Exception e) {
-            log.warn("Exception in processing token", e);
-            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid access token",false), HttpStatus.FORBIDDEN);
-        }
+//        log.info("deleteMemberRelationship" + requestDto);
+//        // JWT 토큰 검증
+//        if (accessToken == null) {
+//            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("access token is null",false), HttpStatus.FORBIDDEN);
+//        }
+//
+//        TokenType tokenType;
+//        try {
+//            tokenType = TokenType.valueOf(tokenTypeStr);
+//        } catch (IllegalArgumentException e) {
+//            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Not supported token type=" + tokenTypeStr,false), HttpStatus.FORBIDDEN);
+//        }
+//
+//        try {
+//            for (BearerTokenSupport ts : this.tokenSupport) {
+//                if (ts.supports(tokenType)) {
+//                    String fromId = ts.extractMemberId(accessToken);
+//                    requestDto.setFromId(fromId);
+//                    memberService.deleteMemberRelationship(requestDto);
+//                    String message = requestDto.getRelationshipType() == RelationshipType.FOLLOW ? "팔로우가 해제되었습니다." : "차단이 해제되었습니다.";
+//                    return ResponseEntity.ok(ApiResponseFactory.createResponse(message, true));
+//                }
+//            }
+//            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Not supported token type=" + tokenTypeStr,false), HttpStatus.FORBIDDEN);
+//        } catch (Exception e) {
+//            log.warn("Exception in processing token", e);
+//            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid access token",false), HttpStatus.FORBIDDEN);
+//        }
+        memberService.deleteMemberRelationship(requestDto);
+        String message = requestDto.getRelationshipType() == RelationshipType.FOLLOW ? "팔로우가 해제되었습니다." : "차단이 해제되었습니다.";
+        return ResponseEntity.ok(ApiResponseFactory.createResponse(message, true));
     }
 
     @Operation(summary = "회원 프로필 사진 조회", description = "회원의 프로필 사진을 조회합니다.")
