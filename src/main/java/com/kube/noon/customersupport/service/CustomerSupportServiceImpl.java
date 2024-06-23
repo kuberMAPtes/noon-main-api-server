@@ -1,7 +1,10 @@
 package com.kube.noon.customersupport.service;
 
+import com.kube.noon.building.repository.BuildingProfileRepository;
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.common.FileType;
+import com.kube.noon.common.ObjectStorageAWS3S;
+import com.kube.noon.common.PublicRange;
 import com.kube.noon.customersupport.domain.Report;
 import com.kube.noon.customersupport.dto.notice.NoticeDto;
 import com.kube.noon.customersupport.dto.report.ReportDto;
@@ -15,10 +18,12 @@ import com.kube.noon.feed.domain.FeedAttachment;
 import com.kube.noon.feed.dto.FeedAttachmentDto;
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.repository.FeedAttachmentRepository;
+import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.member.UpdateMemberDajungScoreDto;
 import com.kube.noon.member.dto.member.UpdateMemberDto;
+import com.kube.noon.member.repository.impl.MemberRepositoryImpl;
 import com.kube.noon.member.service.MemberService;
 import com.kube.noon.notification.domain.NotificationType;
 import com.kube.noon.notification.dto.NotificationDto;
@@ -27,15 +32,17 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -57,7 +64,118 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
     private final NoticeRepository noticeRepository;
     private final NotificationServiceImpl notificationService;
     private final FeedService feedService;
+    private final ObjectStorageAWS3S objectStorageAWS3S;
+    private final FeedRepository feedRepository;
+    private final MemberRepositoryImpl memberRepositoryImpl;
+    private final BuildingProfileRepository buildingProfileRepository;
 
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
+
+    /**
+     * 공지사항에 딸린 멀티파트 파일 저장, 저장된 url반환(위지윅 구현을 위함)
+     */
+    private Map<String , String> tmpImageStorage = new HashMap<>(); // 임시 이미지 저장소<uploadedUrl,FileType>
+    public String addFile(MultipartFile attachment){
+
+        if (attachment != null) {
+                if (!attachment.isEmpty()) {
+                    try {
+
+                        String fileName = attachment.getOriginalFilename();
+                        File dest = new File(uploadDir + File.separator + fileName); // TODO: 일단 로컬에 저장. 추후 저장 하지 않고 Object Storage에 바로 저장할 계획
+
+                        // 필요한 디렉토리가 없으면 생성
+                        dest.getParentFile().mkdirs();
+                        // 파일 저장
+                        attachment.transferTo(dest);
+
+                        // ObjectStorage업로드
+                        String uploadedFileUrl = objectStorageAWS3S.uploadNoticeFile(dest.getAbsolutePath());
+                        log.info("Object Storage uploaded URL={}", uploadedFileUrl);
+                        
+                        //공지 최종 등록 전까지 첨부파일 임시 저장
+                        tmpImageStorage.put(uploadedFileUrl, attachment.getContentType());
+                        
+                        return uploadedFileUrl;
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        throw new RuntimeException("Failed to store file", e);
+                    }
+                }///end of if
+        }///end of if
+
+        return null;
+
+    }/// addFile
+
+    @Override
+    public FeedDto addNotice(String writerId, String title, String text) throws IOException {
+
+        log.info("writerId: {}, Title: {}, FeedText: {}", writerId, title, text);
+
+        //1. 저장할 공지사항 setting
+        Feed feed = new Feed();
+
+        Integer maxFeedId = feedRepository.findMaxId();
+        if (maxFeedId == null) maxFeedId = 0;
+        Integer newFeedId = maxFeedId + 1;
+        feed.setFeedId(newFeedId);
+
+        feed.setWriter(memberRepositoryImpl.findMemberById(writerId).orElseThrow());
+        feed.setTitle(title);
+        feed.setFeedText(text);
+        feed.setWrittenTime(LocalDateTime.now());
+        feed.setFeedCategory(FeedCategory.NOTICE);
+        feed.setPublicRange(PublicRange.PUBLIC);
+        feed.setViewCnt(0L);
+        feed.setActivated(true);
+        feed.setBuilding(buildingProfileRepository.findById(10000).orElseThrow());
+
+        Feed savedFeed = feedRepository.save(feed);
+
+        //2. 저장할 공지사항 첨부파일들 setting
+        for (Map.Entry<String, String> entry : tmpImageStorage.entrySet()) {
+
+            String uploadedFileUrl = entry.getKey();
+            String contentType = entry.getValue();
+            FeedAttachment feedAttachment = new FeedAttachment();
+
+            Integer maxId = feedAttachmentRepository.findMaxId();
+            if (maxId == null) maxId = 0;
+            Integer newId = ++maxId;
+            feedAttachment.setAttachmentId(newId);
+            feedAttachment.setFeed(savedFeed);
+            feedAttachment.setFileUrl(uploadedFileUrl);
+            feedAttachment.setActivated(true);
+
+            if (contentType.startsWith("image/")) {
+                feedAttachment.setFileType(FileType.PHOTO);
+            } else if (contentType.startsWith("video/")) {
+                feedAttachment.setFileType(FileType.VIDEO);
+            }
+            log.info("Multipart type={}", feedAttachment.getFileType());
+
+            //첨부파일 DB저장
+            if (savedFeed.getAttachments() == null) {
+                savedFeed.setAttachments(new ArrayList<>());
+            }
+            savedFeed.getAttachments().add(feedAttachment);
+            log.info("feedAttachment={}",feedAttachment);
+        }
+
+        //3. 공지사항(공지+첨부파일) DB저장
+        feedRepository.save(feed);
+        log.info("Saved Notice={}",feed);
+
+        tmpImageStorage.clear();
+
+
+        return FeedDto.toDto(feed);
+
+    }///end of addNotice
 
 
     /**
@@ -192,7 +310,7 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
 
         //신고 상태 변경, 신고처리 텍스트 추가
         reportRepository.save(report);
-        
+
         //피신고자 계정 잠금 일수 연장
         updateUnlockTime(report.getReporteeId(), reportProcessingDto.getUnlockDuration());
 
@@ -207,7 +325,7 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
         this.sendReportNotification(ReportProcessingDto.fromEntity(report));
 
         return ReportProcessingDto.fromEntity(reportRepository.findReportByReportId(report.getReportId()));
-        
+
     }
 
     /**
@@ -309,7 +427,7 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
     public FeedAttachmentDto addBluredImage(FeedAttachmentDto attachmentDto) throws IOException {
 
         // 블러 파일 생성 및 Object Storage 저장, 저장 url 요청
-        String blurredFileUrl = attachmentFilteringRepository.addBluredFile(attachmentDto.getFileUrl(), attachmentDto.getAttachmentId());
+        String blurredFileUrl = attachmentFilteringRepository.addBlurredFile(attachmentDto.getFileUrl(), attachmentDto.getAttachmentId());
 
         attachmentDto.setBlurredFileUrl(blurredFileUrl);
         feedAttachmentRepository.save(FeedAttachmentDto.toEntity(attachmentDto));

@@ -41,6 +41,9 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
     @Value("${greeneye.naver.secret-key}")
     private String secretKey ;
 
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
     private static final String HARMFUL_LEVEL_NORMAL = "normal";
     private static final String HARMFUL_LEVEL_SEXY = "sexy";
     private static final String HARMFUL_LEVEL_ADULT = "adult";
@@ -143,7 +146,7 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
 
 
     @Override
-    public String addBluredFile(String fileUrl, int attachmentId) {
+    public String addBlurredFile(String fileUrl, int attachmentId) {
 
         log.info("fileUrl={}",fileUrl);
 
@@ -160,7 +163,7 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
             throw new RuntimeException(e);
         }
 
-    }///end of addBluredFile
+    }///end of addBlurredFile
 
 
 
@@ -256,7 +259,10 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
         }
 
         // 블러 사진을 일단 로컬에 저장
-        String blurredImageLocation = "./src/main/resources/images/blured-"+attachmentId+".jpg";
+        //String blurredImageLocation = "./src/main/resources/images/blurred-"+attachmentId+".jpg";
+        String blurredImageLocation = uploadDir+"-"+attachmentId+".jpg";
+
+
         ImageIO.write(output, "jpg", new File(blurredImageLocation));
         log.info("블러 처리 완료. 블러 파일 경로={}",blurredImageLocation);
 
