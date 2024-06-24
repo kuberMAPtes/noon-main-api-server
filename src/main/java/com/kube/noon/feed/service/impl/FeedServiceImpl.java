@@ -383,6 +383,7 @@ public class FeedServiceImpl implements FeedService {
         // tag의 목록을 가져온다.
         List<Tag> tagList = tagRepository.getTagByFeedId(Feed.builder().feedId(feedId).build());
         resultFeed.setTags(TagDto.toDtoList(tagList));
+        resultFeed.setUpdateTagList(tagList.stream().map(s -> s.getTagText()).collect(Collectors.toList()));
 
         return resultFeed;
     }
