@@ -1,5 +1,6 @@
 package com.kube.noon.feed.dto;
 
+import com.kube.noon.common.FeedCategory;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.domain.FeedAttachment;
 import lombok.*;
@@ -24,6 +25,7 @@ public class FeedSummaryDto {
     private String buildingName;
     private LocalDateTime writtenTime;
     private int feedAttachmentId;
+    private FeedCategory feedCategory;
     private boolean like;
     private boolean bookmark;
     private boolean mainActivated;
@@ -42,8 +44,6 @@ public class FeedSummaryDto {
             }
         }
 
-
-
         return FeedSummaryDto.builder()
                 .feedId(feed.getFeedId())
                 .writerId(feed.getWriter().getMemberId())
@@ -53,6 +53,7 @@ public class FeedSummaryDto {
                 .buildingId(feed.getBuilding().getBuildingId())
                 .buildingName(feed.getBuilding().getBuildingName())
                 .writtenTime(feed.getWrittenTime())
+                .feedCategory(feed.getFeedCategory())
                 .mainActivated(feed.isMainActivated())
                 .feedAttachmentId((attachments == null || attachments.isEmpty()) ? 0 : attachments.get(0).getAttachmentId())
                 .build();
