@@ -1,9 +1,12 @@
 package com.kube.noon.chat.repository;
 
+import com.kube.noon.chat.domain.ChatEntrance;
 import com.kube.noon.chat.domain.Chatroom;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -42,6 +45,7 @@ public interface ChatroomRepository extends JpaRepository<Chatroom, Integer> {
                 AND cr.chatroomType = com.kube.noon.chat.domain.ChatroomType.GROUP_CHATTING
             """)
     Page<Chatroom> findByChatroomNameContaining(@Param("chatroomName") String chatroomName, Pageable pageable);
+
     void deleteChatroomByChatroomId(int chatroomId);
     Chatroom findChatroomByChatroomId(int chatroomId);
 }

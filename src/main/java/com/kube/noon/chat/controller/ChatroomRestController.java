@@ -88,4 +88,13 @@ public class ChatroomRestController {
                                                                           @RequestParam("page") int page) {
         return ResponseEntity.ok(this.chatroomSearchService.searchChatroomByChatroomName(searchKeyword, page));
     }
+
+    @GetMapping("/kickChatroom")
+    public Map<String, Object> kickChatroom(@RequestParam int chatroomId, @RequestParam String memberId) throws Exception {
+        System.out.println("        🐬[Controller] 가져온 채팅방과 참여멤버 => " + chatroomId +" "+ memberId);
+
+        // chatroomID, memberID 를 가지고 chatEntrance 를 조회해서 kicked 를 1로 바꿈
+
+        return chatroomService.kickChatroom(chatroomId, memberId);
+    }
 }
