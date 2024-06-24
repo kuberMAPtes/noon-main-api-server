@@ -210,7 +210,12 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     @Query("SELECT f FROM Feed f WHERE f.title LIKE %:#{#keyword}% OR f.feedText LIKE %:#{#keyword}%")
     List<Feed> searchFeedByKeyword(String keyword, Pageable pageable);
 
+
+
     /**
-     *
+     * 가장 최근에 추가한  feedId를 가져온다.
+     * @return FeedId
      */
+    @Query("SELECT MAX(fa.feedId) FROM Feed fa")
+    Integer findMaxId();
 }

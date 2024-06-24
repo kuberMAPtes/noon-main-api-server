@@ -11,6 +11,7 @@ import com.kube.noon.feed.service.FeedService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -26,7 +27,6 @@ public class CustomerSupportRestController {
     private final CustomerSupportService customerSupportService;
     private final ChatbotService chatbotService;
     private final FeedService feedService;
-
 
     /**
      * 신고하기
@@ -55,20 +55,33 @@ public class CustomerSupportRestController {
     }
 
     /**
-     * 공지(피드) 작성하기
-     * @param feedDto 공지 타이틀, 내용 등이 담긴 Dto
-     * @return 작성한 공지 정보
+     * 텍스트 에디터에 이미지 업로드
+     * 글 작성 시 중간에 이미지를 삽입하면 즉시 오브젝트 스토리지 저장, 클라이언트에서 활용할 수 있게 URL제공
+     * @param attachment 사용자가 추가한 이미지
+     * @return 오브젝트 스토리지에 저장한 이미지의 URL
+     */
+    @PostMapping("/uploadImage")
+    public String uploadImage(@RequestParam("attachment") MultipartFile attachment) {
+
+        return customerSupportService.addFile(attachment);
+        
+    }
+
+    /**
+     * 공지사항 작성
+     * @param writerId 작성자 아이디
+     * @param title 공지 제목
+     * @param feedText 공지 내용 (첨부파일 Object Storage url이 포함되어있다.)
+     * @return
+     * @throws IOException
      */
     @PostMapping("/addNotice")
-    public FeedDto addNotice(@RequestBody FeedDto feedDto ) {
+    public FeedDto addNotice(@RequestParam("writerId") String writerId,
+                                       @RequestParam("title") String title,
+                                       @RequestParam("feedText") String feedText) throws IOException {
 
-        log.info("feedDto={}",feedDto);
+        return customerSupportService.addNotice(writerId, title, feedText);
 
-        feedDto.setWrittenTime(LocalDateTime.now());
-        log.info("feedDto={}",feedDto.toString());
-        int noticeId = feedService.addFeed(feedDto);
-
-        return feedService.getFeedById(noticeId);
     }
 
     /**

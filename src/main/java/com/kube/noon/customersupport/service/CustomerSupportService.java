@@ -5,12 +5,15 @@ import com.kube.noon.customersupport.dto.report.ReportDto;
 import com.kube.noon.customersupport.dto.report.ReportProcessingDto;
 import com.kube.noon.feed.dto.FeedAttachmentDto;
 import com.kube.noon.feed.dto.FeedDto;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
 
 public interface CustomerSupportService {
 
+    String addFile(MultipartFile attachment);
+    FeedDto addNotice(String wirterId, String title, String text) throws IOException;
     List<NoticeDto> getNoticeList();
     List<NoticeDto> getNoticeListByPageable(int pageNumber);
 
