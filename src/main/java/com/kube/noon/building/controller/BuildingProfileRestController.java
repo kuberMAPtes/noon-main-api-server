@@ -1,15 +1,13 @@
 
 
 package com.kube.noon.building.controller;
-import com.kube.noon.building.dto.BuildingDto;
-import com.kube.noon.building.dto.BuildingNotFoundResponseDto;
-import com.kube.noon.building.dto.BuildingSearchResponseDto;
-import com.kube.noon.building.dto.BuildingZzimDto;
+import com.kube.noon.building.dto.*;
 import com.kube.noon.building.service.BuildingProfileService;
 import com.kube.noon.chat.dto.ChatroomDto;
 import com.kube.noon.chat.service.ChatroomSearchService;
 import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.service.FeedService;
+import com.kube.noon.member.dto.member.MemberDto;
 import com.kube.noon.member.dto.memberRelationship.MemberRelationshipDto;
 import com.kube.noon.places.domain.Position;
 import com.kube.noon.places.domain.PositionRange;
@@ -35,13 +33,24 @@ public class BuildingProfileRestController {
 
 
     /**
-     * 구독하기 or 건물 등록 신청하기
+     * 구독하기
      * @return 구독에 성공하면 구독 정보 리턴(activated=true)
      */
     @PostMapping("/addSubscription")
     public BuildingZzimDto addSubscription(@RequestBody BuildingZzimDto buildingZzimDto) {
         return buildingProfileService.addSubscription(buildingZzimDto.getMemberId(), buildingZzimDto.getBuildingId());
     }
+
+
+    /**
+     * 건물 등록 신청하기
+     * @return 구독에 성공하면 구독 정보 리턴(activated=true)
+     */
+    @PostMapping("/addSubscription/applicant")
+    public BuildingDto addSubscription(@RequestBody BuildingApplicantDto buildingApplicantDto){
+        return buildingProfileService.addSubscription(buildingApplicantDto);
+    }
+
 
     /**
      * 구독취소하기 or 건물 등록 신청 취소하기
@@ -115,6 +124,15 @@ public class BuildingProfileRestController {
         }
     }
 
+    @GetMapping(value = "/getBuildingProfile")
+    public ResponseEntity<Object> getBuildingProfile(@RequestParam String roadAddr) {
+
+        BuildingDto resp = this.buildingProfileService.getBuildingProfileByRoadAddr(roadAddr);
+        return new ResponseEntity<>(resp, HttpStatus.OK);
+
+    }
+
+
     /**
      * 건물의 구독자 수 가져오기
      */
@@ -122,6 +140,34 @@ public class BuildingProfileRestController {
     public int getSubscriberCnt(@RequestParam("buildingId") int buildingId) {
         return buildingProfileService.getSubscriberCnt(buildingId);
     }
+
+    /**
+     * 건물 아이디로 구독자 목록 가져오기
+     */
+    @GetMapping("/getSubscribers")
+    public List<MemberDto> getSubscribers(@RequestParam("buildingId") int buildingId) {
+        return buildingProfileService.getSubscribers(buildingId);
+    }
+
+    /**
+     * 도로명 주소로 건물 구독자 목록 가져오기
+     */
+    @GetMapping("/getSubscribersByRoadAddr")
+    public List<MemberDto> getSubscribers(@RequestParam("roadAddr") String roadAddr) {
+
+        return buildingProfileService.getSubscribers(roadAddr);
+    }
+
+    /**
+     * 도로명 주소로 건물 정보 가져오기
+     */
+    @GetMapping("/getBuildingProfileByRoadAddr")
+    public BuildingDto getBuildingProfileByRoadAddr(@RequestParam("roadAddr") String roadAddr) {
+
+        return buildingProfileService.getBuildingProfileByRoadAddr(roadAddr);
+
+    }
+
 
     /**
      * 사용자의 화면 범위 내 건물 목록 보기
@@ -140,7 +186,6 @@ public class BuildingProfileRestController {
     ) {
         return new ResponseEntity<>(this.buildingProfileService.searchBuilding(searchKeyword, page), HttpStatus.OK);
     }
-
 
 
 }
