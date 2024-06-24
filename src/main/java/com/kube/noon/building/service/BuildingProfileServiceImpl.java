@@ -56,8 +56,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     private final BuildingSummaryRepository buildingSummaryRepository;
     private final FeedRepository feedRepository;
     private final PlacesService placesService;
-    //private final BuildingWikiRestTemplateServiceImpl buildingWikiRestTemplateService;
-    private final BuildingWikiEmptyServiceImpl buildingWikiEmptyService;
+    private final BuildingWikiService buildingWikiService;
 
 
     public static final int SUMMARY_LENGTH_LIMIT = 2000;
@@ -144,8 +143,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
         //건물 프로필 및 위키페이지 생성
         if( this.getSubscriberCnt(building.getBuildingId()) >= activationThreshold){
             building.setProfileActivated(true);
-            //buildingWikiRestTemplateService.addPage(building.getBuildingName()); //배포용
-            buildingWikiEmptyService.addPage(building.getBuildingName()); //테스트용
+            this.buildingWikiService.addPage(building.getBuildingId()); //테스트용
         }
 
         return BuildingDto.fromEntity(building);
