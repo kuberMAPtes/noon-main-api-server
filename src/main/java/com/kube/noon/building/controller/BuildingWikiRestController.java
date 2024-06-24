@@ -18,20 +18,35 @@ public class BuildingWikiRestController {
 
     @GetMapping("/getPage/{buildingId}")
     public ResponseEntity<BuildingWikiPageResponseDto> getPage(@PathVariable("buildingId") int buildingId) {
-        return ResponseEntity.ok(this.buildingWikiService.getReadPage(buildingId));
+        try {
+            return ResponseEntity.ok(this.buildingWikiService.getReadPage(buildingId));
+        } catch (HttpClientErrorException.NotFound e) {
+            log.warn("Id{} Not found", buildingId);
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/getEditPage/{buildingId}")
     public ResponseEntity<BuildingWikiPageResponseDto> getEditPage(@PathVariable("buildingId") int buildingId) {
-        return ResponseEntity.ok(this.buildingWikiService.getEditPage(buildingId));
+        try {
+            return ResponseEntity.ok(this.buildingWikiService.getEditPage(buildingId));
+        } catch (HttpClientErrorException.NotFound e) {
+            log.warn("Id{} Not found", buildingId);
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/editPage/{buildingId}")
     public ResponseEntity<Void> editPage(
             @PathVariable("buildingId") int buildingId,
-            @ModelAttribute BuildingWikiEditRequestDto dto
+            @RequestBody BuildingWikiEditRequestDto dto
     ) {
-        this.buildingWikiService.editPage(buildingId, dto);
-        return ResponseEntity.ok().build();
+        try {
+            this.buildingWikiService.editPage(buildingId, dto);
+            return ResponseEntity.ok().build();
+        } catch (HttpClientErrorException.NotFound e) {
+            log.warn("Id{} Not found", buildingId);
+            return ResponseEntity.notFound().build();
+        }
     }
 }
