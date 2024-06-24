@@ -52,10 +52,21 @@ public class FeedSubServiceImpl implements FeedSubService {
     public ResponseEntity<byte[]> getFeedAttachment(int attachmentId) {
         FeedAttachmentDto feedAttachmentDto = FeedAttachmentDto.toDto(feedAttachmentRepository.findByAttachmentId(attachmentId));
 
+        if (feedAttachmentDto == null) {
+            // return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 찾을 수 없음을 확인(404)
+            return null;
+        }
+
         String[] fileNames = feedAttachmentDto.getFileUrl().split("/");
         String fileName = fileNames[fileNames.length - 1];
 
+
         S3ObjectInputStream inputStream = objectStorageAPI.getObject(fileName);
+
+        if (inputStream == null) {
+            // return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 찾을 수 없음을 확인(404)
+            return null;
+        }
 
         try {
             byte[] imageBytes = inputStream.readAllBytes();

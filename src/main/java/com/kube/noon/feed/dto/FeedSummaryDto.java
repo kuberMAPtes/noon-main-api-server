@@ -1,6 +1,7 @@
 package com.kube.noon.feed.dto;
 
 import com.kube.noon.feed.domain.Feed;
+import com.kube.noon.feed.domain.FeedAttachment;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -22,12 +23,27 @@ public class FeedSummaryDto {
     private int buildingId;
     private String buildingName;
     private LocalDateTime writtenTime;
-    private String feedAttachementURL;
+    private int feedAttachmentId;
     private boolean like;
     private boolean bookmark;
     private boolean mainActivated;
 
     public static FeedSummaryDto toDto(Feed feed) {
+        
+        // 유효한 첨부파일 걸러내기
+        List<FeedAttachment> attachments = null;
+        if (feed.getAttachments() != null && feed.getAttachments().size() > 0) {
+            attachments = feed.getAttachments().stream()
+                    .filter(s -> s.isActivated() == true)
+                    .collect(Collectors.toList());
+
+            for(FeedAttachment attachment : attachments) {
+                System.out.println(attachment);
+            }
+        }
+
+
+
         return FeedSummaryDto.builder()
                 .feedId(feed.getFeedId())
                 .writerId(feed.getWriter().getMemberId())
@@ -38,7 +54,7 @@ public class FeedSummaryDto {
                 .buildingName(feed.getBuilding().getBuildingName())
                 .writtenTime(feed.getWrittenTime())
                 .mainActivated(feed.isMainActivated())
-                .feedAttachementURL((feed.getAttachments() == null || feed.getAttachments().size() == 0) ? null : feed.getAttachments().get(0).getFileUrl())
+                .feedAttachmentId((attachments == null || attachments.isEmpty()) ? 0 : attachments.get(0).getAttachmentId())
                 .build();
     }
 
