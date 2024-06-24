@@ -19,7 +19,8 @@ public class UpdateMemberDto {
 //    private String memberRole;
 
     private String nickname;
-//    private String pwd;
+
+    private String pwd;
 
 //    private String phoneNumber;
 
