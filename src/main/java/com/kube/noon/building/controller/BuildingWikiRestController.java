@@ -16,19 +16,22 @@ import org.springframework.web.client.HttpClientErrorException;
 public class BuildingWikiRestController {
     private final BuildingWikiService buildingWikiService;
 
-    @GetMapping("/getPage")
-    public ResponseEntity<BuildingWikiPageResponseDto> getPage(@RequestParam("buildingId") int buildingId) {
+    @GetMapping("/getPage/{buildingId}")
+    public ResponseEntity<BuildingWikiPageResponseDto> getPage(@PathVariable("buildingId") int buildingId) {
         return ResponseEntity.ok(this.buildingWikiService.getReadPage(buildingId));
     }
 
-    @GetMapping("/getEditPage")
-    public ResponseEntity<BuildingWikiPageResponseDto> getEditPage(@RequestParam("buildingId") int buildingId) {
+    @GetMapping("/getEditPage/{buildingId}")
+    public ResponseEntity<BuildingWikiPageResponseDto> getEditPage(@PathVariable("buildingId") int buildingId) {
         return ResponseEntity.ok(this.buildingWikiService.getEditPage(buildingId));
     }
 
-    @PostMapping("/editPage")
-    public ResponseEntity<Void> editPage(@ModelAttribute BuildingWikiEditRequestDto dto) {
-        this.buildingWikiService.editPage(dto);
+    @PostMapping("/editPage/{buildingId}")
+    public ResponseEntity<Void> editPage(
+            @PathVariable("buildingId") int buildingId,
+            @ModelAttribute BuildingWikiEditRequestDto dto
+    ) {
+        this.buildingWikiService.editPage(buildingId, dto);
         return ResponseEntity.ok().build();
     }
 }

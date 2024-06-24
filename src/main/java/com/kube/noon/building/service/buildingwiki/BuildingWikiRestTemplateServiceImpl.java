@@ -128,10 +128,10 @@ public class BuildingWikiRestTemplateServiceImpl implements BuildingWikiService 
     }
 
     @Override
-    public void editPage(BuildingWikiEditRequestDto dto) {
+    public void editPage(int buildingId, BuildingWikiEditRequestDto dto) {
         URI uri = UriComponentsBuilder.fromUri(URI.create(this.buildingWikiUrl))
                 .path("/wiki/index.php")
-                .queryParam("title", PAGE_TITLE_PREFIX + dto.getBuildingId())
+                .queryParam("title", PAGE_TITLE_PREFIX + buildingId)
                 .queryParam("action", "submit")
                 .build().toUri();
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();

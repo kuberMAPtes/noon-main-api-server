@@ -30,7 +30,7 @@ public class BuildingWikiEmptyServiceImpl implements BuildingWikiService {
     }
 
     @Override
-    public void editPage(BuildingWikiEditRequestDto content) {
-        getReadPage(content.getBuildingId());
+    public void editPage(int buildingId, BuildingWikiEditRequestDto content) {
+        getReadPage(buildingId);
     }
 }

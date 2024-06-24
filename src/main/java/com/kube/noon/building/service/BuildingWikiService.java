@@ -20,5 +20,5 @@ public interface BuildingWikiService {
 
     public BuildingWikiPageResponseDto getEditPage(int buildingId);
 
-    public void editPage(BuildingWikiEditRequestDto dto);
+    public void editPage(int buildingId, BuildingWikiEditRequestDto dto);
 }

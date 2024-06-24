@@ -10,7 +10,6 @@ import lombok.ToString;
 @Setter
 @ToString
 public class BuildingWikiEditRequestDto {
-    private int buildingId;
     private String wpTextbox1;
     private String wpUnicodeCheck;
     private String wpAntispam;
