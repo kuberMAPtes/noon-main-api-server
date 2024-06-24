@@ -43,6 +43,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.servlet.View;
 
 import java.util.HashMap;
@@ -215,6 +216,26 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("패스워드를 사용할 수 있습니다.", true));
     }
 
+    @GetMapping("/getLoginMember")
+    public ResponseEntity<ApiResponse<?>> getLoginMember(
+            @CookieValue("token") String accessToken,
+            @CookieValue("token_type") TokenType tokenType
+    ) {
+        for (BearerTokenSupport ts : tokenSupport) {
+            if (ts.supports(tokenType)) {
+                String memberId = ts.extractMemberId(accessToken);
+                return ResponseEntity.ok(ApiResponseFactory.createResponse(
+                        "현재 로그인한 유저 정보",
+                        this.memberService.findMemberById(memberId, memberId))
+                );
+            }
+        }
+        return ResponseEntity.badRequest().body(ApiResponseFactory.createResponse("유효하지 않은 토큰 타입", String.format("""
+                {
+                    "token_type": %s
+                }
+                """, tokenType)));
+    }
 
     @Operation(summary = "토큰 갱신", description = "리프레시 토큰을 사용하여 액세스 토큰을 갱신합니다.")
     @ApiResponses({
