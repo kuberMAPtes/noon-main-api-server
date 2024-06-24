@@ -48,8 +48,8 @@ public class BuildingWikiRestTemplateServiceImpl implements BuildingWikiService 
     }
 
     @Override
-    public void addPage(String buildingName) {
-        String title = PAGE_TITLE_PREFIX + buildingName;
+    public void addPage(int buildingId) {
+        String title = PAGE_TITLE_PREFIX + buildingId;
         if (this.buildingWikiUrl == null) {
             throw new IllegalStateException(this.getClass() + ".buildingWikiUrl is null");
         }

@@ -14,7 +14,7 @@ public interface BuildingWikiService {
      * 빈 위키 페이지를 생성한다. title에 해당하는 페이지가 이미 있을 경우, 페이지를 생성하지 않는다.
      * @param buildingName 생성할 건물 위키 페이지의 제목
      */
-    public void addPage(String buildingName);
+    public void addPage(int buildingId);
 
     public BuildingWikiPageResponseDto getReadPage(int buildingId);
 

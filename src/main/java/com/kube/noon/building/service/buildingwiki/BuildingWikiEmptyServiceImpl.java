@@ -14,8 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 public class BuildingWikiEmptyServiceImpl implements BuildingWikiService {
 
     @Override
-    public void addPage(String buildingName) {
-        log.info("Wiki page of {} has been created", buildingName);
+    public void addPage(int buildingId) {
+        log.info("Wiki page of {} has been created", buildingId);
     }
 
     @Override
