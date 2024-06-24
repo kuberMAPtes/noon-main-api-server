@@ -43,7 +43,7 @@ public class PlacesNaverMapsApiRepositoryImpl implements PlacesRepository {
 
     private final String accessKey;
     private final String secretKey;
-    private final RestTemplate restTemplate;
+    protected final RestTemplate restTemplate;
 
     public PlacesNaverMapsApiRepositoryImpl(
             @Value("${geocode.naver.access-key}") String accessKey,
