@@ -14,15 +14,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Transactional
-@ActiveProfiles({ "prod", "key", "privpark" })
+@ActiveProfiles({ "prod", "key", "privpark", "proddddd" })
 @SpringBootTest
 class TestBootBuildingWikiRestTemplateServiceImpl {
 
-//    @Autowired
-//    private BuildingWikiRestTemplateServiceImpl wikiRestTemplateService;
-//
-//    @Autowired
-//    private BuildingProfileRepository buildingProfileRepository;
+    @Autowired
+    private BuildingWikiRestTemplateServiceImpl wikiRestTemplateService;
+
+    @Autowired
+    private BuildingProfileRepository buildingProfileRepository;
 //
 //    Building sampleBuilding;
 //
@@ -39,12 +39,12 @@ class TestBootBuildingWikiRestTemplateServiceImpl {
 //        log.info("page={}", readPage.getHtmlContent());
 //    }
 //
-//    @Test
-//    void getEditPage() {
-//        BuildingWikiPageResponseDto editPage = this.wikiRestTemplateService.getEditPage(15000);
-//        log.info("buildingName={}", editPage.getBuildingName());
-//        log.info("page={}", editPage.getHtmlContent());
-//    }
+    @Test
+    void getEditPage() {
+        BuildingWikiPageResponseDto editPage = this.wikiRestTemplateService.getEditPage(15000);
+        log.info("buildingName={}", editPage.getBuildingName());
+        log.info("page={}", editPage.getHtmlContent());
+    }
 //
 //    @Test
 //    void editPage() {
