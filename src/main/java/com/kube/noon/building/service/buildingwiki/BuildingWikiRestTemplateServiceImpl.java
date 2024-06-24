@@ -32,7 +32,7 @@ import java.util.Arrays;
  */
 @Slf4j
 @Service
-@Profile("prod")
+@Profile("proddddd") // TODO: convert to "prod"
 public class BuildingWikiRestTemplateServiceImpl implements BuildingWikiService {
     private static final String PAGE_TITLE_PREFIX = "Id";
 
