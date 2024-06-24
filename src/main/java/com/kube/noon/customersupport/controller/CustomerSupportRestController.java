@@ -60,7 +60,7 @@ public class CustomerSupportRestController {
      * @param attachment 사용자가 추가한 이미지
      * @return 오브젝트 스토리지에 저장한 이미지의 URL
      */
-    @PostMapping("/uploadImage")
+    @PostMapping("/uploadAttachment")
     public String uploadImage(@RequestParam("attachment") MultipartFile attachment) {
 
         return customerSupportService.addFile(attachment);

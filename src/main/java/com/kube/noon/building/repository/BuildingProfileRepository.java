@@ -25,8 +25,11 @@ public interface BuildingProfileRepository extends JpaRepository<Building, Integ
     @Query("SELECT b FROM Building b WHERE b.profileActivated = true")
     List<Building> findActivatedBuildings();
 
-    @Query("SELECT b FROM Building b WHERE b.roadAddr = :roadAddr AND b.profileActivated = true")
+    @Query("SELECT b FROM Building b WHERE b.roadAddr = :roadAddr")
     Building findBuildingProfileByRoadAddr(String roadAddr);
+
+    @Query("SELECT b FROM Building b WHERE b.roadAddr = :roadAddr AND b.profileActivated = false")
+    Building findAppliedBuildingByRoadAddr(String roadAddr);
 
     @Query("""
         SELECT b FROM Building b

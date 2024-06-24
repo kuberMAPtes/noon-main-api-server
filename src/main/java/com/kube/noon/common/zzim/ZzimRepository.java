@@ -18,13 +18,11 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
      * History가 있다면 재구독 할 때 activated만 변경한다.
      * History가 없다면 새 레코드를 INSERT한다.
      *
-     * @param buildingId 구독History를 조회하려는 건물 아이디
-     * @param memberId 구독History를 조회하려는 회원 아이디
+     * @param buildingId             구독History를 조회하려는 건물 아이디
+     * @param memberId               구독History를 조회하려는 회원 아이디
      * @param subscriptionProviderId 본인이 구독했었는지, 타회원 구독 가져오기로 구독했었는지 구분하는 필드
      * @return 구독했던 이력이 있다면 true, 없다면 false
-     *
      * @author 허예지
-     *
      */
     boolean existsByBuildingIdAndMemberIdAndSubscriptionProviderId(int buildingId, String memberId, String subscriptionProviderId);
 
@@ -33,7 +31,6 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
      * 회원이 구독했다 취소한 History가 있다면 그 레코드의 activate만 true로 update한다.
      *
      * @param activated true이면 구독, false이면 구독취소
-     *
      * @author 허예지
      */
     @Modifying
@@ -43,9 +40,8 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
 
     /**
      * 빌딩아이디, 구독자아이디, 구독제공자아이디로 Zzim레코드를 조회한다.
-     * 
-     * @return Zzim엔티티
      *
+     * @return Zzim엔티티
      * @author 허예지
      */
     Zzim findByBuildingIdAndMemberId(int buildingId, String memberId);
@@ -53,16 +49,27 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
 
     /**
      * 구독자 수 조회
+     *
      * @param buildingId 구독자 수를 조회하려는 건물 아이디
-     * @param activated 입력은 true. 구독중인 구독자만 조회한다.
+     * @param activated  입력은 true. 구독중인 구독자만 조회한다.
      * @return
      */
     int countByBuildingIdAndActivated(int buildingId, boolean activated);
 
 
+    /**
+     * 건물 아이디로 구독자 목록 조회
+     *
+     * @param buildingId 구독자를 조회하려는 건물아이디
+     * @return 구독자 아이디 목록
+     */
+    @Query("SELECT zzim.memberId FROM Zzim zzim WHERE zzim.buildingId = :buildingId")
+    List<String> findMemberIdsByBuildingId(int buildingId);
+
 
     /**
      * 피드 아이디, 유저 아이디, 찜 타입을 통해 Zzim Table의 데이터를 확인한다.
+     *
      * @param feedId
      * @param memberId
      * @param zzimType
@@ -72,6 +79,7 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
 
     /**
      * 회원 아이디와 찜 타입을 통해 회원의 좋아요, 북마크 여부를 확인한다.
+     *
      * @param memberId
      * @param zzimType
      * @return

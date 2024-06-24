@@ -1,12 +1,15 @@
 package com.kube.noon.building.service;
 
 import com.kube.noon.building.domain.Building;
+import com.kube.noon.building.dto.BuildingApplicantDto;
 import com.kube.noon.building.dto.BuildingDto;
 import com.kube.noon.building.dto.BuildingSearchResponseDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
 import com.kube.noon.building.repository.BuildingSummaryRepository;
 import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
 import com.kube.noon.building.repository.BuildingProfileRepository;
+import com.kube.noon.building.service.buildingwiki.BuildingWikiEmptyServiceImpl;
+import com.kube.noon.building.service.buildingwiki.BuildingWikiRestTemplateServiceImpl;
 import com.kube.noon.chat.dto.LiveliestChatroomDto;
 import com.kube.noon.common.constant.PagingConstants;
 import com.kube.noon.common.zzim.Zzim;
@@ -14,6 +17,9 @@ import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.repository.FeedRepository;
+import com.kube.noon.member.binder.mapper.member.MemberDtoBinderImpl;
+import com.kube.noon.member.dto.member.MemberDto;
+import com.kube.noon.member.repository.impl.MemberRepositoryImpl;
 import com.kube.noon.places.domain.Position;
 import com.kube.noon.places.domain.PositionRange;
 import com.kube.noon.places.dto.PlaceDto;
@@ -21,7 +27,10 @@ import com.kube.noon.places.exception.PlaceNotFoundException;
 import com.kube.noon.places.service.PlacesService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.web.config.SortHandlerMethodArgumentResolverCustomizer;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +48,7 @@ import java.util.stream.Collectors;
 public class BuildingProfileServiceImpl implements BuildingProfileService {
 
 
+    private static final Logger log = LoggerFactory.getLogger(BuildingProfileServiceImpl.class);
     ///Field
     private final BuildingProfileRepository buildingProfileRepository;
     private final ZzimRepository zzimRepository;
@@ -46,10 +56,20 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     private final BuildingSummaryRepository buildingSummaryRepository;
     private final FeedRepository feedRepository;
     private final PlacesService placesService;
+    //private final BuildingWikiRestTemplateServiceImpl buildingWikiRestTemplateService;
+    private final BuildingWikiEmptyServiceImpl buildingWikiEmptyService;
+
 
     public static final int SUMMARY_LENGTH_LIMIT = 2000;
     public static final int SUMMARY_FEED_COUNT_LIMIT  = 10;
     private final SortHandlerMethodArgumentResolverCustomizer sortCustomizer;
+    private final MemberRepositoryImpl memberRepositoryImpl;
+    private final MemberDtoBinderImpl memberDtoBinderImpl;
+
+    @Value("${profile-activation.threshold}")
+    private int activationThreshold;
+
+
 
     ///Method
     /**
@@ -88,6 +108,94 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     }
 
 
+    /**
+     * 건물 등록 신청
+     * @param buildingApplicantDto
+     * @return
+     */
+    @Transactional
+    public BuildingDto addSubscription(BuildingApplicantDto buildingApplicantDto) {
+
+        Building building = buildingProfileRepository.findAppliedBuildingByRoadAddr(buildingApplicantDto.getRoadAddr());
+
+        log.info("도로명 주소로 조회한 빌딩={}", building);
+
+        //첫번째 빌딩 프로필 신청자일때
+        if(building==null){
+
+            building = Building.builder()
+                    .buildingName(buildingApplicantDto.getBuildingName())
+                    .roadAddr(buildingApplicantDto.getRoadAddr())
+                    .longitude(buildingApplicantDto.getLongitude())
+                    .latitude(buildingApplicantDto.getLatitude())
+                    .profileActivated(false)
+                    .build();
+
+            buildingProfileRepository.save(building);
+            log.info("saved buildingId={}",building.getBuildingId());
+
+        }
+
+        //건물 등록 신청 처리(=구독)
+        BuildingZzimDto buildingZzimDto = this.addSubscription(buildingApplicantDto.getMemberId(), building.getBuildingId());
+
+        log.info("현재 구독자수={}",this.getSubscriberCnt(building.getBuildingId()) );
+
+        //건물 프로필 및 위키페이지 생성
+        if( this.getSubscriberCnt(building.getBuildingId()) >= activationThreshold){
+            building.setProfileActivated(true);
+            //buildingWikiRestTemplateService.addPage(building.getBuildingName()); //배포용
+            buildingWikiEmptyService.addPage(building.getBuildingName()); //테스트용
+        }
+
+        return BuildingDto.fromEntity(building);
+
+    }
+
+    /**
+     * 건물 아이디로 구독자 목록 조회
+     */
+    @Override
+    public List<MemberDto> getSubscribers(int buildingId) {
+
+        List<String> subscriberIds = zzimRepository.findMemberIdsByBuildingId(buildingId);
+
+        List<MemberDto> subscribers = new ArrayList<>();
+        for(String memberId : subscriberIds){
+            subscribers.add(memberDtoBinderImpl.toDto(memberRepositoryImpl.findMemberById(memberId).orElseThrow()));
+        }
+        log.info("Building subscribers={}",subscribers);
+
+        return subscribers;
+    }
+
+
+
+    /**
+     * 도로명 주소로 구독자(or건물 프로필 등록 신청자) 목록 조회
+     */
+    @Override
+    public List<MemberDto> getSubscribers(String roadAddr) {
+
+        log.info("해당 도로명 주소로 조회={}", roadAddr);
+
+        Building building = buildingProfileRepository.findBuildingProfileByRoadAddr(roadAddr);
+
+        if(building==null){
+            log.info("처음 신청된 건물={}", roadAddr);
+            return null;
+        }
+
+        List<String> subscriberIds = zzimRepository.findMemberIdsByBuildingId(building.getBuildingId());
+
+        List<MemberDto> subscribers = new ArrayList<>();
+        for(String memberId : subscriberIds){
+            subscribers.add(memberDtoBinderImpl.toDto(memberRepositoryImpl.findMemberById(memberId).orElseThrow()));
+        }
+        log.info("Building subscribers={}",subscribers);
+
+        return subscribers;
+    }
 
 
 
@@ -169,6 +277,16 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     @Override
     public BuildingDto getBuildingProfile(int buildingId) {
         Building building = buildingProfileRepository.findBuildingProfileByBuildingId(buildingId);
+        return BuildingDto.fromEntity(building);
+    }
+
+    @Override
+    public BuildingDto getBuildingProfileByRoadAddr(String roadAddr) {
+
+        Building building = buildingProfileRepository.findBuildingProfileByRoadAddr(roadAddr);
+
+        log.info("findBuildingByRoadAddr result={}", building);
+
         return BuildingDto.fromEntity(building);
     }
 

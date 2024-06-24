@@ -1,9 +1,11 @@
 package com.kube.noon.building.service;
 import com.kube.noon.building.domain.Building;
+import com.kube.noon.building.dto.BuildingApplicantDto;
 import com.kube.noon.building.dto.BuildingDto;
 import com.kube.noon.building.dto.BuildingSearchResponseDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
 import com.kube.noon.building.repository.BuildingProfileRepository;
+import com.kube.noon.member.dto.member.MemberDto;
 import com.kube.noon.places.domain.Position;
 import com.kube.noon.places.domain.PositionRange;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +44,65 @@ public class TestBuildingService {
         log.info("찜activated={}", zzimDto.isActivated());
 
     }
+
+    @DisplayName("memberId, roadAddr, longitude, latitude로 건물 등록 신청")
+    @Test
+    void addApplicant() {
+
+        //첫번째 신청자
+        BuildingApplicantDto buildingApplicantDto = BuildingApplicantDto.builder()
+                .memberId("member_1")
+                .buildingName("Sample Building") // 샘플 건물 이름
+                .roadAddr("123 Sample Street, Sample City, Sample Country") // 샘플 도로 주소
+                .longitude(127.03642) // 샘플 경도 값
+                .latitude(37.50124) // 샘플 위도 값
+                .profileActivated(false) // 샘플 프로필 활성화 상태
+                .build();
+
+        BuildingDto result = buildingProfileService.addSubscription(buildingApplicantDto);
+        log.info("Profile activated={}", buildingProfileService.getBuildingProfile(result.getBuildingId()).isProfileActivated());
+
+
+        //두번째 신청자 (프로필 활성화 기준: 2)
+        buildingApplicantDto = BuildingApplicantDto.builder()
+                .memberId("member_2")
+                .buildingName("Sample Building") // 샘플 건물 이름
+                .roadAddr("123 Sample Street, Sample City, Sample Country") // 샘플 도로 주소
+                .longitude(127.03642) // 샘플 경도 값
+                .latitude(37.50124) // 샘플 위도 값
+                .profileActivated(false) // 샘플 프로필 활성화 상태
+                .build();
+
+        result = buildingProfileService.addSubscription(buildingApplicantDto);
+        log.info("Second subscription={}", result);
+
+        log.info("Profile activated={}", buildingProfileService.getBuildingProfile(result.getBuildingId()).isProfileActivated());
+
+
+    }
+
+    @DisplayName("건물 구독자 or 건물 등록 신청자 목록 조회")
+    @Test
+    void getSubscribers(){
+
+        // 건물 아이디로 가져오기
+        List<MemberDto> subscribers = buildingProfileService.getSubscribers(10100);
+
+        for(MemberDto member : subscribers){
+            log.info("subscriber={}",member);
+        }
+
+
+        // 도로명 주소로 가져오기
+        subscribers = buildingProfileService.getSubscribers("123 Sample Street, Sample City, Sample Country");
+
+        for(MemberDto member : subscribers){
+            log.info("subscriber={}",member);
+        }
+
+
+    }
+
 
     @DisplayName("멤버아이디, 건물아이디로 구독 취소하기")
     @Test

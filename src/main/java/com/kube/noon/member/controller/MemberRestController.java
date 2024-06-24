@@ -1,7 +1,5 @@
 package com.kube.noon.member.controller;
 
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.kube.noon.common.ObjectStorageAPI;
 import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.common.messagesender.ApickApiAgent;
 import com.kube.noon.common.messagesender.ApickApiAgentImpl;
@@ -11,7 +9,6 @@ import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.common.security.support.BearerTokenSupport;
 import com.kube.noon.common.security.support.InvalidRefreshTokenException;
 import com.kube.noon.common.security.support.KakaoTokenSupport;
-import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.RequestDto.*;
 import com.kube.noon.member.dto.ResponseDto.SearchMemberResponseDto;
 import com.kube.noon.member.dto.auth.googleLoginRequestDto;
@@ -40,15 +37,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.View;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,11 +76,11 @@ public class MemberRestController {
     private final AuthService authService;
     private final List<BearerTokenSupport> tokenSupport;
     private final View error;
+    private final AuthRepositoryImpl authRepositoryImpl;
 
     private final String clientServerHost;
 
     private final String clientServerPort;
-
 
     @Value("${client-server-domain}")
     private String clientServerDomain;
@@ -96,7 +92,7 @@ public class MemberRestController {
                                 AuthService authService,
                                 List<BearerTokenSupport> tokenSupport, View error, AuthRepositoryImpl authRepositoryImpl,
                                 @Value("${client.server.host}") String clientServerHost,
-                                @Value("${client.server.port}") String clientServerPort, ObjectStorageAPI objectStorageAPI) {
+                                @Value("${client.server.port}") String clientServerPort) {
         this.authService = authService;
         log.info("생성자 :: " + this.getClass());
         this.kakaoService = kakaoService;
@@ -104,6 +100,7 @@ public class MemberRestController {
         this.loginAttemptCheckerAgent = loginAttemptCheckerAgent;
         this.tokenSupport = tokenSupport;
         this.error = error;
+        this.authRepositoryImpl = authRepositoryImpl;
         this.clientServerHost = clientServerHost;
         this.clientServerPort = clientServerPort;
     }
@@ -218,6 +215,26 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("패스워드를 사용할 수 있습니다.", true));
     }
 
+    @GetMapping("/getLoginMember")
+    public ResponseEntity<ApiResponse<?>> getLoginMember(
+            @CookieValue("token") String accessToken,
+            @CookieValue("token_type") TokenType tokenType
+    ) {
+        for (BearerTokenSupport ts : tokenSupport) {
+            if (ts.supports(tokenType)) {
+                String memberId = ts.extractMemberId(accessToken);
+                return ResponseEntity.ok(ApiResponseFactory.createResponse(
+                        "현재 로그인한 유저 정보",
+                        this.memberService.findMemberById(memberId, memberId))
+                );
+            }
+        }
+        return ResponseEntity.badRequest().body(ApiResponseFactory.createResponse("유효하지 않은 토큰 타입", String.format("""
+                {
+                    "token_type": %s
+                }
+                """, tokenType)));
+    }
 
     @Operation(summary = "토큰 갱신", description = "리프레시 토큰을 사용하여 액세스 토큰을 갱신합니다.")
     @ApiResponses({
@@ -441,7 +458,6 @@ public class MemberRestController {
             addMemberDto.setMemberId(dto.getMemberId());
             addMemberDto.setNickname(dto.getNickname());
             addMemberDto.setPwd("social_sign_up");
-            addMemberDto.setProfilePhotoUrl(dto.getProfilePhotoUrl());
             //만약 존재하는 아이디라면 GlobalExceptionHandler에서 처리된다.
             //프론트엔드에서 info를 받았을 때 memberId가 있는지 보면 된다.
             addMemberDto.setSocialSignUp(true);
@@ -597,7 +613,6 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 정보 변경 업무", true));
     }
 
-
     /**
      * 관리자가 사용
      */
@@ -618,11 +633,7 @@ public class MemberRestController {
         log.info("getMemberByPhoneNumber :: " + phoneNumber);
         MemberDto dto = memberService.findMemberByPhoneNumber(phoneNumber);
         System.out.println("회원조회업무 :: " + dto);
-        if(dto!=null) {
-            return ResponseEntity.ok(ApiResponseFactory.createResponse("", dto.getMemberId()));
-        }else{
-            return ResponseEntity.ok(ApiResponseFactory.createResponse("", null));
-        }
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("", dto.getMemberId()));
     }
 
     @Operation(summary = "회원 프로필 조회", description = "사용자의 프로필을 조회합니다.")
@@ -787,7 +798,7 @@ public class MemberRestController {
     @GetMapping("/getProfilePhoto")
     public ResponseEntity<byte[]> getProfilePhoto(@Parameter(description = "회원 ID") @RequestParam String memberId) {
 
-         return memberService.findMemberProfilePhoto(memberId);
+        return memberService.findMemberProfilePhoto(memberId);
     }
 
     @Operation(summary = "회원 프로필 사진 추가", description = "회원의 프로필 사진을 추가합니다.")
