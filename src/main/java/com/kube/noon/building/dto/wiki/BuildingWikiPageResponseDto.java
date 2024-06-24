@@ -1,12 +1,13 @@
 package com.kube.noon.building.dto.wiki;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
-@Builder
+@AllArgsConstructor
 @Getter
 @ToString
-public class BuildingWikiReadPageResponseDto {
+public class BuildingWikiPageResponseDto {
+    private final String buildingName;
     private final String htmlContent;
 }

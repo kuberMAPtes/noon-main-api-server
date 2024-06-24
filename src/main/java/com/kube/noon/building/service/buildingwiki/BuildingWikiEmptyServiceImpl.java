@@ -1,5 +1,7 @@
 package com.kube.noon.building.service.buildingwiki;
 
+import com.kube.noon.building.dto.wiki.BuildingWikiEditRequestDto;
+import com.kube.noon.building.dto.wiki.BuildingWikiPageResponseDto;
 import com.kube.noon.building.service.BuildingWikiService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,13 +14,23 @@ import lombok.extern.slf4j.Slf4j;
 public class BuildingWikiEmptyServiceImpl implements BuildingWikiService {
 
     @Override
-    public void addPage(String title) {
-        log.info("Wiki page of {} has been created", title);
+    public void addPage(String buildingName) {
+        log.info("Wiki page of {} has been created", buildingName);
     }
 
     @Override
-    public String getPageInHtml(int buildingId) {
+    public BuildingWikiPageResponseDto getReadPage(int buildingId) {
         log.info("Wiki page of id - {}", buildingId);
-        return "";
+        return new BuildingWikiPageResponseDto("", "");
+    }
+
+    @Override
+    public BuildingWikiPageResponseDto getEditPage(int buildingId) {
+        return getReadPage(buildingId);
+    }
+
+    @Override
+    public void editPage(BuildingWikiEditRequestDto content) {
+        getReadPage(content.getBuildingId());
     }
 }
