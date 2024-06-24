@@ -2,8 +2,10 @@ package com.kube.noon.chat.service;
 
 import com.kube.noon.chat.dto.ChatroomDto;
 import com.kube.noon.chat.dto.ChatEntranceDto;
+import com.kube.noon.member.domain.Member;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ChatroomService {
 
@@ -22,6 +24,15 @@ public interface ChatroomService {
      * @throws Exception
      */
     public String deleteChatroom(int chatroomId) throws Exception;
+
+    /**
+     * 채팅방 추방
+     * @param chatroomId
+     * @param memberId
+     * @return
+     * @throws Exception
+     */
+    public Map<String, Object> kickChatroom(int chatroomId, String memberId) throws Exception;
 
     /**
      * 채팅방에 참여한 멤버 리스트를 채팅방으로 조회
