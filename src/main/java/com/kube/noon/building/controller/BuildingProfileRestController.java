@@ -124,6 +124,15 @@ public class BuildingProfileRestController {
         }
     }
 
+    @GetMapping(value = "/getBuildingProfile")
+    public ResponseEntity<Object> getBuildingProfile(@RequestParam String roadAddr) {
+
+        BuildingDto resp = this.buildingProfileService.getBuildingProfileByRoadAddr(roadAddr);
+        return new ResponseEntity<>(resp, HttpStatus.OK);
+
+    }
+
+
     /**
      * 건물의 구독자 수 가져오기
      */
@@ -147,6 +156,16 @@ public class BuildingProfileRestController {
     public List<MemberDto> getSubscribers(@RequestParam("roadAddr") String roadAddr) {
 
         return buildingProfileService.getSubscribers(roadAddr);
+    }
+
+    /**
+     * 도로명 주소로 건물 정보 가져오기
+     */
+    @GetMapping("/getBuildingProfileByRoadAddr")
+    public BuildingDto getBuildingProfileByRoadAddr(@RequestParam("roadAddr") String roadAddr) {
+
+        return buildingProfileService.getBuildingProfileByRoadAddr(roadAddr);
+
     }
 
 

@@ -22,6 +22,7 @@ public interface BuildingProfileService {
     List<BuildingDto> addSubscriptionFromSomeone(String memberId, String someoneId);
     List<BuildingDto> getMemberBuildingSubscriptionList(String memberId);
     BuildingDto getBuildingProfile(int buildingId);
+    BuildingDto getBuildingProfileByRoadAddr(String roadAddr);
     BuildingDto getBuildingProfileByPosition(Position position) throws PlaceNotFoundException;
     List<BuildingDto> getBuildingSubscriptionListByMemberId(String memberId);
     List<BuildingDto> getBuildingsWithinRange(PositionRange positionRange);

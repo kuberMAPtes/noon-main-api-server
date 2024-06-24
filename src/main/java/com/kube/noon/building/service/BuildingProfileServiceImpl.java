@@ -281,6 +281,16 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     }
 
     @Override
+    public BuildingDto getBuildingProfileByRoadAddr(String roadAddr) {
+
+        Building building = buildingProfileRepository.findBuildingProfileByRoadAddr(roadAddr);
+
+        log.info("findBuildingByRoadAddr result={}", building);
+
+        return BuildingDto.fromEntity(building);
+    }
+
+    @Override
     public BuildingDto getBuildingProfileByPosition(Position position)
             throws PlaceNotFoundException, NoSuchElementException {
         PlaceDto findPlace = this.placesService.getPlaceByPosition(position);
