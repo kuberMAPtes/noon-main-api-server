@@ -4,6 +4,7 @@ package com.kube.noon.member.repository;
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.domain.MemberRelationship;
+import com.kube.noon.member.dto.memberRelationship.FindMemberRelationshipListByCriteriaDto;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import com.kube.noon.member.enums.RelationshipType;
@@ -67,8 +68,9 @@ public class TestMemberRepository {
         memberRepository.addMemberRelationship(mr2);
         memberRepository.addMemberRelationship(mr3);
         memberRepository.addMemberRelationship(mr4);
-        Page<MemberRelationship> foundMemberRelationship = memberRepository.findMemberRelationshipListByCriteria(mrsc,1,5);
+        FindMemberRelationshipListByCriteriaDto findMemberRelationshipListByCriteriaDto = memberRepository.findMemberRelationshipListByCriteria(mrsc,1,5);
 
+        Page<MemberRelationship> foundMemberRelationship = findMemberRelationshipListByCriteriaDto.getMemberRelationshipPage();
 
         for (MemberRelationship mr : foundMemberRelationship) {
             log.info("member_1의 FromId 리스트 출력 : {}", mr.getFromMember().getMemberId());
@@ -168,8 +170,9 @@ public class TestMemberRepository {
     @DisplayName("회원 관계 리스트 조회 테스트")
     void findMemberRelationshipListByCriteria() {
         MemberRelationshipSearchCriteriaDto mrsc = getMemberRelationshipSearchCriteriaDto("member_1", true, true, false, false);
-        Page<MemberRelationship> foundMemberRelationship = memberRepository.findMemberRelationshipListByCriteria(mrsc,3,5);
-        log.info("member_1의 FromId 리스트 출력 : {}", foundMemberRelationship);
+        FindMemberRelationshipListByCriteriaDto findMemberRelationshipListByCriteriaDto = memberRepository.findMemberRelationshipListByCriteria(mrsc,3,5);
+        Page<MemberRelationship> foundMemberRelationship = findMemberRelationshipListByCriteriaDto.getMemberRelationshipPage();
+        log.info("member_1의 FromId 리스트 출력 : {}", foundMemberRelationship.toList());
 
     }
 

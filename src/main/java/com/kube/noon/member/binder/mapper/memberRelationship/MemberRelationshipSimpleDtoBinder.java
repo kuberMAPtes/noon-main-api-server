@@ -10,6 +10,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
+
+//극심하게 많이 헷갈린다. 리팩토링이 좀 필요해보인다.
 @Mapper(componentModel = "spring")
 public interface MemberRelationshipSimpleDtoBinder extends Binder<MemberRelationshipSimpleDto, MemberRelationshipDto> {
 

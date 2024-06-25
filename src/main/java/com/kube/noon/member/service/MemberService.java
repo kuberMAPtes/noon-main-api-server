@@ -3,12 +3,12 @@ package com.kube.noon.member.service;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.ResponseDto.SearchMemberResponseDto;
 import com.kube.noon.member.dto.member.*;
-import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
-import com.kube.noon.member.dto.memberRelationship.DeleteMemberRelationshipDto;
-import com.kube.noon.member.dto.memberRelationship.MemberRelationshipDto;
+import com.kube.noon.member.dto.memberRelationship.*;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
@@ -33,9 +33,14 @@ public interface MemberService {
 
     Page<MemberDto> findMemberListByCriteria(String fromId, MemberSearchCriteriaDto memberSearchCriteriaDto, int page, int size);//JPA
 
-    Page<MemberRelationshipDto> findMemberRelationshipListByCriteria(String fromId, MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto, int page, int size);
+    FindMemberRelationshipListByCriteriaResponseDto findMemberRelationshipListByCriteria(String fromId, MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto, int page, int size);
 
     MemberRelationshipDto findMemberRelationship(String fromId, String toId);
+
+    MemberRelationshipSimpleDto findMemberRelationshipSimple(String fromId, String toId);
+
+
+    ResponseEntity<byte[]> findMemberProfilePhoto(String memberId);
 
     Page<SearchMemberResponseDto> searchMemberByNickname(String requesterId, String searchKeyword, int page);
 
@@ -46,6 +51,8 @@ public interface MemberService {
     void updatePhoneNumber(UpdatePhoneNumberDto updatePhoneNumberDto);
 
     void updateMemberProfilePhotoUrl(UpdateMemberProfilePhotoUrlDto updateMemberProfilePhotoUrlDto);
+
+    String updateMemberProfilePhotoUrl(String memberId, MultipartFile file);
 
     void updateMemberProfileIntro(UpdateMemberProfileIntroDto updateMemberProfileIntroDto);
 
