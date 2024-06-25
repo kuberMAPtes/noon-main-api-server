@@ -6,20 +6,21 @@ import com.kube.noon.common.security.authentication.provider.JwtAuthenticationPr
 import com.kube.noon.common.security.authentication.provider.KakaoTokenAuthenticationProvider;
 import com.kube.noon.common.security.authentication.provider.NoAuthenticationProvider;
 import com.kube.noon.common.security.authentication.provider.SimpleJsonAuthenticationProvider;
+import com.kube.noon.common.security.filter.AccessControlFilter;
 import com.kube.noon.common.security.filter.AuthFilter;
 import com.kube.noon.common.security.filter.TokenAuthenticationFilter;
 import com.kube.noon.common.security.filter.TokenRefreshFilter;
 import com.kube.noon.common.security.support.BearerTokenSupport;
 import com.kube.noon.common.security.support.JwtSupport;
 import com.kube.noon.member.enums.Role;
+import com.kube.noon.member.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.context.event.EventListener;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -119,6 +120,14 @@ public class WebSecurityConfig {
     }
 
     @Bean
+    @Profile({"dev", "prod"})
+    public AccessControlFilter accessRestrictionFilter(List<BearerTokenSupport> tokenSupports,
+                                                       ApplicationContext applicationContext,
+                                                       MemberRepository memberRepository) {
+        return new AccessControlFilter(tokenSupports, applicationContext, memberRepository);
+    }
+
+    @Bean
     @Profile("prod")
     public PasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder(); // TODO: Should replace with Argon2PasswordEncoder someday
@@ -146,7 +155,8 @@ public class WebSecurityConfig {
             HttpSecurity http,
             AuthFilter authFilter,
             TokenAuthenticationFilter tokenAuthenticationFilter,
-            TokenRefreshFilter tokenRefreshFilter
+            TokenRefreshFilter tokenRefreshFilter,
+            AccessControlFilter accessControlFilter
     ) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((registry) -> {
@@ -160,6 +170,7 @@ public class WebSecurityConfig {
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(tokenAuthenticationFilter, AuthFilter.class)
                 .addFilterAfter(tokenRefreshFilter, AuthorizationFilter.class)
+                .addFilterBefore(accessControlFilter, TokenRefreshFilter.class)
                 .build();
     }
 
