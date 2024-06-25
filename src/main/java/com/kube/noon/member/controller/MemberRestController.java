@@ -747,6 +747,36 @@ public class MemberRestController {
 
         return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회", map));
     }
+    @GetMapping("/getBlockRelationship")
+    public ResponseEntity<ApiResponse<Map<String,Object>>> getBlockRelationship(@RequestParam String fromId, String toId) {
+        log.info("getMemberRelationship :: " + fromId + " " + toId);
+        MemberRelationshipSimpleDto dto1 = memberService.findMemberRelationshipSimple(fromId, toId);
+
+        //getRelationshipType이 BLOCK이 아니면 null을 리턴
+        if(dto1!=null) {
+            if (dto1.getRelationshipType() != RelationshipType.BLOCK) {
+                dto1 = null;
+            }else if( Boolean.FALSE.equals(dto1.getActivated())){
+                dto1 = null;
+            }
+        }
+
+        MemberRelationshipSimpleDto dto2 = memberService.findMemberRelationshipSimple(toId, fromId);
+
+        if(dto2!=null) {
+            if (dto2.getRelationshipType() != RelationshipType.BLOCK) {
+                dto2 = null;
+            }else if( Boolean.FALSE.equals(dto2.getActivated())){
+                dto2 = null;
+            }
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("from", dto1);
+        map.put("to", dto2);
+
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회", map));
+    }
 
     @Operation(summary = "회원 관계 삭제", description = "사용자 간의 관계를 삭제합니다.")
     @ApiResponses({
