@@ -315,7 +315,7 @@ public class FeedRestController {
 
     @Operation(summary = "[투표] 투표 내용 삭제", description = "투표 내용을 삭제한다.")
     @PostMapping("/deleteVote/{feedId}")
-    public int deleteFeedVotes(@Parameter(description = "삭제할 피드 ID") int feedId) {
+    public int deleteFeedVotes(@Parameter(description = "삭제할 피드 ID") @PathVariable("feedId") int feedId) {
         feedVotesService.deleteVote(feedId);
 
         return feedId;
@@ -324,8 +324,8 @@ public class FeedRestController {
     @Operation(summary = "[투표] 특정 투표 내용에 투표하기", description = "실제로 투표에 참여한다.")
     @PostMapping("/addVoting/{feedId}/{optionIndex}")
     public int addVoting(
-            @Parameter(description = "참여할 투표에 대한 피드 ID") int feedId,
-            @Parameter(description = "옵션의 번호") int optionIndex) {
+            @Parameter(description = "참여할 투표에 대한 피드 ID") @PathVariable("feedId") int feedId,
+            @Parameter(description = "옵션의 번호") @PathVariable("optionIndex") int optionIndex) {
         feedVotesService.addVoting(feedId, optionIndex);
 
         return feedId;
@@ -334,8 +334,8 @@ public class FeedRestController {
     @Operation(summary = "[투표] 특정 투표 취소하기", description = "투표를 취소한다.")
     @PostMapping("/deleteVoting/{feedId}/{optionIndex}")
     public int deleteVoting(
-            @Parameter(description = "취소할 투표에 대한 피드 ID") int feedId,
-            @Parameter(description = "옵션의 번호") int optionIndex) {
+            @Parameter(description = "취소할 투표에 대한 피드 ID") @PathVariable("feedId") int feedId,
+            @Parameter(description = "옵션의 번호") @PathVariable("optionIndex") int optionIndex) {
         feedVotesService.deleteVoting(feedId, optionIndex);
 
         return feedId;
@@ -344,7 +344,7 @@ public class FeedRestController {
     @Operation(summary = "[투표] 투표 내용 가져오기", description = "투표를 취소한다.")
     @GetMapping("/getVote/{feedId}")
     public FeedVotesDto getVote(
-            @Parameter(description = "가져올 피드 ID") int feedId) {
+            @Parameter(description = "가져올 피드 ID") @PathVariable("feedId") int feedId) {
         return feedVotesService.getVoteById(feedId);
     }
 }
