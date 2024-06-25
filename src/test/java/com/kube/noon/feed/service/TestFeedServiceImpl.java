@@ -208,6 +208,9 @@ public class TestFeedServiceImpl {
 
         assertThat(getFeed).isNotNull();
         assertThat(getFeed.isActivated()).isFalse();
+
+        assertThat(getFeed.getAttachments().stream().filter(s -> s.isActivated() == true)).size().isEqualTo(0);
+        assertThat(getFeed.getComments().stream().filter(s -> s.isActivated() == true)).size().isEqualTo(0);
     }
 
     /**
