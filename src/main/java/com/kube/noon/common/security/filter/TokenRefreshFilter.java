@@ -1,5 +1,6 @@
 package com.kube.noon.common.security.filter;
 
+import com.kube.noon.common.security.SecurityConstants;
 import com.kube.noon.common.security.TokenPair;
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.common.security.support.BearerTokenSupport;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -52,17 +54,18 @@ public class TokenRefreshFilter extends OncePerRequestFilter {
                 : getCookiesOnDemand(request);
         String refreshToken = cookies.get(REFRESH_TOKEN_COOKIE_KEY.get());
         String tokenTypeStr = cookies.get(TOKEN_TYPE_COOKIE_KEY.get());
-        filterChain.doFilter(request, response);
 
         log.trace("request.getRequestURI()={}", request.getRequestURI());
         if (URI_NOT_REFRESH_TOKEN.contains(request.getRequestURI())) {
 
             log.trace("Token shouldn't be refreshed for the URI: {}", request.getRequestURI());
+            filterChain.doFilter(request, response);
             return;
         }
 
         if (refreshToken == null || tokenTypeStr == null) {
             log.trace("No previous refresh token");
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -71,6 +74,7 @@ public class TokenRefreshFilter extends OncePerRequestFilter {
             tokenType = TokenType.valueOf(tokenTypeStr);
         } catch (IllegalArgumentException e) {
             log.warn("No such token type={}", tokenTypeStr);
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -80,12 +84,15 @@ public class TokenRefreshFilter extends OncePerRequestFilter {
             tokenPair = tokenSupport.refreshToken(refreshToken);
         } catch (InvalidRefreshTokenException e) {
             log.trace("Invalid refresh token={}", refreshToken, e);
+            filterChain.doFilter(request, response);
             return;
         }
-        response.addCookie(wrapWithHttpOnlyCookie(ACCESS_TOKEN_COOKIE_KEY.get(), tokenPair.getAccessToken()));
-        response.addCookie(wrapWithHttpOnlyCookie(REFRESH_TOKEN_COOKIE_KEY.get(), tokenPair.getRefreshToken()));
-        response.addCookie(wrapWithCookie(TOKEN_TYPE_COOKIE_KEY.get(), String.valueOf(tokenType)));
+        response.addHeader("Set-Cookie", wrapWithCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get(), tokenPair.getAccessToken()));
+        response.addHeader("Set-Cookie", wrapWithCookie(SecurityConstants.REFRESH_TOKEN_COOKIE_KEY.get(), tokenPair.getRefreshToken()));
+        response.addHeader("Set-Cookie", wrapWithCookie(SecurityConstants.TOKEN_TYPE_COOKIE_KEY.get(), tokenType.name()));
         log.info("New JWT Token in Cookie");
+
+        filterChain.doFilter(request, response);
     }
 
     private Map<String, String> getCookiesOnDemand(HttpServletRequest request) {
@@ -96,16 +103,15 @@ public class TokenRefreshFilter extends OncePerRequestFilter {
         return cookies;
     }
 
-    private Cookie wrapWithHttpOnlyCookie(String key, String value) {
-        Cookie cookie = wrapWithCookie(key, value);
-        cookie.setHttpOnly(true);
-        return cookie;
-    }
-
-    private Cookie wrapWithCookie(String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setDomain(this.clientDomain);
-        cookie.setPath("/");
-        return cookie;
+    private String wrapWithCookie(String key, String value) {
+        ResponseCookie built = ResponseCookie.from(key, value)
+                .httpOnly(true)
+                .path("/")
+                .secure(true)
+                .domain(this.clientDomain)
+                .maxAge(7 * 24 * 60 * 60)
+                .sameSite("None")
+                .build();
+        return built.toString();
     }
 }
