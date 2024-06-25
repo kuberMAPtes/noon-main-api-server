@@ -67,12 +67,24 @@ public class ObjectStorageAPI {
         return fileUrl;
     }
 
-    // getFeedAttachment
+    // getFeedAttachment : 정해진 파일이 없다면 null로 처리한다.
     public S3ObjectInputStream getObject(String fileName) {
-        S3Object s3Object = s3.getObject(BUCKET_NAME, fileName);
+        try {
+            S3Object s3Object = s3.getObject(BUCKET_NAME, fileName);
+            S3ObjectInputStream s3ObjectInputStream = s3Object.getObjectContent();
+            return s3ObjectInputStream;
+        } catch (AmazonS3Exception e) {
+            if(e.getStatusCode() == 404) {
+                System.err.println("File not found");
+            } else {
+                System.err.println("Amazon S3 Error : " + e.getMessage());
+            }
 
-        S3ObjectInputStream s3ObjectInputStream = s3Object.getObjectContent();
+            return null;
+        } catch (Exception e) {
+            System.err.println("Exception : " + e.getMessage());
+            return null;
+        }
 
-        return s3ObjectInputStream;
     }
 }

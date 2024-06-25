@@ -52,20 +52,49 @@ public class FeedSubServiceImpl implements FeedSubService {
     public ResponseEntity<byte[]> getFeedAttachment(int attachmentId) {
         FeedAttachmentDto feedAttachmentDto = FeedAttachmentDto.toDto(feedAttachmentRepository.findByAttachmentId(attachmentId));
 
+        if (feedAttachmentDto == null) {
+            // return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 찾을 수 없음을 확인(404)
+            return null;
+        }
+
         String[] fileNames = feedAttachmentDto.getFileUrl().split("/");
         String fileName = fileNames[fileNames.length - 1];
 
+
         S3ObjectInputStream inputStream = objectStorageAPI.getObject(fileName);
+
+        if (inputStream == null) {
+            // return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 찾을 수 없음을 확인(404)
+            return null;
+        }
 
         try {
             byte[] imageBytes = inputStream.readAllBytes();
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.IMAGE_JPEG);
+
+            MediaType mediaType = getMediaType(fileName);
+            headers.setContentType(mediaType);
 
             return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
         } catch(IOException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // 파일 확장자를 기반으로 MIME 타입을 반환하는 메소드
+    private MediaType getMediaType(String fileName) {
+        String[] parts = fileName.split("\\.");
+        String extension = parts[parts.length - 1].toLowerCase(); // 파일 확장자를 소문자로 변환하여 비교
+
+        switch (extension) {
+            case "jpg": case "jpeg":
+            case "png": case "gif":
+                return MediaType.IMAGE_JPEG; // 이미지 파일인 경우
+            case "mp4":
+                return MediaType.valueOf("video/mp4"); // 동영상 파일인 경우
+            default:
+                return MediaType.APPLICATION_OCTET_STREAM; // 기타 파일은 바이너리 스트림으로 처리
         }
     }
 

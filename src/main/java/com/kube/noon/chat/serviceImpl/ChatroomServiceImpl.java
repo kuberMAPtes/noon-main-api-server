@@ -19,9 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service("chatroomService")
@@ -59,30 +57,61 @@ public class ChatroomServiceImpl implements ChatroomService {
             // Member를 찾지 못한 경우 처리
             System.out.println("누구세요? 신청 안바다여");
         }
-        // addChatroom 시 빌딩에 대한 정보도 넣어함
-        System.out.println("        🦐[addChatroom ServiceImpl] 채팅방을 세울 빌딩Id => " + requestChatroom.getBuildingId());
-        Building building = new Building();
-        building.setBuildingId(requestChatroom.getBuildingId());
-        chatroom.setBuilding(building);
-
-        chatroom.setChatroomMinTemp(requestChatroom.getChatroomMinTemp());
-        ChatroomType roomType = ChatroomType.valueOf(requestChatroom.getChatroomType()); // String 을 Enum으로 변환해서 Entity 삽입
-        chatroom.setChatroomType(roomType);
-        Chatroom savedChatroom = chatroomRepository.save(chatroom);
 
 
+        // public_chatting 요청시 addChatroom 에는 빌딩에 대한 정보도 넣어함
+        if(!requestChatroom.getChatroomType().equals("PRIVATE_CHATTING")) {
+            System.out.println("        🦐[addChatroom ServiceImpl Public Chatting ] 채팅방을 세울 빌딩Id => " + requestChatroom.getBuildingId());
+            Building building = new Building();
+            building.setBuildingId(requestChatroom.getBuildingId());
+            chatroom.setBuilding(building);
 
-        // 채팅생성자가 채팅참여멤버에 안들어갓누
-        ChatEntrance chatEntrance = new ChatEntrance();
-        chatEntrance.setChatroom(savedChatroom);
-        chatEntrance.setChatroomMemberId(requestChatroom.getChatroomCreatorId());
-        chatEntrance.setChatroomMemberType(ChatroomMemberType.OWNER);
-        ChatEntrance savedChatEntrance = chatEntranceRepository.save(chatEntrance);
+            chatroom.setChatroomMinTemp(requestChatroom.getChatroomMinTemp());
+            ChatroomType roomType = ChatroomType.valueOf(requestChatroom.getChatroomType()); // String 을 Enum으로 변환해서 Entity 삽입
+            chatroom.setChatroomType(roomType);
+            Chatroom savedChatroom = chatroomRepository.save(chatroom);
 
-        System.out.println("        🦐[ServiceImpl] 생성자를 채팅멤버에 저장 => " + savedChatEntrance);
+            // 채팅생성자가 채팅참여멤버에 안들어갓누
+            ChatEntrance chatEntrance = new ChatEntrance();
+            chatEntrance.setChatroom(savedChatroom);
+            chatEntrance.setChatroomMemberId(requestChatroom.getChatroomCreatorId());
+            chatEntrance.setChatroomMemberType(ChatroomMemberType.OWNER);
+            ChatEntrance savedChatEntrance = chatEntranceRepository.save(chatEntrance);
 
-        // Entity를 Dto 로 변환해서 리턴
-        return convertToChatroomDto(savedChatroom);
+            System.out.println("        🦐[ServiceImpl] 생성자를 채팅멤버에 저장 => " + savedChatEntrance);
+
+            // Entity를 Dto 로 변환해서 리턴
+            return convertToChatroomDto(savedChatroom);
+        }
+
+        // private_chatting 요청시 addChatroom 에는 빌딩에 대한 정보 안넣어줌 다정온도도 안들어감
+        if(requestChatroom.getChatroomType().equals("PRIVATE_CHATTING")) {
+            System.out.println("        🦐[addChatroom ServiceImpl Private Chatting]");
+
+            ChatroomType roomType = ChatroomType.valueOf(requestChatroom.getChatroomType()); // String 을 Enum으로 변환해서 Entity 삽입
+            chatroom.setChatroomType(roomType);
+            Chatroom savedChatroom = chatroomRepository.save(chatroom);
+
+            // 채팅생성자 및 피신청자도 채팅참여멤버에 들어가자
+            ChatEntrance chatEntrance1 = new ChatEntrance();
+            chatEntrance1.setChatroom(savedChatroom);
+            chatEntrance1.setChatroomMemberId(requestChatroom.getChatroomCreatorId());
+            chatEntrance1.setChatroomMemberType(ChatroomMemberType.OWNER);
+            ChatEntrance savedChatEntrance1 = chatEntranceRepository.save(chatEntrance1);
+
+            ChatEntrance chatEntrance2 = new ChatEntrance();
+            chatEntrance2.setChatroom(savedChatroom);
+            chatEntrance2.setChatroomMemberId(requestChatroom.getInvitedMemberId());
+            chatEntrance2.setChatroomMemberType(ChatroomMemberType.MEMBER);
+            ChatEntrance savedChatEntrance2 = chatEntranceRepository.save(chatEntrance2);
+
+            System.out.println("        🦐[ServiceImpl] 생성자를 채팅멤버에 저장 => " + savedChatEntrance1 + savedChatEntrance2);
+
+            // Entity를 Dto 로 변환해서 리턴
+            return convertToChatroomDto(savedChatroom);
+        }
+
+        return null;
     }
 
     @Override
@@ -97,7 +126,39 @@ public class ChatroomServiceImpl implements ChatroomService {
         return "delete success";
     }
 
-    // 채팅방 참여멤버를 채팅방으로 조회 (테스트위해 방 번호 고정해놓음)
+    // 채팅방에서 참여멤버 강퇴
+    @Override
+    public Map<String, Object> kickChatroom(int chatroomId, String memberId) throws Exception {
+        System.out.println("        🦐[ServiceImpl] getChatEntranceByChatroom requestChatroom => " + chatroomId + " " + memberId);
+
+        // 채팅방 찾기
+        Chatroom chatroom = chatroomRepository.findChatroomByChatroomId(chatroomId);
+        if (chatroom == null) {
+            throw new RuntimeException("Chatroom not found");
+        }
+        System.out.println("findCHatroomByChatroomId 완료");
+
+        // 해당 채팅방에서 회원 추방
+        int updatedRows = chatEntranceRepository.kickMember(chatroom, memberId);
+        if (updatedRows == 0){
+            throw new RuntimeException("Member not found or already kicked");
+        }
+        System.out.println("kickMember" + memberId + "내보내기 완료");
+
+        // 추방 당하지 않은 회원 다시 불러오기
+        List<ChatEntrance> activeChatEntrances = chatEntranceRepository.findByChatroomAndKickedFalse(chatroom);
+        System.out.println("findByChatroomAndKickedFalse 완료");
+
+        // 채팅방+추방당하지 않은 회원 정보 리턴
+        Map<String, Object> result = new HashMap<>();
+        result.put("chatroom", convertToChatroomDto(chatroom));
+        result.put("activeChatEntrances", convertToChatEntranceDtoList(activeChatEntrances));
+        System.out.println("result 저장 완료" + result);
+        
+        return result;
+    }
+
+    // 채팅방 참여멤버목록을 채팅방으로 조회
     @Override
     public List<ChatEntranceDto> getChatEntranceListByChatroom(ChatroomDto requestChatroom) {
         System.out.println("        🦐[ServiceImpl] getChatEntranceListByChatroom requestChatroom => " + requestChatroom);
@@ -106,9 +167,9 @@ public class ChatroomServiceImpl implements ChatroomService {
         Chatroom chatroom = chatroomRepository.findById(requestChatroom.getChatroomID()).orElse(null);
         System.out.println("        🦐[ServiceImpl] chatroom Repository 로 찾은 채팅방 결과 => " + chatroom);
 
-        // 채팅방에 참여한 사람 정보 얻어야함
+        // 채팅방에 참여멤버 목록
         List<ChatEntrance> entrances = chatEntranceRepository.findChatEntrancesByChatroom(chatroom);
-        System.out.println("        🦐[ServiceImpl] chatEntrance Repository 로 찾은 채팅멤버 결과 "+ entrances.size() + entrances );
+        System.out.println("        🦐[ServiceImpl] chatEntrance Repository 로 찾은 채팅멤버목록 결과 "+ entrances.size() + entrances );
 
         List<ChatEntranceDto> entranceDtos = new ArrayList<>();
 
@@ -179,9 +240,20 @@ public class ChatroomServiceImpl implements ChatroomService {
         return dto;
     }
 
-    private ChatEntranceDto convertToChatEntranceDto(ChatEntrance chatentrance) {
+    private ChatEntranceDto convertToChatEntranceDto(ChatEntrance chatEntrance) {
         ChatEntranceDto dto = new ChatEntranceDto();
-        // 변환코드
+        dto.setChatEntranceId(chatEntrance.getChatEntranceId());
+        dto.setChatroomId(chatEntrance.getChatroom().getChatroomId()); // chatroom 엔티티의 ID 가져오기
+        dto.setChatroomMemberId(chatEntrance.getChatroomMemberId());
+        dto.setChatroomMemberType(chatEntrance.getChatroomMemberType()); // Enum 값을 문자열로 변환하여 설정
+        dto.setChatroomEnteredTime(chatEntrance.getChatroomEnteredTime());
+        dto.setKicked(chatEntrance.isKicked());
         return dto;
+    }
+
+    public List<ChatEntranceDto> convertToChatEntranceDtoList(List<ChatEntrance> chatEntranceList) {
+        return chatEntranceList.stream()
+                .map(this::convertToChatEntranceDto)
+                .collect(Collectors.toList());
     }
 }

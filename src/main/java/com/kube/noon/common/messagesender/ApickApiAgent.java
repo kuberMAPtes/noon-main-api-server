@@ -4,6 +4,6 @@ import reactor.core.publisher.Mono;
 
 public interface ApickApiAgent {
 
-    public boolean checkPhoneNumber(String phoneNumber);
+    public Object checkPhoneNumber(String phoneNumber);
 
 }

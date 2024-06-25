@@ -27,7 +27,7 @@ class TestSettingServiceImpl {
 
     @BeforeEach
     void beforeEach() {
-        this.memberService.addMember(new AddMemberDto("sample-id", "nickname", "1q2w3e4r", "01012341234", false));
+        this.memberService.addMember(new AddMemberDto("sample-id", "nickname", "1q2w3e4r", "01012341234", null ,false));
     }
 
     @Test

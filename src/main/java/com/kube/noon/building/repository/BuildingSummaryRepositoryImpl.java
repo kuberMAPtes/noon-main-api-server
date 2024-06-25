@@ -41,7 +41,7 @@ public class BuildingSummaryRepositoryImpl implements BuildingSummaryRepository 
                   "option": {
                     "language": "ko",
                     "model": "news",
-                    "tone": 2,
+                    "tone": 3,
                     "summaryCount": %s
                   }
                 }

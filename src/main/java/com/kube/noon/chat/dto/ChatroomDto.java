@@ -18,4 +18,6 @@ public class ChatroomDto {
     private Member chatroomCreator;
     private String chatroomType;
     private int buildingId;
+
+    private String invitedMemberId;
 }

@@ -13,6 +13,7 @@ import java.util.Date;
 @ToString
 public class ChatEntranceDto {
 
+    private int chatEntranceId;
     private int chatroomId;
     private String chatroomMemberId;
     private ChatroomMemberType chatroomMemberType;

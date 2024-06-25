@@ -31,7 +31,7 @@ public class ApickApiAgentImpl implements ApickApiAgent {
     }
 
     @Override
-    public boolean checkPhoneNumber(String phoneNumber) {
+    public Object checkPhoneNumber(String phoneNumber) {
 
         String response = webClient.post()
                 .uri("/rest/check_phone_valid")
@@ -48,10 +48,15 @@ public class ApickApiAgentImpl implements ApickApiAgent {
         try{
             JsonNode root = objectMapper.readTree(response);
             boolean validity = root.path("data").path("유효성").asBoolean();
-            return validity;
+            if(validity){
+                return validity;
+            }else{
+                return response;
+            }
+
         }catch( JsonProcessingException e){
             log.error("JsonProcessingException", e);
-            return false;
+            return response;
         }
 
     }

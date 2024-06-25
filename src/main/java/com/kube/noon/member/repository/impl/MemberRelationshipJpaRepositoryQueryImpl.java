@@ -2,6 +2,8 @@ package com.kube.noon.member.repository.impl;
 
 import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.domain.QMemberRelationship;
+import com.kube.noon.member.dto.memberRelationship.MemberRelationshipCountDto;
+import com.kube.noon.member.dto.memberRelationship.FindMemberRelationshipListByCriteriaDto;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.repository.MemberRelationshipJpaRepositoryQuery;
@@ -24,7 +26,7 @@ public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelations
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<MemberRelationship> findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria, Pageable pageable) {
+    public FindMemberRelationshipListByCriteriaDto findMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria, Pageable pageable) {
 
         log.info(criteria.toString());
         log.info(pageable.toString());
@@ -35,16 +37,16 @@ public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelations
 
 
         if (Boolean.TRUE.equals(criteria.getFollowing())) {
-            builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
+            builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)).and(ms.activated.eq(true)));
         }
         if (Boolean.TRUE.equals(criteria.getFollower())){
-            builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)));
+            builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)).and(ms.activated.eq(true)));
         }
         if (Boolean.TRUE.equals(criteria.getBlocking())) {
-            builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
+            builder.or(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)).and(ms.activated.eq(true)));
         }
         if (Boolean.TRUE.equals(criteria.getBlocker())) {
-            builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)));
+            builder.or(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)).and(ms.activated.eq(true)));
         }
 
         List<MemberRelationship> results = queryFactory.selectFrom(ms)
@@ -55,11 +57,36 @@ public class MemberRelationshipJpaRepositoryQueryImpl implements MemberRelations
 
         log.info(results.toString());
 
-        long total = queryFactory.selectFrom(ms)
-                .where(builder)
+
+
+        int followingCount = (int) queryFactory.selectFrom(ms)
+                .where(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)).and(ms.activated.eq(true)))
                 .fetchCount();
 
-        return new PageImpl<>(results, pageable, total);
+        int followerCount = (int) queryFactory.selectFrom(ms)
+                .where(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.FOLLOW)).and(ms.activated.eq(true)))
+                .fetchCount();
+
+        int blockingCount = (int) queryFactory.selectFrom(ms)
+                .where(ms.fromMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)).and(ms.activated.eq(true)))
+                .fetchCount();
+
+        int blockerCount = (int) queryFactory.selectFrom(ms)
+                .where(ms.toMember.memberId.eq(criteria.getMemberId()).and(ms.relationshipType.eq(RelationshipType.BLOCK)).and(ms.activated.eq(true)))
+                .fetchCount();
+
+        long total = followingCount + followerCount + blockingCount + blockerCount;
+
+        log.info("Following count: {}", followingCount);
+        log.info("Follower count: {}", followerCount);
+        log.info("Blocking count: {}", blockingCount);
+        log.info("Blocker count: {}", blockerCount);
+
+
+        MemberRelationshipCountDto counts = new MemberRelationshipCountDto(followingCount, followerCount, blockingCount, blockerCount);
+        Page<MemberRelationship> page = new PageImpl<>(results, pageable,total);
+
+        return new FindMemberRelationshipListByCriteriaDto(page, counts);
     }
 
     @Override

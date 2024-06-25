@@ -23,6 +23,8 @@ public class FeedAttachmentDto {
     private boolean activated;
 
     public static FeedAttachmentDto toDto(FeedAttachment feedAttachment) {
+        if(feedAttachment == null) return null;
+
         return FeedAttachmentDto.builder()
                 .attachmentId(feedAttachment.getAttachmentId())
                 .feedId(feedAttachment.getFeed().getFeedId())
