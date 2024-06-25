@@ -13,10 +13,7 @@ import com.kube.noon.member.dto.RequestDto.*;
 import com.kube.noon.member.dto.ResponseDto.SearchMemberResponseDto;
 import com.kube.noon.member.dto.auth.googleLoginRequestDto;
 import com.kube.noon.member.dto.member.*;
-import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
-import com.kube.noon.member.dto.memberRelationship.DeleteMemberRelationshipDto;
-import com.kube.noon.member.dto.memberRelationship.MemberRelationshipDto;
-import com.kube.noon.member.dto.memberRelationship.MemberRelationshipSimpleDto;
+import com.kube.noon.member.dto.memberRelationship.*;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import com.kube.noon.member.dto.util.RandomData;
@@ -28,6 +25,7 @@ import com.kube.noon.member.service.KakaoService;
 import com.kube.noon.member.service.LoginAttemptCheckerAgent;
 import com.kube.noon.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
@@ -44,6 +42,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.View;
 
 import java.util.HashMap;
@@ -697,16 +696,56 @@ public class MemberRestController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원 관계 목록 조회 실패")
     })
     @PostMapping("/getMemberRelationshipList")
-    public ResponseEntity<ApiResponse<List<MemberRelationshipSimpleDto>>> getMemberRelationshipList(@RequestBody MemberRelationshipSearchCriteriaRequestDto requestDto) {
-        log.info("getMemberRelationshipList" + requestDto);
+    public ResponseEntity<ApiResponse<Map<String,Object>>> getMemberRelationshipList(@RequestBody MemberRelationshipSearchCriteriaRequestDto requestDto) {
+        log.info("getMemberRelationshipList{}", requestDto);
         MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto = DtoEntityBinder.INSTANCE.toOtherDto(requestDto);
 
-        Page<MemberRelationshipDto> relationships = memberService.findMemberRelationshipListByCriteria(requestDto.getFromId(), memberRelationshipSearchCriteriaDto, requestDto.getPage(), requestDto.getSize());
-        List<MemberRelationshipSimpleDto> relationshipSimpleDtoList = relationships.getContent()
+        FindMemberRelationshipListByCriteriaResponseDto responseDto = memberService.findMemberRelationshipListByCriteria(requestDto.getFromId(), memberRelationshipSearchCriteriaDto, requestDto.getPage(), requestDto.getSize());
+        log.info("responseDto :: {}", responseDto.toString());
+
+        List<MemberRelationshipSimpleDto> relationshipSimpleDtoList = responseDto.getMemberRelationshipDtoPage().getContent()
                 .stream()
                 .map(memberRelationshipDto -> DtoEntityBinder.INSTANCE.toDto(memberRelationshipDto, MemberRelationshipSimpleDto.class))
                 .toList();
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회",relationshipSimpleDtoList));
+
+        Map<String,Object> map = new HashMap<>();
+        map.put("dtoList",relationshipSimpleDtoList);
+        map.put("totalFollowingCount",responseDto.getMemberRelationshipCountDto().getFollowingCount());
+        map.put("totalFollowerCount",responseDto.getMemberRelationshipCountDto().getFollowerCount());
+        map.put("totalBlockingCount",responseDto.getMemberRelationshipCountDto().getBlockingCount());//내가 차단한 회원
+        map.put("totalBlockerCount",responseDto.getMemberRelationshipCountDto().getBlockerCount());//얘는 관리자만 사용
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회",map));
+    }
+
+    @GetMapping("/getFollowRelationship")
+    public ResponseEntity<ApiResponse<Map<String,Object>>> getFollowRelationship(@RequestParam String fromId, String toId) {
+        log.info("getMemberRelationship :: " + fromId + " " + toId);
+        MemberRelationshipSimpleDto dto1 = memberService.findMemberRelationshipSimple(fromId, toId);
+
+        //getRelationshipType이 FOLLOW가 아니면 null을 리턴
+        if(dto1!=null) {
+            if (dto1.getRelationshipType() != RelationshipType.FOLLOW) {
+                dto1 = null;
+            }else if( Boolean.FALSE.equals(dto1.getActivated())){
+                dto1 = null;
+            }
+        }
+
+        MemberRelationshipSimpleDto dto2 = memberService.findMemberRelationshipSimple(toId, fromId);
+
+        if(dto2!=null) {
+            if (dto2.getRelationshipType() != RelationshipType.FOLLOW) {
+                dto2 = null;
+            }else if( Boolean.FALSE.equals(dto2.getActivated())){
+                dto2 = null;
+            }
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("from", dto1);
+        map.put("to", dto2);
+
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회", map));
     }
 
     @Operation(summary = "회원 관계 삭제", description = "사용자 간의 관계를 삭제합니다.")
@@ -714,7 +753,7 @@ public class MemberRestController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 관계 삭제 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원 관계 삭제 실패")
     })
-    @PostMapping("/deleteMemberRelationship/{fromId}/{toId}")
+    @PostMapping("/deleteMemberRelationship")
     public ResponseEntity<ApiResponse<Boolean>> deleteMemberRelationship(
             @RequestBody DeleteMemberRelationshipDto requestDto,
             @CookieValue(value = "token", required = false) String accessToken,
@@ -722,36 +761,59 @@ public class MemberRestController {
             @CookieValue(value = "refresh_token", required = false) String refreshToken,
             HttpServletResponse response
     ) {
-        log.info("deleteMemberRelationship" + requestDto);
-        // JWT 토큰 검증
-        if (accessToken == null) {
-            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("access token is null",false), HttpStatus.FORBIDDEN);
-        }
-
-        TokenType tokenType;
-        try {
-            tokenType = TokenType.valueOf(tokenTypeStr);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Not supported token type=" + tokenTypeStr,false), HttpStatus.FORBIDDEN);
-        }
-
-        try {
-            for (BearerTokenSupport ts : this.tokenSupport) {
-                if (ts.supports(tokenType)) {
-                    String fromId = ts.extractMemberId(accessToken);
-                    requestDto.setFromId(fromId);
-                    memberService.deleteMemberRelationship(requestDto);
-                    String message = requestDto.getRelationshipType() == RelationshipType.FOLLOW ? "팔로우가 해제되었습니다." : "차단이 해제되었습니다.";
-                    return ResponseEntity.ok(ApiResponseFactory.createResponse(message, true));
-                }
-            }
-            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Not supported token type=" + tokenTypeStr,false), HttpStatus.FORBIDDEN);
-        } catch (Exception e) {
-            log.warn("Exception in processing token", e);
-            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid access token",false), HttpStatus.FORBIDDEN);
-        }
+//        log.info("deleteMemberRelationship" + requestDto);
+//        // JWT 토큰 검증
+//        if (accessToken == null) {
+//            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("access token is null",false), HttpStatus.FORBIDDEN);
+//        }
+//
+//        TokenType tokenType;
+//        try {
+//            tokenType = TokenType.valueOf(tokenTypeStr);
+//        } catch (IllegalArgumentException e) {
+//            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Not supported token type=" + tokenTypeStr,false), HttpStatus.FORBIDDEN);
+//        }
+//
+//        try {
+//            for (BearerTokenSupport ts : this.tokenSupport) {
+//                if (ts.supports(tokenType)) {
+//                    String fromId = ts.extractMemberId(accessToken);
+//                    requestDto.setFromId(fromId);
+//                    memberService.deleteMemberRelationship(requestDto);
+//                    String message = requestDto.getRelationshipType() == RelationshipType.FOLLOW ? "팔로우가 해제되었습니다." : "차단이 해제되었습니다.";
+//                    return ResponseEntity.ok(ApiResponseFactory.createResponse(message, true));
+//                }
+//            }
+//            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Not supported token type=" + tokenTypeStr,false), HttpStatus.FORBIDDEN);
+//        } catch (Exception e) {
+//            log.warn("Exception in processing token", e);
+//            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid access token",false), HttpStatus.FORBIDDEN);
+//        }
+        memberService.deleteMemberRelationship(requestDto);
+        String message = requestDto.getRelationshipType() == RelationshipType.FOLLOW ? "팔로우가 해제되었습니다." : "차단이 해제되었습니다.";
+        return ResponseEntity.ok(ApiResponseFactory.createResponse(message, true));
     }
 
+    @Operation(summary = "회원 프로필 사진 조회", description = "회원의 프로필 사진을 조회합니다.")
+    @GetMapping("/getProfilePhoto")
+    public ResponseEntity<byte[]> getProfilePhoto(@Parameter(description = "회원 ID") @RequestParam String memberId) {
+
+        return memberService.findMemberProfilePhoto(memberId);
+    }
+
+    @Operation(summary = "회원 프로필 사진 추가", description = "회원의 프로필 사진을 추가합니다.")
+    @PostMapping("/updateProfilePhoto/{memberId}")
+    public ResponseEntity<String> updateProfilePhoto(
+            @RequestParam("multipartFile") MultipartFile multipartFile,
+            @Parameter(description = "회원 ID") @PathVariable("memberId") String memberId) {
+        try {
+            String profilePhotoUrl = memberService.updateMemberProfilePhotoUrl(memberId, multipartFile);
+            return new ResponseEntity<>(profilePhotoUrl, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
     private String wrapWithCookie(String cookieName, String value) {
         log.info("client-server-domain={}", this.clientServerDomain);
 

@@ -66,9 +66,10 @@ public class KakaoServiceImpl implements KakaoService {
 
     @Transactional
     public void addKakaoMember(Member infoToAdd) {
+        log.info("addKakaoMember={}", infoToAdd);
         AddMemberDto addDto = new AddMemberDto();
         BeanUtils.copyProperties(infoToAdd, addDto);
-
+        log.info("addDto={}", addDto);
         if(memberService.findMemberByNickname(infoToAdd.getNickname())!=null) {
             addDto.setNickname(RandomData.getRandomNickname());
         }

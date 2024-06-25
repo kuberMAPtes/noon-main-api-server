@@ -153,7 +153,7 @@ public class KakaoTokenSupport implements BearerTokenSupport {
                     member.setPwd("socialLogin");
                     member.setPhoneNumber("010-0000-0000");
                     member.setProfilePhotoUrl(kakaoResponseDto.getKakaoAccount().getProfile().getProfileImage());
-                    member.setProfileIntro(kakaoResponseDto.getKakaoAccount().getProfile().getProfileImage());
+//                    member.setProfileIntro(kakaoResponseDto.getKakaoAccount().getProfile().getProfileImage());
                     return member;
                 })
                 .block();
