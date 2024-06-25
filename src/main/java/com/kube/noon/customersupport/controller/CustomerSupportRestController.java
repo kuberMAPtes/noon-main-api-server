@@ -230,6 +230,24 @@ public class CustomerSupportRestController {
 
 
     /**
+     * 블러 취소하기
+     * @return 블러가 취소되어 블러 URL이 NULL인 첨부파일 정보
+     */
+    @PostMapping("/deleteBlurFile")
+    public FeedAttachmentDto deleteBlurFile(@RequestBody FeedAttachmentDto feedAttachmentDto) {
+
+        log.info("feedAttachmentDto={}",feedAttachmentDto);
+
+        try {
+            return customerSupportService.deleteBluredImage(customerSupportService.getImageByAttatchmentId(feedAttachmentDto.getAttachmentId()) );
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+
+    /**
      * 유해피드 삭제 및 작성자 계정잠금일수 연장
      *
      * @param feedDto 유해 첨부파일이 포함된 피드 아이디가 담긴 Dto

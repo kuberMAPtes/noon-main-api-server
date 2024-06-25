@@ -32,6 +32,7 @@ public interface CustomerSupportService {
 
     FeedAttachmentDto getImageByAttatchmentId(int attachmentId);
     FeedAttachmentDto addBluredImage(FeedAttachmentDto attachmentDto) throws IOException;
+    FeedAttachmentDto deleteBluredImage(FeedAttachmentDto attachmentDto) throws IOException;
     FeedDto deleteBadFeed(FeedDto feedDto, String reqUnlockDuration);
     List<FeedAttachmentDto> getFilteredListByAI();
     List<FeedAttachmentDto> getFilteredListByAIAndPageable(int pageNumber);
