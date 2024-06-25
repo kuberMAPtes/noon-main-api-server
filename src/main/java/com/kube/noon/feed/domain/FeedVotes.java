@@ -1,5 +1,6 @@
 package com.kube.noon.feed.domain;
 
+import com.kube.noon.feed.domain.converter.ListToIntegerConverter;
 import com.kube.noon.feed.domain.converter.ListToStringConverter;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,7 +23,7 @@ public class FeedVotes {
     @Convert(converter = ListToStringConverter.class)
     private List<String> options;
 
-    @Convert(converter = ListToStringConverter.class)
+    @Convert(converter = ListToIntegerConverter.class)
     private List<Integer> votes;
 
     @OneToOne

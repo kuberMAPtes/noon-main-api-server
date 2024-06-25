@@ -14,9 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
 public class FeedVotesDto {
-    private Feed feed;
     private int feedId;
     private String question;
     private List<String> options;
@@ -24,7 +22,6 @@ public class FeedVotesDto {
 
     public static FeedVotesDto toDto(FeedVotes feedVotes) {
         return FeedVotesDto.builder()
-                .feed(feedVotes.getFeed())
                 .feedId(feedVotes.getFeedId())
                 .question(feedVotes.getQuestion())
                 .options(feedVotes.getOptions())
@@ -32,4 +29,11 @@ public class FeedVotesDto {
                 .build();
     }
 
+    @Override
+    public String toString() {
+        return "feedId : " + feedId +
+                ", question : " + question +
+                ", options : " + options +
+                ", votes : " + votes;
+    }
 }
