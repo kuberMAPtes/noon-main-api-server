@@ -23,7 +23,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 @Slf4j
@@ -40,18 +42,75 @@ public class PlacesNaverMapsApiRepositoryImpl implements PlacesRepository {
     private static final String RESPONSE_TYPE = "json";
     private static final String ORDERS = "roadaddr";
     private static final String LAT_LNG_DELIMITER = ",";
+    private static final int DISPLAY_NUMBER = 5;
+    private static final String NAVER_PLACE_SEARCH_API_BASE_URL = "https://openapi.naver.com";
 
     private final String accessKey;
     private final String secretKey;
-    protected final RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
+    private final String clientId;
+    private final String clientSecret;
 
     public PlacesNaverMapsApiRepositoryImpl(
             @Value("${geocode.naver.access-key}") String accessKey,
-            @Value("${geocode.naver.secret-key}") String secretKey
+            @Value("${geocode.naver.secret-key}") String secretKey,
+            @Value("${place-search.naver.client-id}") String clientId,
+            @Value("${place-search.naver.client-secret}") String clientSecret
     ) {
         this.accessKey = accessKey;
         this.secretKey = secretKey;
         this.restTemplate = new RestTemplate();
+        this.clientId = clientId;
+        this. clientSecret = clientSecret;
+    }
+
+    @Override
+    public List<Place> searchPlaceList(String searchKeyword) {
+        try {
+            URI uri = UriComponentsBuilder.fromUri(URI.create(NAVER_PLACE_SEARCH_API_BASE_URL))
+                    .path("/v1/search/local.json")
+                    .queryParam("display", DISPLAY_NUMBER)
+                    .queryParam("query", searchKeyword)
+                    .encode(StandardCharsets.UTF_8)
+                    .encode()
+                    .build()
+                    .toUri();
+            HttpHeaders requestHeaders = new HttpHeaders();
+            requestHeaders.add("X-Naver-Client-Id", this.clientId);
+            requestHeaders.add("X-Naver-Client-Secret", this.clientSecret);
+            requestHeaders.add(HttpHeaders.ACCEPT, "*/*");
+            RequestEntity<Void> requestEntity = RequestEntity.get(uri).headers(requestHeaders).build();
+
+            log.debug("uri={}", uri);
+
+            String body = this.restTemplate.exchange(requestEntity, String.class).getBody();
+            log.debug("body={}", body);
+
+            JSONObject jsonObject = new JSONObject(body);
+            log.debug("jsonObject={}", jsonObject);
+            JSONArray items = jsonObject.getJSONArray("items");
+            log.debug("items={}", items);
+            List<Place> resultPlaces = new LinkedList<>();
+            for (int i = 0; i < items.length(); i++) {
+                JSONObject item = items.getJSONObject(i);
+                String title = item.getString("title");
+                String roadAddress = item.getString("roadAddress");
+                Place place = findByPlaceName(roadAddress).get(0);
+                resultPlaces.add(Place.builder()
+                        .placeName(title)
+                        .latitude(place.getLatitude())
+                        .longitude(place.getLongitude())
+                        .roadAddress(roadAddress)
+                        .build());
+            }
+            log.debug("resultPlaces={}", resultPlaces);
+            return resultPlaces;
+        } catch (InvalidDataAccessResourceUsageException e) {
+            throw new InvalidDataAccessResourceUsageException("URI syntax error for Naver Search API", e);
+        } catch (Exception e) {
+            log.error("error", e);
+            return List.of();
+        }
     }
 
     @Override
@@ -112,7 +171,7 @@ public class PlacesNaverMapsApiRepositoryImpl implements PlacesRepository {
             JSONObject land = result.getJSONObject("land");
             String name = land.getString("name");
             String number = land.getString("number1");
-            return this.findByPlaceName(name + " " + number).get(0);
+            return findByPlaceName(name + " " + number).get(0);
         } catch (URISyntaxException e) {
             throw new InvalidDataAccessResourceUsageException("URI syntax error for Naver Maps", e); // TODO
         }

@@ -5,6 +5,7 @@ import com.kube.noon.building.dto.BuildingApplicantDto;
 import com.kube.noon.building.dto.BuildingDto;
 import com.kube.noon.building.dto.BuildingSearchResponseDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
+import com.kube.noon.building.exception.NotRegisteredBuildingException;
 import com.kube.noon.building.repository.BuildingSummaryRepository;
 import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
 import com.kube.noon.building.repository.BuildingProfileRepository;
@@ -291,11 +292,11 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
     @Override
     public BuildingDto getBuildingProfileByPosition(Position position)
-            throws PlaceNotFoundException, NoSuchElementException {
+            throws PlaceNotFoundException, NotRegisteredBuildingException {
         PlaceDto findPlace = this.placesService.getPlaceByPosition(position);
         Building building = this.buildingProfileRepository.findBuildingProfileByRoadAddr(findPlace.getRoadAddress());
         if (building == null) {
-            throw new NoSuchElementException("No building");
+            throw new NotRegisteredBuildingException("No building", findPlace);
         }
         return BuildingDto.fromEntity(building);
     }

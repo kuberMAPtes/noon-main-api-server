@@ -27,7 +27,7 @@ class TestPlacesServiceImpl {
     @DisplayName("장소명으로 검색")
     @Test
     void getPlaceList() {
-        List<PlaceDto> results = this.placesService.getPlaceList("강남");
+        List<PlaceDto> results = this.placesService.searchPlaceList("강남");
 
         assertThat(results).isNotEmpty();
 
@@ -47,7 +47,7 @@ class TestPlacesServiceImpl {
     })
     @ParameterizedTest
     void getPlaceList_searchPlaceNotExists(String testCase) {
-        List<PlaceDto> result = this.placesService.getPlaceList(testCase);
+        List<PlaceDto> result = this.placesService.searchPlaceList(testCase);
         assertThat(result).isEmpty();
     }
 

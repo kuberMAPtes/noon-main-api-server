@@ -2,6 +2,7 @@
 
 package com.kube.noon.building.controller;
 import com.kube.noon.building.dto.*;
+import com.kube.noon.building.exception.NotRegisteredBuildingException;
 import com.kube.noon.building.service.BuildingProfileService;
 import com.kube.noon.chat.dto.ChatroomDto;
 import com.kube.noon.chat.service.ChatroomSearchService;
@@ -113,12 +114,12 @@ public class BuildingProfileRestController {
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (PlaceNotFoundException e) {
             return new ResponseEntity<>(
-                    new BuildingNotFoundResponseDto(false, "해당 좌표에 건물이 없음"),
+                    new BuildingNotFoundResponseDto(false, "해당 좌표에 건물이 없음", null),
                     HttpStatus.NOT_FOUND
             );
-        } catch (NoSuchElementException e) {
+        } catch (NotRegisteredBuildingException e) {
             return new ResponseEntity<>(
-                    new BuildingNotFoundResponseDto(true,"등록되지 않은 건물"),
+                    new BuildingNotFoundResponseDto(true,"등록되지 않은 건물", e.getPlace()),
                     HttpStatus.NOT_FOUND
             );
         }
