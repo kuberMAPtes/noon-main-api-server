@@ -24,10 +24,10 @@ public class PlacesServiceImpl implements PlacesService {
     private final PlacesRepository placesRepository;
 
     @Override
-    public List<PlaceDto> getPlaceList(String searchKeyword) {
+    public List<PlaceDto> searchPlaceList(String searchKeyword) {
         log.trace("searchKeyword={}", searchKeyword);
 
-        return this.placesRepository.findByPlaceName(searchKeyword)
+        return this.placesRepository.searchPlaceList(searchKeyword)
                 .stream()
                 .map(PlaceDto::from)
                 .toList();

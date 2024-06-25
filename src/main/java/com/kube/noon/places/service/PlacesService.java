@@ -26,7 +26,7 @@ public interface PlacesService {
      * @param searchKeyword 장소 검색 키워드
      * @return searchKeyword에 부합하는 장소들을 반환. 반환되는 List의 길이는 1보다 클 수 있고, 1일 수 있고, 0일 수 있다.
      */
-    public List<PlaceDto> getPlaceList(String searchKeyword);
+    public List<PlaceDto> searchPlaceList(String searchKeyword);
 
     /**
      * 주어진 위도, 경도에 위치한 장소 정보를 얻는다.

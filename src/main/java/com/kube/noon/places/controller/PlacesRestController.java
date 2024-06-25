@@ -27,7 +27,7 @@ public class PlacesRestController {
     @ApiResponse(responseCode = "200", description = "장소 검색 결과")
     @GetMapping(value = "/search", params = "placeName")
     public ResponseEntity<List<PlaceDto>> searchPlace(@RequestParam("placeName") String placeName) {
-        return new ResponseEntity<>(this.placesService.getPlaceList(placeName), HttpStatus.OK);
+        return new ResponseEntity<>(this.placesService.searchPlaceList(placeName), HttpStatus.OK);
     }
 
     @Operation(summary = "위도, 경도로 장소 검색", description = "위도, 경도 좌표에 해당하는 장소들을 조회합니다.")

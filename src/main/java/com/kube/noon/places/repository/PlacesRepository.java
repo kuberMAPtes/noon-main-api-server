@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface PlacesRepository {
 
+    public List<Place> searchPlaceList(String searchKeyword);
+
     public List<Place> findByPlaceName(String placeName);
 
     public Place findByPosition(double latitude, double longitude) throws PlaceNotFoundException;
