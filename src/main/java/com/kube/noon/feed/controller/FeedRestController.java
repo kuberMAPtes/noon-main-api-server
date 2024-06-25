@@ -4,6 +4,7 @@ import com.kube.noon.feed.dto.*;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.feed.service.FeedStatisticsService;
 import com.kube.noon.feed.service.FeedSubService;
+import com.kube.noon.feed.service.FeedVotesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,6 +25,7 @@ public class FeedRestController {
     private final FeedService feedService;
     private final FeedStatisticsService feedStatisticsService;
     private final FeedSubService feedSubService;
+    private final FeedVotesService feedVotesService;
 
     private static final int PAGE_SIZE = 10;        // 일단 static final로 설정, 나중에 메타데이터로 뺄 예정
 
@@ -297,5 +299,52 @@ public class FeedRestController {
     @GetMapping("/FeedPopularity")
     public List<FeedPopularityDto> getFeedPopularity(@RequestParam int buildingId) {
         return feedStatisticsService.getFeedPopularity(buildingId);
+    }
+
+    @Operation(summary = "[투표] 투표 게시판 생성", description = "투표 게시판을 생성한다.")
+    @PostMapping("/addVote")
+    public FeedVotesDto addVote(@RequestBody FeedVotesDto feedVotesDto) {
+        return feedVotesService.addVote(feedVotesDto);
+    }
+
+    @Operation(summary = "[투표] 투표 게시판 갱신", description = "투표 게시판을 생성한다.")
+    @PostMapping("/updateVote")
+    public FeedVotesDto updateFeedVotes(@RequestBody FeedVotesDto feedVotesDto) {
+        return feedVotesService.updateVote(feedVotesDto);
+    }
+
+    @Operation(summary = "[투표] 투표 내용 삭제", description = "투표 내용을 삭제한다.")
+    @PostMapping("/deleteVote/{feedId}")
+    public int deleteFeedVotes(@Parameter(description = "삭제할 피드 ID") @PathVariable("feedId") int feedId) {
+        feedVotesService.deleteVote(feedId);
+
+        return feedId;
+    }
+
+    @Operation(summary = "[투표] 특정 투표 내용에 투표하기", description = "실제로 투표에 참여한다.")
+    @PostMapping("/addVoting/{feedId}/{optionIndex}")
+    public int addVoting(
+            @Parameter(description = "참여할 투표에 대한 피드 ID") @PathVariable("feedId") int feedId,
+            @Parameter(description = "옵션의 번호") @PathVariable("optionIndex") int optionIndex) {
+        feedVotesService.addVoting(feedId, optionIndex);
+
+        return feedId;
+    }
+
+    @Operation(summary = "[투표] 특정 투표 취소하기", description = "투표를 취소한다.")
+    @PostMapping("/deleteVoting/{feedId}/{optionIndex}")
+    public int deleteVoting(
+            @Parameter(description = "취소할 투표에 대한 피드 ID") @PathVariable("feedId") int feedId,
+            @Parameter(description = "옵션의 번호") @PathVariable("optionIndex") int optionIndex) {
+        feedVotesService.deleteVoting(feedId, optionIndex);
+
+        return feedId;
+    }
+
+    @Operation(summary = "[투표] 투표 내용 가져오기", description = "투표를 취소한다.")
+    @GetMapping("/getVote/{feedId}")
+    public FeedVotesDto getVote(
+            @Parameter(description = "가져올 피드 ID") @PathVariable("feedId") int feedId) {
+        return feedVotesService.getVoteById(feedId);
     }
 }
