@@ -70,10 +70,11 @@ public class ChatMatchingServiceImpl implements ChatMatchingService {
         Optional<ChatApply> optionalChatApply = chatApplyRepository.findById(chatApplyDto.getChatApplyId());
         if (optionalChatApply.isPresent()) {
             ChatApply chatApply = optionalChatApply.get();
-            chatApply.setAccepted(false);
+            chatApply.setAccepted(true);
             chatApply.setRejectMessage(chatApplyDto.getRejectMessage());
 
             ChatApply resultChatApply = chatApplyRepository.save(chatApply);
+            System.out.println("        🦐[ServiceImpl rejectChatting] 처리한 resultChatApply DTO => " + chatApplyDto);
             return convertToChatApplyDto(resultChatApply);
         }else{
             throw new RuntimeException("ChatApply not found with id: " + chatApplyDto.getChatApplyId());
@@ -99,7 +100,9 @@ public class ChatMatchingServiceImpl implements ChatMatchingService {
                 chatApplyDto.setFromId(chatApply.getApplicant());
                 chatApplyDto.setApplyMessage(chatApply.getApplyMessage());
                 chatApplyDto.setChatApplyId(chatApply.getChatApplyId());
+                chatApplyDto.setAccepted(chatApply.getAccepted());
                 chatApplyDtos.add(chatApplyDto);
+
             }
         }
 

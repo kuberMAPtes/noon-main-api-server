@@ -26,7 +26,7 @@ public class Chatroom {
     private Member chatroomCreator; // Chatroom이 Member를 참조하도록 수정
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "building_id", referencedColumnName = "building_id", nullable = false)
+    @JoinColumn(name = "building_id", referencedColumnName = "building_id", nullable = true)
     private Building building; // Chatroom이 Building을 참조하도록 수정
 
     @Column(name = "chatroom_name", length = 50, nullable = false)
