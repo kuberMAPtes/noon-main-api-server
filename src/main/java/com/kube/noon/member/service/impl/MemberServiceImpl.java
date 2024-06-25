@@ -1,5 +1,7 @@
 package com.kube.noon.member.service.impl;
 
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.kube.noon.common.ObjectStorageAPI;
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.feed.service.FeedService;
@@ -21,10 +23,16 @@ import com.kube.noon.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
@@ -41,6 +49,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final FeedService feedService;
+    private final ObjectStorageAPI objectStorageAPI;
 
 //    private final SettingService settingService;
 
@@ -176,6 +185,33 @@ public class MemberServiceImpl implements MemberService {
             return findOtherMemberProfile(fromId, memberId);
         }
     }
+
+    @Override
+    public ResponseEntity<byte[]> findMemberProfilePhoto(String memberId) {
+        // memberProfileDto에서 profilePhotoUrl을 가져오기
+        MemberProfileDto memberProfileDto = DtoEntityBinder.INSTANCE.toDto(memberRepository.findMemberById(memberId), MemberProfileDto.class);
+
+        // profilePhotoUrl에서 파일명 추출
+        String[] fileNames = memberProfileDto.getProfilePhotoUrl().split("/");
+        String fileName = fileNames[fileNames.length - 1];
+
+        // 오브젝트 스토리지에서 파일 읽기
+        S3ObjectInputStream inputStream = objectStorageAPI.getObject(fileName);
+
+        try {
+            // 이미지 파일을 byte 배열로 읽기
+            byte[] imageBytes = inputStream.readAllBytes();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_JPEG);
+
+            // ResponseEntity로 반환
+            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        } catch(IOException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
     private Optional<MemberProfileDto> findOtherMemberProfile(String fromId, String memberId) {
         log.info("다른 회원 프로필 조회 중: FromID={}, MemberID={}", fromId, memberId);
@@ -396,6 +432,21 @@ public class MemberServiceImpl implements MemberService {
             throw e;
         }
     }
+    @Override
+    public String updateMemberProfilePhotoUrl(String memberId, MultipartFile file){
+        try{
+            String originalFilename = file.getOriginalFilename();
+            String Url = objectStorageAPI.putObject(originalFilename, file);
+
+            memberRepository.updateMemberProfilePhoto(memberId, Url);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return memberId;
+    }
+
     @Override
     public void updateMemberProfileIntro(UpdateMemberProfileIntroDto dto){
         try {

@@ -9,6 +9,8 @@ import com.kube.noon.member.dto.memberRelationship.MemberRelationshipDto;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
@@ -37,6 +39,8 @@ public interface MemberService {
 
     MemberRelationshipDto findMemberRelationship(String fromId, String toId);
 
+    ResponseEntity<byte[]> findMemberProfilePhoto(String memberId);
+
     Page<SearchMemberResponseDto> searchMemberByNickname(String requesterId, String searchKeyword, int page);
 
     void updateMember(UpdateMemberDto updateMemberDto);
@@ -46,6 +50,9 @@ public interface MemberService {
     void updatePhoneNumber(UpdatePhoneNumberDto updatePhoneNumberDto);
 
     void updateMemberProfilePhotoUrl(UpdateMemberProfilePhotoUrlDto updateMemberProfilePhotoUrlDto);
+
+    String updateMemberProfilePhotoUrl(String memberId, MultipartFile file);
+
 
     void updateMemberProfileIntro(UpdateMemberProfileIntroDto updateMemberProfileIntroDto);
 
