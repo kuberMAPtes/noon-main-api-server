@@ -58,6 +58,7 @@ public class ChatMatchingRestController {
         privateRoomDto.setChatroomType("PRIVATE_CHATTING");
         privateRoomDto.setChatroomName("사적채팅방 이름을 어떻게 하지 상대에 따라 유동적으로 가야될텐데");
         privateRoomDto.setChatroomMinTemp(0F);
+        privateRoomDto.setInvitedMemberId(chatApplyDto.getToId());
 
         // 화면에서 받아서 채팅방으로 이동할 것
         return chatroomService.addChatroom(privateRoomDto);

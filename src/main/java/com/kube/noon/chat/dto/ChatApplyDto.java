@@ -17,5 +17,6 @@ public class ChatApplyDto {
     private String rejectMessage;
     private String fromId; // applicant
     private String toId; // respondent
+    private String chatroomType;
     private boolean accepted; // 신청 수락
 }

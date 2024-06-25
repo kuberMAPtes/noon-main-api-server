@@ -58,30 +58,60 @@ public class ChatroomServiceImpl implements ChatroomService {
             System.out.println("누구세요? 신청 안바다여");
         }
 
-        // addChatroom 시 빌딩에 대한 정보도 넣어함
-        System.out.println("        🦐[addChatroom ServiceImpl] 채팅방을 세울 빌딩Id => " + requestChatroom.getBuildingId());
-        Building building = new Building();
-        building.setBuildingId(requestChatroom.getBuildingId());
-        chatroom.setBuilding(building);
 
-        chatroom.setChatroomMinTemp(requestChatroom.getChatroomMinTemp());
-        ChatroomType roomType = ChatroomType.valueOf(requestChatroom.getChatroomType()); // String 을 Enum으로 변환해서 Entity 삽입
-        chatroom.setChatroomType(roomType);
-        Chatroom savedChatroom = chatroomRepository.save(chatroom);
+        // public_chatting 요청시 addChatroom 에는 빌딩에 대한 정보도 넣어함
+        if(!requestChatroom.getChatroomType().equals("PRIVATE_CHATTING")) {
+            System.out.println("        🦐[addChatroom ServiceImpl Public Chatting ] 채팅방을 세울 빌딩Id => " + requestChatroom.getBuildingId());
+            Building building = new Building();
+            building.setBuildingId(requestChatroom.getBuildingId());
+            chatroom.setBuilding(building);
 
+            chatroom.setChatroomMinTemp(requestChatroom.getChatroomMinTemp());
+            ChatroomType roomType = ChatroomType.valueOf(requestChatroom.getChatroomType()); // String 을 Enum으로 변환해서 Entity 삽입
+            chatroom.setChatroomType(roomType);
+            Chatroom savedChatroom = chatroomRepository.save(chatroom);
 
+            // 채팅생성자가 채팅참여멤버에 안들어갓누
+            ChatEntrance chatEntrance = new ChatEntrance();
+            chatEntrance.setChatroom(savedChatroom);
+            chatEntrance.setChatroomMemberId(requestChatroom.getChatroomCreatorId());
+            chatEntrance.setChatroomMemberType(ChatroomMemberType.OWNER);
+            ChatEntrance savedChatEntrance = chatEntranceRepository.save(chatEntrance);
 
-        // 채팅생성자가 채팅참여멤버에 안들어갓누
-        ChatEntrance chatEntrance = new ChatEntrance();
-        chatEntrance.setChatroom(savedChatroom);
-        chatEntrance.setChatroomMemberId(requestChatroom.getChatroomCreatorId());
-        chatEntrance.setChatroomMemberType(ChatroomMemberType.OWNER);
-        ChatEntrance savedChatEntrance = chatEntranceRepository.save(chatEntrance);
+            System.out.println("        🦐[ServiceImpl] 생성자를 채팅멤버에 저장 => " + savedChatEntrance);
 
-        System.out.println("        🦐[ServiceImpl] 생성자를 채팅멤버에 저장 => " + savedChatEntrance);
+            // Entity를 Dto 로 변환해서 리턴
+            return convertToChatroomDto(savedChatroom);
+        }
 
-        // Entity를 Dto 로 변환해서 리턴
-        return convertToChatroomDto(savedChatroom);
+        // private_chatting 요청시 addChatroom 에는 빌딩에 대한 정보 안넣어줌 다정온도도 안들어감
+        if(requestChatroom.getChatroomType().equals("PRIVATE_CHATTING")) {
+            System.out.println("        🦐[addChatroom ServiceImpl Private Chatting]");
+
+            ChatroomType roomType = ChatroomType.valueOf(requestChatroom.getChatroomType()); // String 을 Enum으로 변환해서 Entity 삽입
+            chatroom.setChatroomType(roomType);
+            Chatroom savedChatroom = chatroomRepository.save(chatroom);
+
+            // 채팅생성자 및 피신청자도 채팅참여멤버에 들어가자
+            ChatEntrance chatEntrance1 = new ChatEntrance();
+            chatEntrance1.setChatroom(savedChatroom);
+            chatEntrance1.setChatroomMemberId(requestChatroom.getChatroomCreatorId());
+            chatEntrance1.setChatroomMemberType(ChatroomMemberType.OWNER);
+            ChatEntrance savedChatEntrance1 = chatEntranceRepository.save(chatEntrance1);
+
+            ChatEntrance chatEntrance2 = new ChatEntrance();
+            chatEntrance2.setChatroom(savedChatroom);
+            chatEntrance2.setChatroomMemberId(requestChatroom.getInvitedMemberId());
+            chatEntrance2.setChatroomMemberType(ChatroomMemberType.MEMBER);
+            ChatEntrance savedChatEntrance2 = chatEntranceRepository.save(chatEntrance2);
+
+            System.out.println("        🦐[ServiceImpl] 생성자를 채팅멤버에 저장 => " + savedChatEntrance1 + savedChatEntrance2);
+
+            // Entity를 Dto 로 변환해서 리턴
+            return convertToChatroomDto(savedChatroom);
+        }
+
+        return null;
     }
 
     @Override
