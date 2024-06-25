@@ -454,9 +454,11 @@ public class MemberRestController {
             log.info("회원 정보: {}", memberDto);
             memberDtoAtomicReference.set(memberDto);
         }, () -> {
+
             AddMemberDto addMemberDto = new AddMemberDto();
             addMemberDto.setMemberId(dto.getMemberId());
             addMemberDto.setNickname(dto.getNickname());
+            addMemberDto.setProfilePhotoUrl(dto.getProfilePhotoUrl());
             addMemberDto.setPwd("social_sign_up");
             //만약 존재하는 아이디라면 GlobalExceptionHandler에서 처리된다.
             //프론트엔드에서 info를 받았을 때 memberId가 있는지 보면 된다.
