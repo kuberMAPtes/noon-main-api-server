@@ -149,7 +149,8 @@ public class FeedSubServiceImpl implements FeedSubService {
     @Override
     public int addFeedLike(int feedId, String memberId) {
         // 1) 좋아요 데이터가 있는지 확인한다.
-        Zzim zzimLike = zzimRepository.findByFeedIdAndMemberIdAndZzimType(feedId, memberId, ZzimType.LIKE);
+        List<Zzim> zzimLikeList = zzimRepository.findByFeedIdAndMemberIdAndZzimTypeOrderByZzimId(feedId, memberId, ZzimType.LIKE);
+        Zzim zzimLike = (zzimLikeList.isEmpty() ? null : zzimLikeList.get(0)); // null로 데이터가 존재하는지 아닌지 확인, 중복 데이터 대비하여 List 중 하나를 가지고 옴
         Feed feed = feedRepository.findByFeedId(feedId);
         Zzim resultZzim;
 
@@ -174,7 +175,8 @@ public class FeedSubServiceImpl implements FeedSubService {
     @Transactional
     @Override
     public int deleteFeedLike(int feedId, String memberId) {
-        Zzim deleteZzim = zzimRepository.findByFeedIdAndMemberIdAndZzimType(feedId, memberId, ZzimType.LIKE);
+        List<Zzim> zzimLikeList = zzimRepository.findByFeedIdAndMemberIdAndZzimTypeOrderByZzimId(feedId, memberId, ZzimType.LIKE);
+        Zzim deleteZzim = (zzimLikeList.isEmpty() ? null : zzimLikeList.get(0));
 
         if(deleteZzim != null) {
             deleteZzim.setActivated(false);
@@ -188,11 +190,12 @@ public class FeedSubServiceImpl implements FeedSubService {
     @Override
     public int addFeedBookmark(int feedId, String memberId) {
         // 1) 북마크 데이터가 있는지 확인한다.
-        Zzim zzimLike = zzimRepository.findByFeedIdAndMemberIdAndZzimType(feedId, memberId, ZzimType.BOOKMARK);
+        List<Zzim> zzimBookmarkList = zzimRepository.findByFeedIdAndMemberIdAndZzimTypeOrderByZzimId(feedId, memberId, ZzimType.BOOKMARK);
+        Zzim zzimBookmark = (zzimBookmarkList.isEmpty() ? null : zzimBookmarkList.get(0));
         Feed feed = feedRepository.findByFeedId(feedId);
         Zzim resultZzim;
 
-        if(zzimLike == null) { // 2) 없다면, 하나 추가한다.
+        if(zzimBookmark == null) { // 2) 없다면, 하나 추가한다.
             Zzim newZzimBookmark = Zzim.builder()
                     .memberId(memberId)
                     .feedId(feedId)
@@ -203,8 +206,8 @@ public class FeedSubServiceImpl implements FeedSubService {
                     .build();
             resultZzim = zzimRepository.save(newZzimBookmark);
         } else { // 3) 있다면. activated = true로 설정한다.
-            zzimLike.setActivated(true);
-            resultZzim = zzimRepository.save(zzimLike);
+            zzimBookmark.setActivated(true);
+            resultZzim = zzimRepository.save(zzimBookmark);
         }
 
         return resultZzim.getZzimId();
@@ -213,7 +216,8 @@ public class FeedSubServiceImpl implements FeedSubService {
     @Transactional
     @Override
     public int deleteFeedBookmark(int feedId, String memberId) {
-        Zzim deleteZzim = zzimRepository.findByFeedIdAndMemberIdAndZzimType(feedId, memberId, ZzimType.BOOKMARK);
+        List<Zzim> zzimBookmarkList = zzimRepository.findByFeedIdAndMemberIdAndZzimTypeOrderByZzimId(feedId, memberId, ZzimType.BOOKMARK);
+        Zzim deleteZzim = (zzimBookmarkList.isEmpty() ? null : zzimBookmarkList.get(0));
 
         if(deleteZzim != null) {
             deleteZzim.setActivated(false);

@@ -287,7 +287,8 @@ public class TestFeedRepository {
 
         // 1. 추가
         // 1) 좋아요 데이터가 있는지 확인한다.
-        Zzim zzimLike = zzimRepository.findByFeedIdAndMemberIdAndZzimType(feedId, memberId, ZzimType.LIKE);
+        List<Zzim> zzimLikeList = zzimRepository.findByFeedIdAndMemberIdAndZzimTypeOrderByZzimId(feedId, memberId, ZzimType.LIKE);
+        Zzim zzimLike = (zzimLikeList.isEmpty() ? null : zzimLikeList.get(0));
         Zzim resultZzim;
 
         if(zzimLike == null) { // 2) 없다면, 하나 추가한다.
@@ -310,7 +311,8 @@ public class TestFeedRepository {
         log.info(resultZzim.toString());
 
         // 2. 삭제
-        Zzim deleteZzim = zzimRepository.findByFeedIdAndMemberIdAndZzimType(feedId, memberId, ZzimType.LIKE);
+        List<Zzim> zzimDeleteLikeList = zzimRepository.findByFeedIdAndMemberIdAndZzimTypeOrderByZzimId(feedId, memberId, ZzimType.LIKE);
+        Zzim deleteZzim = (zzimDeleteLikeList.isEmpty() ? null : zzimDeleteLikeList.get(0));
         deleteZzim.setActivated(false);
         resultZzim = zzimRepository.save(deleteZzim);
 
@@ -331,7 +333,8 @@ public class TestFeedRepository {
 
         // 1. 추가
         // 1) 북마크 데이터가 있는지 확인한다.
-        Zzim zzimBookmark = zzimRepository.findByFeedIdAndMemberIdAndZzimType(feedId, memberId, ZzimType.BOOKMARK);
+        List<Zzim> zzimBookmarkList = zzimRepository.findByFeedIdAndMemberIdAndZzimTypeOrderByZzimId(feedId, memberId, ZzimType.BOOKMARK);
+        Zzim zzimBookmark = (zzimBookmarkList.isEmpty() ? null : zzimBookmarkList.get(0));
         Zzim resultZzim;
 
         if(zzimBookmark == null) { // 2) 없다면, 하나 추가한다.
@@ -354,7 +357,8 @@ public class TestFeedRepository {
         log.info(resultZzim.toString());
 
         // 2. 삭제
-        Zzim deleteZzim = zzimRepository.findByFeedIdAndMemberIdAndZzimType(feedId, memberId, ZzimType.BOOKMARK);
+        List<Zzim> zzimDeleteBookmarkList = zzimRepository.findByFeedIdAndMemberIdAndZzimTypeOrderByZzimId(feedId, memberId, ZzimType.BOOKMARK);
+        Zzim deleteZzim = (zzimDeleteBookmarkList.isEmpty() ? null : zzimDeleteBookmarkList.get(0));
         deleteZzim.setActivated(false);
         resultZzim = zzimRepository.save(deleteZzim);
 

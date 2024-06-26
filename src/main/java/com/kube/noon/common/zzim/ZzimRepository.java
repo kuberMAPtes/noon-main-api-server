@@ -75,7 +75,7 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
      * @param zzimType
      * @return Zzim 해당하는 Zzim 하나를 가져온다.
      */
-    Zzim findByFeedIdAndMemberIdAndZzimType(int feedId, String memberId, ZzimType zzimType);
+    List<Zzim> findByFeedIdAndMemberIdAndZzimTypeOrderByZzimId(int feedId, String memberId, ZzimType zzimType);
 
     /**
      * 회원 아이디와 찜 타입을 통해 회원의 좋아요, 북마크 여부를 확인한다.
