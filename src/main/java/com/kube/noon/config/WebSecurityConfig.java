@@ -150,29 +150,6 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    @Profile({"authdev", "prod"})
-    public SecurityFilterChain tokenBasedFilterChain(
-            HttpSecurity http,
-            AuthFilter authFilter,
-            TokenAuthenticationFilter tokenAuthenticationFilter,
-            TokenRefreshFilter tokenRefreshFilter
-    ) throws Exception {
-        return http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests((registry) -> {
-                    registry.requestMatchers(AccessDefinition.ALLOWED_TO_MEMBER.stream().map(AntPathRequestMatcher::new).toArray(AntPathRequestMatcher[]::new))
-                            .hasAnyAuthority(Role.MEMBER.name(), Role.ADMIN.name())
-                            .anyRequest()
-                            .permitAll();
-                })
-                .sessionManagement((config) -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .requestCache(RequestCacheConfigurer::disable)
-                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(tokenAuthenticationFilter, AuthFilter.class)
-                .addFilterAfter(tokenRefreshFilter, AuthorizationFilter.class)
-                .build();
-    }
-
-    @Bean
     @Profile({"accesscontrol"})
     public SecurityFilterChain tokenBasedFilterChainWithAccessControl(
             HttpSecurity http,
@@ -194,6 +171,30 @@ public class WebSecurityConfig {
                 .addFilterBefore(tokenAuthenticationFilter, AuthFilter.class)
                 .addFilterAfter(tokenRefreshFilter, AuthorizationFilter.class)
                 .addFilterAfter(accessControlFilter, AuthorizationFilter.class)
+                .build();
+    }
+
+    @Bean
+    @Profile({"authdev", "prod"})
+    @ConditionalOnMissingBean(SecurityFilterChain.class)
+    public SecurityFilterChain tokenBasedFilterChain(
+            HttpSecurity http,
+            AuthFilter authFilter,
+            TokenAuthenticationFilter tokenAuthenticationFilter,
+            TokenRefreshFilter tokenRefreshFilter
+    ) throws Exception {
+        return http.csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests((registry) -> {
+                    registry.requestMatchers(AccessDefinition.ALLOWED_TO_MEMBER.stream().map(AntPathRequestMatcher::new).toArray(AntPathRequestMatcher[]::new))
+                            .hasAnyAuthority(Role.MEMBER.name(), Role.ADMIN.name())
+                            .anyRequest()
+                            .permitAll();
+                })
+                .sessionManagement((config) -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .requestCache(RequestCacheConfigurer::disable)
+                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(tokenAuthenticationFilter, AuthFilter.class)
+                .addFilterAfter(tokenRefreshFilter, AuthorizationFilter.class)
                 .build();
     }
 
