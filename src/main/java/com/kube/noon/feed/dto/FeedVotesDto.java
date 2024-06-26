@@ -21,6 +21,8 @@ public class FeedVotesDto {
     private List<Integer> votes;
 
     public static FeedVotesDto toDto(FeedVotes feedVotes) {
+        if(feedVotes == null) return new FeedVotesDto(); // null 처리
+
         return FeedVotesDto.builder()
                 .feedId(feedVotes.getFeedId())
                 .question(feedVotes.getQuestion())

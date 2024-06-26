@@ -4,9 +4,7 @@ import com.kube.noon.building.domain.Building;
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
-import com.kube.noon.feed.domain.Feed;
-import com.kube.noon.feed.domain.Tag;
-import com.kube.noon.feed.domain.TagFeed;
+import com.kube.noon.feed.domain.*;
 import com.kube.noon.feed.dto.FeedDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.dto.TagDto;
@@ -28,8 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.ArrayList;;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -366,8 +363,19 @@ public class FeedServiceImpl implements FeedService {
     @Override
     public int deleteFeed(int feedId) {
         Feed deleteFeed = feedRepository.findByFeedId(feedId);
-
         deleteFeed.setActivated(false);
+
+        // 첨부 파일 삭제 : activated = false
+        for(FeedAttachment feedAttachment : deleteFeed.getAttachments()) {
+            feedAttachment.setActivated(false);
+        }
+
+        // 댓글 삭제 : activated = false
+        for(FeedComment feedComment : deleteFeed.getComments()) {
+            feedComment.setActivated(false);
+        }
+
+
         return feedRepository.save(deleteFeed).getFeedId();
     }
 

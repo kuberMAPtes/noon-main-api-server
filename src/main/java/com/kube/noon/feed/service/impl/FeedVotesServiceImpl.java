@@ -78,7 +78,7 @@ public class FeedVotesServiceImpl implements FeedVotesService {
     public FeedVotesDto getVoteById(int feedId) {
         return FeedVotesDto.toDto(
                 feedVotesRepository.findById(feedId)
-                        .orElseThrow(() -> new IllegalArgumentException("유효한 ID가 아님"))
+                        .orElse(null)
         );
     }
 }
