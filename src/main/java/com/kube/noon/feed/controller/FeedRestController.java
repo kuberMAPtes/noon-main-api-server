@@ -322,23 +322,9 @@ public class FeedRestController {
     }
 
     @Operation(summary = "[투표] 특정 투표 내용에 투표하기", description = "실제로 투표에 참여한다.")
-    @PostMapping("/addVoting/{feedId}/{optionIndex}")
-    public int addVoting(
-            @Parameter(description = "참여할 투표에 대한 피드 ID") @PathVariable("feedId") int feedId,
-            @Parameter(description = "옵션의 번호") @PathVariable("optionIndex") int optionIndex) {
-        feedVotesService.addVoting(feedId, optionIndex);
-
-        return feedId;
-    }
-
-    @Operation(summary = "[투표] 특정 투표 취소하기", description = "투표를 취소한다.")
-    @PostMapping("/deleteVoting/{feedId}/{optionIndex}")
-    public int deleteVoting(
-            @Parameter(description = "취소할 투표에 대한 피드 ID") @PathVariable("feedId") int feedId,
-            @Parameter(description = "옵션의 번호") @PathVariable("optionIndex") int optionIndex) {
-        feedVotesService.deleteVoting(feedId, optionIndex);
-
-        return feedId;
+    @PostMapping("/addVoting")
+    public FeedVotesDto addVoting(@RequestBody FeedVotesDto feedVotesDto){
+        return feedVotesService.addVoting(feedVotesDto);
     }
 
     @Operation(summary = "[투표] 투표 내용 가져오기", description = "투표를 취소한다.")
