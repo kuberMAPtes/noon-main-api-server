@@ -2,6 +2,7 @@ package com.kube.noon.common.security.filter;
 
 import com.kube.noon.common.security.accesscontrol.AccessControl;
 import com.kube.noon.common.security.accesscontrol.AccessControlTrigger;
+import com.kube.noon.common.security.accesscontrol.util.RequestPathTree;
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.common.security.support.BearerTokenSupport;
 import com.kube.noon.member.domain.Member;
@@ -18,8 +19,10 @@ import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -33,7 +36,7 @@ import static com.kube.noon.common.security.SecurityConstants.*;
 public class AccessControlFilter extends OncePerRequestFilter {
     private final List<BearerTokenSupport> tokenSupportSet;
     private final ApplicationContext context;
-    private final Map<String, BeanAndMethod> accessControls;
+    private final RequestPathTree<BeanAndMethod> accessControls;
     private final MemberRepository memberRepository;
 
     public AccessControlFilter(List<BearerTokenSupport> tokenSupportSet,
@@ -41,8 +44,8 @@ public class AccessControlFilter extends OncePerRequestFilter {
                                MemberRepository memberRepository) {
         this.tokenSupportSet = tokenSupportSet;
         this.context = context;
-        this.accessControls = new HashMap<>();
         this.memberRepository = memberRepository;
+        this.accessControls = new RequestPathTree<>();
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -59,12 +62,20 @@ public class AccessControlFilter extends OncePerRequestFilter {
                                     method.getName());
                             continue;
                         }
-                        String httpMethod = trigger.method();
+                        String httpMethod = trigger.method().trim().toUpperCase();
+                        if (isMethodNameAcceptable(httpMethod)) {
+                            log.warn("HttpMethod is not acceptable: {}", httpMethod);
+                            return;
+                        }
                         String path = trigger.path().trim();
-                        String key = getKey(httpMethod, path);
-                        this.accessControls.put(key, new BeanAndMethod(bean, method));
+                        this.accessControls.add(path, HttpMethod.valueOf(httpMethod), new BeanAndMethod(bean, method));
                     }
                 });
+    }
+
+    private boolean isMethodNameAcceptable(String methodName) {
+        return Set.of("GET", "POST", "DELETE", "PATCH", "PUT", "HEAD")
+                .contains(methodName);
     }
 
     @AllArgsConstructor
@@ -76,11 +87,11 @@ public class AccessControlFilter extends OncePerRequestFilter {
     }
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String httpMethod = request.getMethod().toUpperCase();
+        HttpMethod httpMethod = HttpMethod.valueOf(request.getMethod().toUpperCase());
+        log.trace("{} {}", httpMethod, request.getRequestURI());
         String path = request.getRequestURI();
-        String key = getKey(httpMethod, path);
 
-        BeanAndMethod beanAndMethod = this.accessControls.get(key);
+        BeanAndMethod beanAndMethod = this.accessControls.getElement(path, httpMethod).orElse(null);
 
         if (beanAndMethod == null) {
             log.trace("No access control for {} {}", httpMethod, path);
