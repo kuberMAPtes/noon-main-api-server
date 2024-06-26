@@ -1,9 +1,14 @@
 package com.kube.noon.common.security.accesscontrol;
 
-import com.kube.noon.member.domain.Member;
-import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.stereotype.Component;
 
-public interface AccessControl {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    boolean isAllowed(Member member, HttpServletRequest request);
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Component
+public @interface AccessControl {
 }
