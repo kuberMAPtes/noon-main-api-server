@@ -573,6 +573,14 @@ public class MemberServiceImpl implements MemberService {
     public void checkLoginMemberIdPattern(String memberId){
         log.info("회원 아이디 패턴 확인 완료 : {}", memberId);
     }
+    @Override
+    public void checkLoginMemberNotLocked(String memberId){
+        log.info("회원 계정 잠금 확인 완료 : {}", memberId);
+    }
+    @Override
+    public void checkNotSocialSignUp(String memberId){
+        log.info("회원 소셜 회원가입 확인 완료 : {}", memberId);
+    }
 
     @Override
     public void checkPassword(String memberId, String password) {

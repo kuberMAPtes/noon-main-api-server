@@ -279,7 +279,7 @@ public class MemberRestController {
         String memberId = dto.getMemberId();
         String errorMessage = "";
 
-        if(loginAttemptCheckerAgent.isLoginLocked(memberId)){
+        if(loginAttemptCheckerAgent.isLoginLocked(memberId)) {
             System.out.println("로그인 시도 횟수 초과 30초간 잠금상태입니다.");
 
             errorMessage = "로그인 시도 횟수 초과 30초간 잠금상태입니다.";
@@ -287,7 +287,8 @@ public class MemberRestController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponseFactory.createErrorResponse(errorMessage, null));
         }
-
+        memberService.checkNotSocialSignUp(memberId);
+        memberService.checkLoginMemberNotLocked(memberId);
         memberService.checkLoginMemberIdPattern(memberId);
         memberService.checkPassword(memberId,dto.getPwd());
         MemberDto memberDto = memberService.findMemberById(memberId, memberId);
