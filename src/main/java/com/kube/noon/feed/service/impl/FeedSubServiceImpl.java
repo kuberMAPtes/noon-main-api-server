@@ -3,6 +3,7 @@ package com.kube.noon.feed.service.impl;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.kube.noon.common.FileType;
 import com.kube.noon.common.ObjectStorageAPI;
+import com.kube.noon.common.ObjectStorageAPIProfile;
 import com.kube.noon.common.zzim.Zzim;
 import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
@@ -39,7 +40,7 @@ public class FeedSubServiceImpl implements FeedSubService {
     private final TagRepository tagRepository;
     private final ZzimRepository zzimRepository;
     private final ObjectStorageAPI objectStorageAPI;
-
+    private final ObjectStorageAPIProfile objectStorageAPIProfile; // test
 
     @Override
     public List<FeedAttachmentDto> getFeedAttachementListByFileType(FileType fileType) {
@@ -117,6 +118,7 @@ public class FeedSubServiceImpl implements FeedSubService {
 
                     // Object Storage에 넣기
                     String Url = objectStorageAPI.putObject(originalFileName, file);
+                    // String Url = objectStorageAPIProfile.putObject(originalFileName, file); // test
 
                     // DB에 넣기
                     feedAttachmentRepository.save(FeedAttachment.builder()
