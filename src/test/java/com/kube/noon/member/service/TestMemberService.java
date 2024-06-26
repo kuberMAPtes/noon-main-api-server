@@ -14,6 +14,7 @@ import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
 import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.repository.MemberRepository;
+import com.kube.noon.member.service.impl.MemberServiceImpl;
 import jakarta.transaction.Transactional;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,10 @@ public class TestMemberService {
 
     @Autowired
     private MemberService memberService;
+
+    @Autowired
+    private MemberServiceImpl memberServiceImpl;
+
     @Autowired
     private MemberRepository memberRepository;
 
@@ -87,8 +92,17 @@ public class TestMemberService {
     @DisplayName("회원 프로필  찾기 테스트")
     void findMemberProfileById() {
         log.info("회원 프로필 찾기 테스트!@#!@");
-        assertThat(memberService.findMemberProfileById("member_100","member_1")).isNotNull();
+        System.out.println(memberService.findMemberProfileById("member_1","member_1"));
+        assertThat(memberService.findMemberProfileById("member_1","member_1")).isNotNull();
     }
+
+    //이거 private함수를 테스트해보고 주석처리 한 것 입니다.
+//    @Test
+//    @DisplayName("회원 프로필 사진 찾기 테스트")
+//    void findMemberProfilePhoto(){
+//        log.info("회원 프로필 사진 찾기 테스트");
+//        System.out.println(memberServiceImpl.findMemberProfilePhoto("member_1"));
+//    }
 
     @Test
     @DisplayName("회원 닉네임으로 찾기 테스트")

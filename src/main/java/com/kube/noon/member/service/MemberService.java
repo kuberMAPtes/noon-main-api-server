@@ -39,7 +39,6 @@ public interface MemberService {
 
     MemberRelationshipSimpleDto findMemberRelationshipSimple(String fromId, String toId);
 
-
     ResponseEntity<byte[]> findMemberProfilePhoto(String memberId);
 
     Page<SearchMemberResponseDto> searchMemberByNickname(String requesterId, String searchKeyword, int page);
@@ -52,7 +51,7 @@ public interface MemberService {
 
     void updateMemberProfilePhotoUrl(UpdateMemberProfilePhotoUrlDto updateMemberProfilePhotoUrlDto);
 
-    String updateMemberProfilePhotoUrl(String memberId, MultipartFile file);
+    String updateMemberProfilePhotoUrl2(String memberId, MultipartFile file);
 
     void updateMemberProfileIntro(UpdateMemberProfileIntroDto updateMemberProfileIntroDto);
 
