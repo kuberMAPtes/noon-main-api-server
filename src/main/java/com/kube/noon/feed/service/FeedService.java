@@ -1,6 +1,7 @@
 package com.kube.noon.feed.service;
 
 import com.kube.noon.feed.dto.FeedDto;
+import com.kube.noon.feed.dto.FeedMegaphoneDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.dto.UpdateFeedDto;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,9 @@ public interface FeedService {
     // 회원이 건물을 구독한 피드 목록을 가져온다.
     List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId);
     List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId, int page, int pageSize);
+
+    // 건물 내 피드 중 확성기 관련 피드만 가져온다.
+    List<FeedMegaphoneDto> getFeedListByBuildingAndMegaphone(int buildingId);
 
     // 모든 피드를 인기도순으로 나열한다.
     List<FeedSummaryDto> getAllFeedOrderByPopolarity(String member, int page, int pageSize);

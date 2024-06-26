@@ -5,10 +5,7 @@ import com.kube.noon.common.FeedCategory;
 import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.*;
-import com.kube.noon.feed.dto.FeedDto;
-import com.kube.noon.feed.dto.FeedSummaryDto;
-import com.kube.noon.feed.dto.TagDto;
-import com.kube.noon.feed.dto.UpdateFeedDto;
+import com.kube.noon.feed.dto.*;
 import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.feed.repository.TagFeedRepository;
 import com.kube.noon.feed.repository.TagRepository;
@@ -254,6 +251,14 @@ public class FeedServiceImpl implements FeedService {
         List<FeedSummaryDto> feedListByBuildingSubscription = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByBuildingSubscription;
+    }
+
+    @Override
+    public List<FeedMegaphoneDto> getFeedListByBuildingAndMegaphone(int buildingId) {
+        Building building = Building.builder().buildingId(buildingId).build();
+        List<Feed> feedList = feedRepository.findByBuildingAndFeedCategoryAndActivatedTrue(building, FeedCategory.MEGAPHONE);
+
+        return FeedMegaphoneDto.toDtoList(feedList);
     }
 
     @Override

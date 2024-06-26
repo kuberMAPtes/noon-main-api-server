@@ -1,6 +1,7 @@
 package com.kube.noon.feed.repository;
 
 import com.kube.noon.building.domain.Building;
+import com.kube.noon.common.FeedCategory;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.member.domain.Member;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +43,11 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
      */
     List<Feed> findByBuildingAndActivatedTrue(Building building);
     List<Feed> findByBuildingAndActivatedTrue(Building building, Pageable pageable);
+
+    /**
+     * 건물별 피드 중 카테고리에 알맞는 피드를 가져온다 : 주사용처 -> 확성기
+     */
+    List<Feed> findByBuildingAndFeedCategoryAndActivatedTrue(Building building, FeedCategory feedCategory);
 
     /**
      * 회원의 메인 피드를 가져온다.
