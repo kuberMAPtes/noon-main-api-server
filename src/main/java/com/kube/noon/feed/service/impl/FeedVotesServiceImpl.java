@@ -11,9 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Log4j2
@@ -32,6 +30,7 @@ public class FeedVotesServiceImpl implements FeedVotesService {
                 .question(feedVotesDto.getQuestion())
                 .options(feedVotesDto.getOptions())
                 .votes(new ArrayList<>(Collections.nCopies(feedVotesDto.getOptions().size(), 0))) // 0으로 초기화
+                .voterIds(new HashMap<String, Integer>())
                 .build();
 
         return FeedVotesDto.toDto(feedVotesRepository.save(feedVotes));
@@ -40,10 +39,11 @@ public class FeedVotesServiceImpl implements FeedVotesService {
     @Transactional
     @Override
     public FeedVotesDto updateVote(FeedVotesDto feedVotesDto) {
-        FeedVotes feedVotes = feedVotesRepository.findById(feedVotesDto.getFeedId()).orElseThrow(() -> new IllegalArgumentException("유효한 ID가 아님"));
+        FeedVotes feedVotes = feedVotesRepository.findById(feedVotesDto.getFeedId()).orElse(null);
         feedVotes.setQuestion(feedVotesDto.getQuestion());
         feedVotes.setOptions(feedVotesDto.getOptions());
-        feedVotes.setVotes(new ArrayList<>(Collections.nCopies(feedVotesDto.getOptions().size(), 0))); // ㅊ기화
+        feedVotes.setVotes(new ArrayList<>(Collections.nCopies(feedVotesDto.getOptions().size(), 0))); // 초기화
+        feedVotes.setVoterIds(new HashMap<String, Integer>()); // 초기화
 
         return FeedVotesDto.toDto(feedVotesRepository.save(feedVotes));
     }
@@ -56,21 +56,26 @@ public class FeedVotesServiceImpl implements FeedVotesService {
 
     @Transactional
     @Override
-    public void addVoting(int feedId, int optionIndex) {
-        FeedVotes feedVotes = feedVotesRepository.findById(feedId).orElseThrow(() -> new IllegalArgumentException("Invalid feed ID"));
-        List<Integer> votes = feedVotes.getVotes();
-        votes.set(optionIndex, votes.get(optionIndex) + 1);
-        feedVotes.setVotes(votes);
-        feedVotesRepository.save(feedVotes);
-    }
+    public FeedVotesDto addVoting(FeedVotesDto feedVotesDto) {
+        FeedVotes feedVotes = feedVotesRepository.findById(feedVotesDto.getFeedId()).orElse(null);
+        // System.out.println(feedVotes);
 
-    @Override
-    public void deleteVoting(int feedId, int optionIndex) {
-        FeedVotes feedVotes = feedVotesRepository.findById(feedId).orElseThrow(() -> new IllegalArgumentException("Invalid feed ID"));
-        List<Integer> votes = feedVotes.getVotes();
-        votes.set(optionIndex, votes.get(optionIndex) - 1);
-        feedVotes.setVotes(votes);
-        feedVotesRepository.save(feedVotes);
+        if(feedVotes != null) {
+            // 1. 투표 수 더하기
+            List<Integer> votes = feedVotes.getVotes();
+            int chosenOption = feedVotesDto.getChosenOption();
+            votes.set(chosenOption, votes.get(chosenOption) + 1);
+            feedVotes.setVotes(votes);
+
+            // 2. 투표를 한 맴버 추가
+            Map<String, Integer> voterIds = feedVotes.getVoterIds();
+            voterIds.put(feedVotesDto.getMemberId(), chosenOption);
+            feedVotes.setVoterIds(voterIds);
+
+            return FeedVotesDto.toDto(feedVotesRepository.save(feedVotes));
+        }
+
+        return null;
     }
 
 
