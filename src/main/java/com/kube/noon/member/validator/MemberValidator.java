@@ -11,6 +11,7 @@ import com.kube.noon.member.repository.MemberRepository;
 import com.kube.noon.member.service.impl.MemberServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.multipart.MultipartFile;
 
 @Validator(targetClass = MemberServiceImpl.class)
 @Slf4j
@@ -92,6 +93,10 @@ public class MemberValidator {
     public void updateMemberProfilePhotoUrl(UpdateMemberProfilePhotoUrlDto dto) {
         memberScanner.imoDataNotNull(dto);
         memberScanner.imoDtoFieldO(dto);
+    }
+    public void updateMemberProfilePhotoUrl2(String memberId, MultipartFile file) {
+        memberScanner.imoDataNotNull(memberId);
+        memberScanner.imoDataNotNull(file);
     }
     public void updateMemberProfileIntro(UpdateMemberProfileIntroDto dto) {
         memberScanner.imoDataNotNull(dto);

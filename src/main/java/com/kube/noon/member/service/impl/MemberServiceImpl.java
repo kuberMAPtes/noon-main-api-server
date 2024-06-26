@@ -1,7 +1,7 @@
 package com.kube.noon.member.service.impl;
 
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.kube.noon.common.ObjectStorageAPI;
+import com.kube.noon.common.ObjectStorageAPIProfile;
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.feed.service.FeedService;
@@ -34,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.Random;
 
@@ -49,7 +50,8 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final FeedService feedService;
-    private final ObjectStorageAPI objectStorageAPI;
+    private final ObjectStorageAPIProfile objectStorageAPIProfile;
+
 
 //    private final SettingService settingService;
 
@@ -186,36 +188,53 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-    @Override
     public ResponseEntity<byte[]> findMemberProfilePhoto(String memberId) {
         // memberProfileDto에서 profilePhotoUrl을 가져오기
 
         Member member = memberRepository.findMemberById(memberId).orElse(null);
         MemberProfileDto memberProfileDto = null;
         if(member!=null) {
-             memberProfileDto = DtoEntityBinder.INSTANCE.toDto(member, MemberProfileDto.class);
+            memberProfileDto = DtoEntityBinder.INSTANCE.toDto(member, MemberProfileDto.class);
         }else{
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
 
-        // profilePhotoUrl에서 파일`명 추출
+        // profilePhotoUrl에서 파일명 추출
         String[] fileNames = memberProfileDto.getProfilePhotoUrl().split("/");
         String fileName = fileNames[fileNames.length - 1];
 
         // 오브젝트 스토리지에서 파일 읽기
-        S3ObjectInputStream inputStream = objectStorageAPI.getObject(fileName);
+        S3ObjectInputStream inputStream = objectStorageAPIProfile.getObject(fileName);
 
         try {
             // 이미지 파일을 byte 배열로 읽기
             byte[] imageBytes = inputStream.readAllBytes();
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.IMAGE_JPEG);
+            MediaType mediaType = getMediaType(fileName);
+            headers.setContentType(mediaType);
 
             // ResponseEntity로 반환
             return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
         } catch(IOException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    // 파일 확장자를 기반으로 MIME 타입을 반환하는 메소드
+    private MediaType getMediaType(String fileName) {
+        String[] parts = fileName.split("\\.");
+        String extension = parts[parts.length - 1].toLowerCase(); // 파일 확장자를 소문자로 변환하여 비교
+
+        switch (extension) {
+            case "jpg": case "jpeg":
+            case "png": case "gif":
+                return MediaType.IMAGE_JPEG; // 이미지 파일인 경우
+            case "mp4":
+                return MediaType.valueOf("video/mp4"); // 동영상 파일인 경우
+            default:
+                return MediaType.APPLICATION_OCTET_STREAM; // 기타 파일은 바이너리 스트림으로 처리
         }
     }
 
@@ -471,17 +490,16 @@ public class MemberServiceImpl implements MemberService {
         }
     }
     @Override
-    public String updateMemberProfilePhotoUrl(String memberId, MultipartFile file){
+    public String updateMemberProfilePhotoUrl2(String memberId, MultipartFile file){
         try{
             String originalFilename = file.getOriginalFilename();
-            String Url = objectStorageAPI.putObject(originalFilename, file);
+            String Url = objectStorageAPIProfile.putObject(originalFilename, file);
 
             memberRepository.updateMemberProfilePhoto(memberId, Url);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
         return memberId;
     }
 

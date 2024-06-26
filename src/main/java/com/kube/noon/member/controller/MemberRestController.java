@@ -848,12 +848,12 @@ public class MemberRestController {
     }
 
     @Operation(summary = "회원 프로필 사진 추가", description = "회원의 프로필 사진을 추가합니다.")
-    @PostMapping("/updateProfilePhoto/{memberId}")
-    public ResponseEntity<String> updateProfilePhoto(
+    @PostMapping("/updateProfilePhotoUrl/{memberId}")
+    public ResponseEntity<String> updateProfilePhotoUrl(
             @RequestParam("multipartFile") MultipartFile multipartFile,
             @Parameter(description = "회원 ID") @PathVariable("memberId") String memberId) {
         try {
-            String profilePhotoUrl = memberService.updateMemberProfilePhotoUrl(memberId, multipartFile);
+            String profilePhotoUrl = memberService.updateMemberProfilePhotoUrl2(memberId, multipartFile);
             return new ResponseEntity<>(profilePhotoUrl, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
