@@ -21,6 +21,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -222,6 +223,28 @@ public class MemberScanner {
             throw new IllegalServiceCallException("자기 자신과의 관계는 설정할 수 없습니다.", new Problems(Map.of("fromId", fromId, "toId", toId)));
         }
     }
+    public void imoMemberNotLocked(String memberId) {
+        Member member = memberRepository.findMemberById(memberId).orElseThrow(() ->
+                new IllegalServiceCallException("존재하지 않는 회원입니다.", new Problems(Map.of("memberId", memberId)))
+        );
+        System.out.println("체크완료");
+
+        if (!member.isAccountNonLocked()) {
+            System.out.println("잠긴 계정입니다.");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd");
+            String unlockTime = member.getUnlockTime().format(formatter);
+            throw new IllegalServiceCallException("잠긴 계정입니다. 계정 잠금 해제 일자 : " + unlockTime, new Problems(Map.of("memberId", memberId)));
+        }
+    }
+    public void imoNotSocialSignUp(String memberId){
+        Member member = memberRepository.findMemberById(memberId).orElseThrow(() ->
+                new IllegalServiceCallException("존재하지 않는 회원입니다.", new Problems(Map.of("memberId", memberId)))
+        );
+        if (member.getPwd().equals("social_sign_up")){
+            throw new IllegalServiceCallException("소셜 회원님은 일반로그인 하실 수 없습니다.", new Problems(Map.of("memberId", memberId)));
+        }
+    }
+
 
     public void imoNicknameNotAlreadyExist(String nickname) {
         if (memberRepository.findMemberByNickname(nickname).isPresent()) {
@@ -272,7 +295,7 @@ public class MemberScanner {
 
     public void imoPwdPatternO(String password) {
         if (!PASSWORD_PATTERN.matcher(password).matches()) {
-            throw new IllegalServiceCallException("비밀번호는 8자 이상 16자 이하여야 합니다.", new Problems(Map.of("password", password)));
+            throw new IllegalServiceCallException("비밀번호는 8자 이상 16자 이하이고, 영어와 숫자가 포함되어야 합니다.", new Problems(Map.of("password", password)));
         }
     }
     public void imoPwdNotSequentialPatternO(String password) {

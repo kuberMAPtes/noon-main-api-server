@@ -152,6 +152,14 @@ public class MemberValidator {
         memberScanner.imoDataNotNull(memberId);
         memberScanner.imoMemberIdPatternO(memberId);
     }
+    public void checkLoginMemberNotLocked(String memberId){
+        memberScanner.imoDataNotNull(memberId);
+        memberScanner.imoMemberNotLocked(memberId);
+    }
+    public void checkNotSocialSignUp(String memberId){
+        memberScanner.imoDataNotNull(memberId);
+        memberScanner.imoNotSocialSignUp(memberId);
+    }
 
     //비밀번호변경시
     public void checkPassword(String memberId, String password) {

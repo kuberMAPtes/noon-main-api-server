@@ -68,6 +68,10 @@ public interface MemberService {
 
     void checkMemberIdExisted(String memberId);
 
+    void checkLoginMemberNotLocked(String memberId);
+
+    void checkNotSocialSignUp(String memberId);
+
     void checkPhoneNumberAndMemberId(String phoneNumber, String memberId);
 
     void checkLoginMemberIdPattern(String memberId);
