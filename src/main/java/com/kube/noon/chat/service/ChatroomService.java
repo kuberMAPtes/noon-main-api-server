@@ -26,6 +26,13 @@ public interface ChatroomService {
     public String deleteChatroom(int chatroomId) throws Exception;
 
     /**
+     * Job 의 내용을 일정주기로 반복실행하는 스케쥴러, ChatroomSchedularConfig 에서 정의한 DeleteChatroomJob의 실제 실행 내용
+     * @return
+     * @throws Exception
+     */
+    public int scheduledDeleteGroupChatrooms() throws Exception;
+
+    /**
      * 채팅방 추방
      * @param chatroomId
      * @param memberId
