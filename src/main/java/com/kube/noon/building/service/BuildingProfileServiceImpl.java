@@ -1,17 +1,16 @@
 package com.kube.noon.building.service;
 
 import com.kube.noon.building.domain.Building;
-import com.kube.noon.building.dto.BuildingApplicantDto;
-import com.kube.noon.building.dto.BuildingDto;
-import com.kube.noon.building.dto.BuildingSearchResponseDto;
-import com.kube.noon.building.dto.BuildingZzimDto;
+import com.kube.noon.building.dto.*;
 import com.kube.noon.building.exception.NotRegisteredBuildingException;
 import com.kube.noon.building.repository.BuildingSummaryRepository;
 import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
 import com.kube.noon.building.repository.BuildingProfileRepository;
 import com.kube.noon.building.service.buildingwiki.BuildingWikiEmptyServiceImpl;
 import com.kube.noon.building.service.buildingwiki.BuildingWikiRestTemplateServiceImpl;
+import com.kube.noon.chat.dto.ChatroomDto;
 import com.kube.noon.chat.dto.LiveliestChatroomDto;
+import com.kube.noon.chat.serviceImpl.ChatroomSearchServiceImpl;
 import com.kube.noon.common.constant.PagingConstants;
 import com.kube.noon.common.zzim.Zzim;
 import com.kube.noon.common.zzim.ZzimRepository;
@@ -66,6 +65,9 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     private final SortHandlerMethodArgumentResolverCustomizer sortCustomizer;
     private final MemberRepositoryImpl memberRepositoryImpl;
     private final MemberDtoBinderImpl memberDtoBinderImpl;
+    private final ChatroomSearchServiceImpl chatroomSearchService;
+
+    private static final int CHART_DATA_LIMIT = 20;
 
     @Value("${profile-activation.threshold}")
     private int activationThreshold;
@@ -228,7 +230,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
      * @param memberId 타회원의 구독목록을 가져오려는 회원의 계정아이디
      * @param someoneId 구독목록을 제공하는 회원의 계정아이디
      * @return 타회원 구독 목록이 합쳐진 회원의 구독 목록
-     * 
+     *
      * @Author 허예지
      */
     @Override
@@ -422,5 +424,62 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
                     return dto;
                 })
                 .toList();
+    }
+
+    @Override
+    public List<BuildingChartDto> getChart(String reqType) throws Exception {
+
+        List<Building> buildingList = buildingProfileRepository.findAll();
+        List<BuildingChartDto> buildingChart = new ArrayList<>();
+
+        log.info("All buildings={}",buildingList);
+
+        for(Building building : buildingList){
+            BuildingChartDto buildingChartDto = new BuildingChartDto();
+            buildingChartDto.setBuildingId(building.getBuildingId());
+            buildingChartDto.setBuildingName(building.getBuildingName());
+
+            switch (reqType){
+                case "SUBSCRIBER":
+                    //건물별 구독자 수 저장
+                    buildingChartDto.setCnt(this.getSubscriberCnt(building.getBuildingId()));
+                    log.info("buildingChartDto={}", buildingChartDto);
+                    break;
+
+                case "FEED":
+                    //건물별 피드 개수 저장
+                    List<Feed> feedList = feedRepository.findByBuildingAndActivatedTrue(building);
+                    buildingChartDto.setCnt(feedList.size());
+                    break;
+
+                case "CHAT":
+                    //건물별 채팅방 개수 저장
+                    List<ChatroomDto> chatroomList = chatroomSearchService.getBuildingChatroomList(building.getBuildingId());
+                    buildingChartDto.setCnt(chatroomList.size());
+                    break;
+
+                default:
+                    break;
+            }/// end of switch
+
+            buildingChart.add(buildingChartDto);
+
+            log.info("added data={}",buildingChartDto);
+            log.info("added chart={}",buildingChart);
+            log.info("chart size={}",buildingChart.size());
+        }///end of for
+
+        log.info("buildingChart={}",buildingChart);
+
+        //cnt 기준 내림차순 정렬
+        buildingChart.sort(Comparator.comparingInt(BuildingChartDto::getCnt).reversed());
+        log.info("sorted buildingChart={}",buildingChart);
+
+        // 높은순 CHART_DATA_LIMIT개 데이터만 제공함
+        if (buildingChart.size() > CHART_DATA_LIMIT) {
+            buildingChart = buildingChart.subList(0, CHART_DATA_LIMIT);
+        }
+
+        return buildingChart;
     }
 }

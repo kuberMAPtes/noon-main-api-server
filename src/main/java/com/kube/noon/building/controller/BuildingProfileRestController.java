@@ -204,4 +204,16 @@ public class BuildingProfileRestController {
 
 
 
+    /**
+     * 통계를 위한 자료 제공(건물 구독자수/피드개수/채팅방개수)
+     */
+    @GetMapping("/getChart")
+    public List<BuildingChartDto> getChart(@RequestParam("reqType") String reqType) throws Exception {
+
+        return buildingProfileService.getChart(reqType);
+
+    }
+
+
+
 }

@@ -208,55 +208,14 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
      *
      * @author 허예지
      */
-    public String makeBlurredImage(String fileUrl, int attachmentId) throws IOException {
-
+    public String   makeBlurredImage(String fileUrl, int attachmentId) throws IOException {
         URL imageUrl = new URL(fileUrl);
         BufferedImage input = ImageIO.read(imageUrl);
 
-        Color color[];
+        int radius = 5; // 블러 반경, 값이 클수록 더 강한 블러 효과
+        int iterations = 5; // 블러 반복 횟수, 값이 클수록 더 강한 블러 효과
 
-        BufferedImage output = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_RGB);
-        int i = 0;
-        int max = 400, rad = 10;
-        int a1 = 0, r1 = 0, g1 = 0, b1 = 0;
-        color = new Color[max];
-
-        //블러링 작업
-        int x = 1, y = 1, x1, y1, ex = 5, d = 0;
-        for (x = rad; x < input.getHeight() - rad; x++) {
-            for (y = rad; y < input.getWidth() - rad; y++) {
-
-                for (x1 = x - rad; x1 < x + rad; x1++) {
-                    for (y1 = y - rad; y1 < y + rad; y1++) {
-                        color[i++] = new Color(input.getRGB(y1, x1));
-                    }
-                }
-                i = 0;
-
-                for (d = 0; d < max; d++) {
-                    a1 = a1 + color[d].getAlpha();
-                }
-                a1 = a1 / (max);
-
-                for (d = 0; d < max; d++) {
-                    r1 = r1 + color[d].getRed();
-                }
-                r1 = r1 / (max);
-
-                for (d = 0; d < max; d++) {
-                    g1 = g1 + color[d].getGreen();
-                }
-                g1 = g1 / (max);
-
-                for (d = 0; d < max; d++) {
-                    b1 = b1 + color[d].getBlue();
-                }
-                b1 = b1 / (max);
-                int sum1 = (a1 << 24) + (r1 << 16) + (g1 << 8) + b1;
-                output.setRGB(y, x, (int) (sum1));
-
-            }
-        }
+        BufferedImage output = applyBoxBlur(input, radius, iterations);
 
         // 블러 사진을 일단 로컬에 저장
         //String blurredImageLocation = "./src/main/resources/images/blurred-"+attachmentId+".jpg";
@@ -267,6 +226,56 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
         log.info("블러 처리 완료. 블러 파일 경로={}",blurredImageLocation);
 
         return blurredImageLocation;
+    }
 
-    }//end of makeBlurredImage
+    private BufferedImage applyBoxBlur(BufferedImage input, int radius, int iterations) {
+        int width = input.getWidth();
+        int height = input.getHeight();
+        BufferedImage blurredImage = new BufferedImage(width, height, input.getType());
+
+        for (int i = 0; i < iterations; i++) {
+            boxBlur(input, blurredImage, radius);
+            input = blurredImage;
+        }
+
+        return blurredImage;
+    }
+
+    private void boxBlur(BufferedImage input, BufferedImage output, int radius) {
+        int width = input.getWidth();
+        int height = input.getHeight();
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int r = 0, g = 0, b = 0, a = 0;
+                int count = 0;
+
+                for (int dy = -radius; dy <= radius; dy++) {
+                    for (int dx = -radius; dx <= radius; dx++) {
+                        int nx = x + dx;
+                        int ny = y + dy;
+
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            Color color = new Color(input.getRGB(nx, ny), true);
+                            r += color.getRed();
+                            g += color.getGreen();
+                            b += color.getBlue();
+                            a += color.getAlpha();
+                            count++;
+                        }
+                    }
+                }
+
+                int newR = r / count;
+                int newG = g / count;
+                int newB = b / count;
+                int newA = a / count;
+
+                Color newColor = new Color(newR, newG, newB, newA);
+                output.setRGB(x, y, newColor.getRGB());
+            }
+        }
+    }
+
+
 }
