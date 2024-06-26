@@ -32,6 +32,15 @@ import java.util.*;
 
 import static com.kube.noon.common.security.SecurityConstants.*;
 
+/**
+ * {@link org.springframework.context.annotation.Profile}이 "accesscontrol"로 지정되어 있지 않으면
+ * 해당 필터는 적용되지 않는다.
+ * @author PGD
+ * @see AccessControl
+ * @see AccessControlTrigger
+ * @see RequestPathTree
+ * @see com.kube.noon.common.security.accesscontrol.util.RequestPathNode
+ */
 @Slf4j
 public class AccessControlFilter extends OncePerRequestFilter {
     private final List<BearerTokenSupport> tokenSupportSet;
