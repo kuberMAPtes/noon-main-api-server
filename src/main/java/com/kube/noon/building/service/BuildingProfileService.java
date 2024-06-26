@@ -4,6 +4,7 @@ import com.kube.noon.building.dto.BuildingApplicantDto;
 import com.kube.noon.building.dto.BuildingDto;
 import com.kube.noon.building.dto.BuildingSearchResponseDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
+import com.kube.noon.building.exception.NotRegisteredBuildingException;
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.dto.member.MemberDto;
 import com.kube.noon.places.domain.Position;
@@ -23,7 +24,7 @@ public interface BuildingProfileService {
     List<BuildingDto> getMemberBuildingSubscriptionList(String memberId);
     BuildingDto getBuildingProfile(int buildingId);
     BuildingDto getBuildingProfileByRoadAddr(String roadAddr);
-    BuildingDto getBuildingProfileByPosition(Position position) throws PlaceNotFoundException;
+    BuildingDto getBuildingProfileByPosition(Position position) throws PlaceNotFoundException, NotRegisteredBuildingException;
     List<BuildingDto> getBuildingSubscriptionListByMemberId(String memberId);
     List<BuildingDto> getBuildingsWithinRange(PositionRange positionRange);
     String getFeedAISummary(int buildingId);

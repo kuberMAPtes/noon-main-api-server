@@ -436,6 +436,23 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
     }
 
     /**
+     *  블러 url삭제
+     *
+     * @param attachmentDto 블러 파일을 생성하려는 첨부파일 Dto
+     * @return Object Storage에 업로드된 블러 파일의 url이 저장된 첨부파일 Dto
+     */
+    @Override
+    public FeedAttachmentDto deleteBluredImage(FeedAttachmentDto attachmentDto) throws IOException {
+
+        attachmentDto.setBlurredFileUrl(null);
+        feedAttachmentRepository.save(FeedAttachmentDto.toEntity(attachmentDto));
+
+        return attachmentDto;
+    }
+
+
+
+    /**
      * 유해 이미지 포함된 피드 삭제 & 작성자 계정 잠금일수 연장
      * @param feedDto 유해 이미지가 포함된 feed의 정보
      * @param reqUnlockDuration 관리자가 설정한 계정 잠금 연장 일수

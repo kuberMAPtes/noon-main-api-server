@@ -461,9 +461,11 @@ public class MemberRestController {
             log.info("회원 정보: {}", memberDto);
             memberDtoAtomicReference.set(memberDto);
         }, () -> {
+
             AddMemberDto addMemberDto = new AddMemberDto();
             addMemberDto.setMemberId(dto.getMemberId());
             addMemberDto.setNickname(dto.getNickname());
+            addMemberDto.setProfilePhotoUrl(dto.getProfilePhotoUrl());
             addMemberDto.setPwd("social_sign_up");
             addMemberDto.setProfilePhotoUrl(dto.getProfilePhotoUrl());
             //만약 존재하는 아이디라면 GlobalExceptionHandler에서 처리된다.
@@ -760,6 +762,36 @@ public class MemberRestController {
 
         return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회", map));
     }
+    @GetMapping("/getBlockRelationship")
+    public ResponseEntity<ApiResponse<Map<String,Object>>> getBlockRelationship(@RequestParam String fromId, String toId) {
+        log.info("getMemberRelationship :: " + fromId + " " + toId);
+        MemberRelationshipSimpleDto dto1 = memberService.findMemberRelationshipSimple(fromId, toId);
+
+        //getRelationshipType이 BLOCK이 아니면 null을 리턴
+        if(dto1!=null) {
+            if (dto1.getRelationshipType() != RelationshipType.BLOCK) {
+                dto1 = null;
+            }else if( Boolean.FALSE.equals(dto1.getActivated())){
+                dto1 = null;
+            }
+        }
+
+        MemberRelationshipSimpleDto dto2 = memberService.findMemberRelationshipSimple(toId, fromId);
+
+        if(dto2!=null) {
+            if (dto2.getRelationshipType() != RelationshipType.BLOCK) {
+                dto2 = null;
+            }else if( Boolean.FALSE.equals(dto2.getActivated())){
+                dto2 = null;
+            }
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("from", dto1);
+        map.put("to", dto2);
+
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회", map));
+    }
 
     @Operation(summary = "회원 관계 삭제", description = "사용자 간의 관계를 삭제합니다.")
     @ApiResponses({
@@ -827,7 +859,6 @@ public class MemberRestController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
     private String wrapWithCookie(String cookieName, String value) {
         log.info("client-server-domain={}", this.clientServerDomain);
 

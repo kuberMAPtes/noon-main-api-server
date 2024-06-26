@@ -5,6 +5,7 @@ import com.kube.noon.building.dto.BuildingApplicantDto;
 import com.kube.noon.building.dto.BuildingDto;
 import com.kube.noon.building.dto.BuildingSearchResponseDto;
 import com.kube.noon.building.dto.BuildingZzimDto;
+import com.kube.noon.building.exception.NotRegisteredBuildingException;
 import com.kube.noon.building.repository.BuildingSummaryRepository;
 import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
 import com.kube.noon.building.repository.BuildingProfileRepository;
@@ -27,6 +28,7 @@ import com.kube.noon.places.exception.PlaceNotFoundException;
 import com.kube.noon.places.service.PlacesService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -290,11 +292,11 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
     @Override
     public BuildingDto getBuildingProfileByPosition(Position position)
-            throws PlaceNotFoundException, NoSuchElementException {
+            throws PlaceNotFoundException, NotRegisteredBuildingException {
         PlaceDto findPlace = this.placesService.getPlaceByPosition(position);
         Building building = this.buildingProfileRepository.findBuildingProfileByRoadAddr(findPlace.getRoadAddress());
         if (building == null) {
-            throw new NoSuchElementException("No building");
+            throw new NotRegisteredBuildingException("No building", findPlace);
         }
         return BuildingDto.fromEntity(building);
     }
@@ -340,7 +342,9 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
         }///end of for
 
         // 해당 빌딩의 요약 받아오기
-        String feedAiSummary = buildingSummaryRepository.findFeedAISummary(title, feedText);
+        String feedAiSummary = new JSONObject( buildingSummaryRepository.findFeedAISummary(title, feedText) ).getString("summary");
+        log.info("피드 요약 결과={}",feedAiSummary);
+
 
         // 해당 빌딩의 요약 업데이트
         Building building = buildingProfileRepository.findBuildingProfileByBuildingId(buildingId);

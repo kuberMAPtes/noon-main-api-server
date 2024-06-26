@@ -2,6 +2,7 @@
 
 package com.kube.noon.building.controller;
 import com.kube.noon.building.dto.*;
+import com.kube.noon.building.exception.NotRegisteredBuildingException;
 import com.kube.noon.building.service.BuildingProfileService;
 import com.kube.noon.chat.dto.ChatroomDto;
 import com.kube.noon.chat.service.ChatroomSearchService;
@@ -113,12 +114,12 @@ public class BuildingProfileRestController {
             return new ResponseEntity<>(resp, HttpStatus.OK);
         } catch (PlaceNotFoundException e) {
             return new ResponseEntity<>(
-                    new BuildingNotFoundResponseDto(false, "해당 좌표에 건물이 없음"),
+                    new BuildingNotFoundResponseDto(false, "해당 좌표에 건물이 없음", null),
                     HttpStatus.NOT_FOUND
             );
-        } catch (NoSuchElementException e) {
+        } catch (NotRegisteredBuildingException e) {
             return new ResponseEntity<>(
-                    new BuildingNotFoundResponseDto(true,"등록되지 않은 건물"),
+                    new BuildingNotFoundResponseDto(true,"등록되지 않은 건물", e.getPlace()),
                     HttpStatus.NOT_FOUND
             );
         }
@@ -186,6 +187,21 @@ public class BuildingProfileRestController {
     ) {
         return new ResponseEntity<>(this.buildingProfileService.searchBuilding(searchKeyword, page), HttpStatus.OK);
     }
+
+
+    /**
+     * 건물 아이디로 피드 요약 가져오기.
+     * 스케줄러가 매일 12시마다 실행하는 작업이지만, 테스트를 위해 클라이언트의 요약 요청을 처리하기로 했다.
+     * @param buildingId 피드를 요약하려는 빌딩 아이디
+     * @return 요약된 피드 문자열 1줄
+     */
+    @GetMapping("/getSummary")
+    public String getSummary(@RequestParam("buildingId") int buildingId){
+
+        return buildingProfileService.getFeedAISummary(buildingId);
+        
+    }
+
 
 
 }
