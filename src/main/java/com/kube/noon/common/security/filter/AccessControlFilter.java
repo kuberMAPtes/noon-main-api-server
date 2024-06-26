@@ -63,14 +63,16 @@ public class AccessControlFilter extends OncePerRequestFilter {
                             continue;
                         }
                         String httpMethod = trigger.method().trim().toUpperCase();
-                        if (isMethodNameAcceptable(httpMethod)) {
+                        if (!isMethodNameAcceptable(httpMethod)) {
                             log.warn("HttpMethod is not acceptable: {}", httpMethod);
                             return;
                         }
                         String path = trigger.path().trim();
+                        log.trace("path={}, method={}", path, httpMethod);
                         this.accessControls.add(path, HttpMethod.valueOf(httpMethod), new BeanAndMethod(bean, method));
                     }
                 });
+        log.trace("{}", this.accessControls);
     }
 
     private boolean isMethodNameAcceptable(String methodName) {

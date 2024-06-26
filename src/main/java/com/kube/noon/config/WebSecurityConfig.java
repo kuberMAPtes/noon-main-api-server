@@ -61,7 +61,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    @Profile("prod")
+    @Profile({ "prod", "accesscontrol" })
     public JwtAuthenticationProvider jwtAuthenticationProvider(JwtSupport tokenSupportList, UserDetailsService userDetailsService) {
         return new JwtAuthenticationProvider(tokenSupportList, userDetailsService);
     }
@@ -73,7 +73,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    @Profile("prod")
+    @Profile({ "prod", "accesscontrol" })
     public KakaoTokenAuthenticationProvider kakaoTokenAuthenticationProvider(UserDetailsService userDetailsService) {
         return new KakaoTokenAuthenticationProvider(userDetailsService);
     }
@@ -102,19 +102,19 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    @Profile({"dev", "prod"})
+    @Profile({"dev", "prod", "accesscontrol" })
     public TokenAuthenticationFilter tokenAuthenticationFilter(List<BearerTokenAuthenticationTokenGenerator> generatorList) {
         return new TokenAuthenticationFilter(generatorList);
     }
 
     @Bean
-    @Profile({"dev", "prod"})
+    @Profile({"dev", "prod", "accesscontrol" })
     public AuthFilter authFilter(AuthenticationManager authenticationManager) {
         return new AuthFilter(authenticationManager);
     }
 
     @Bean
-    @Profile({"dev", "prod"})
+    @Profile({"dev", "prod", "accesscontrol" })
     public TokenRefreshFilter tokenRefreshFilter(List<BearerTokenSupport> tokenSupport, @Value("${client-server-domain}") String clientDomain) {
         return new TokenRefreshFilter(tokenSupport, clientDomain);
     }
@@ -128,7 +128,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    @Profile("prod")
+    @Profile({ "prod", "accesscontrol" })
     public PasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder(); // TODO: Should replace with Argon2PasswordEncoder someday
     }
@@ -193,7 +193,7 @@ public class WebSecurityConfig {
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(tokenAuthenticationFilter, AuthFilter.class)
                 .addFilterAfter(tokenRefreshFilter, AuthorizationFilter.class)
-                .addFilterBefore(accessControlFilter, TokenRefreshFilter.class)
+                .addFilterAfter(accessControlFilter, AuthorizationFilter.class)
                 .build();
     }
 
