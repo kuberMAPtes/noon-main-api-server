@@ -1,5 +1,7 @@
 package com.kube.noon.member.controller;
 
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.kube.noon.common.ObjectStorageAPI;
 import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.common.messagesender.ApickApiAgent;
 import com.kube.noon.common.messagesender.ApickApiAgentImpl;
@@ -9,6 +11,7 @@ import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.common.security.support.BearerTokenSupport;
 import com.kube.noon.common.security.support.InvalidRefreshTokenException;
 import com.kube.noon.common.security.support.KakaoTokenSupport;
+import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.RequestDto.*;
 import com.kube.noon.member.dto.ResponseDto.SearchMemberResponseDto;
 import com.kube.noon.member.dto.auth.googleLoginRequestDto;
@@ -42,9 +45,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.View;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,11 +84,11 @@ public class MemberRestController {
     private final AuthService authService;
     private final List<BearerTokenSupport> tokenSupport;
     private final View error;
-    private final AuthRepositoryImpl authRepositoryImpl;
 
     private final String clientServerHost;
 
     private final String clientServerPort;
+
 
     @Value("${client-server-domain}")
     private String clientServerDomain;
@@ -92,7 +100,7 @@ public class MemberRestController {
                                 AuthService authService,
                                 List<BearerTokenSupport> tokenSupport, View error, AuthRepositoryImpl authRepositoryImpl,
                                 @Value("${client.server.host}") String clientServerHost,
-                                @Value("${client.server.port}") String clientServerPort) {
+                                @Value("${client.server.port}") String clientServerPort, ObjectStorageAPI objectStorageAPI) {
         this.authService = authService;
         log.info("생성자 :: " + this.getClass());
         this.kakaoService = kakaoService;
@@ -100,7 +108,6 @@ public class MemberRestController {
         this.loginAttemptCheckerAgent = loginAttemptCheckerAgent;
         this.tokenSupport = tokenSupport;
         this.error = error;
-        this.authRepositoryImpl = authRepositoryImpl;
         this.clientServerHost = clientServerHost;
         this.clientServerPort = clientServerPort;
     }
@@ -461,6 +468,7 @@ public class MemberRestController {
             addMemberDto.setNickname(dto.getNickname());
             addMemberDto.setProfilePhotoUrl(dto.getProfilePhotoUrl());
             addMemberDto.setPwd("social_sign_up");
+            addMemberDto.setProfilePhotoUrl(dto.getProfilePhotoUrl());
             //만약 존재하는 아이디라면 GlobalExceptionHandler에서 처리된다.
             //프론트엔드에서 info를 받았을 때 memberId가 있는지 보면 된다.
             addMemberDto.setSocialSignUp(true);
@@ -616,6 +624,7 @@ public class MemberRestController {
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 정보 변경 업무", true));
     }
 
+
     /**
      * 관리자가 사용
      */
@@ -636,7 +645,11 @@ public class MemberRestController {
         log.info("getMemberByPhoneNumber :: " + phoneNumber);
         MemberDto dto = memberService.findMemberByPhoneNumber(phoneNumber);
         System.out.println("회원조회업무 :: " + dto);
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("", dto.getMemberId()));
+        if(dto!=null) {
+            return ResponseEntity.ok(ApiResponseFactory.createResponse("", dto.getMemberId()));
+        }else{
+            return ResponseEntity.ok(ApiResponseFactory.createResponse("", null));
+        }
     }
 
     @Operation(summary = "회원 프로필 조회", description = "사용자의 프로필을 조회합니다.")
@@ -831,7 +844,7 @@ public class MemberRestController {
     @GetMapping("/getProfilePhoto")
     public ResponseEntity<byte[]> getProfilePhoto(@Parameter(description = "회원 ID") @RequestParam String memberId) {
 
-        return memberService.findMemberProfilePhoto(memberId);
+         return memberService.findMemberProfilePhoto(memberId);
     }
 
     @Operation(summary = "회원 프로필 사진 추가", description = "회원의 프로필 사진을 추가합니다.")
