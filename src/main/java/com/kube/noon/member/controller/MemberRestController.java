@@ -493,6 +493,9 @@ public class MemberRestController {
             memberDtoAtomicReference.set(memberDto);
 
         });
+
+        addTokenToCookie(response, new TokenPair(dto.getOauthIdToken(), dto.getRefreshToken()), TokenType.GOOGLE_TOKEN);
+        log.debug(response.getHeader("Set-Cookie"));
         return ResponseEntity.ok(ApiResponseFactory.createResponse("로그인 업무", memberDtoAtomicReference.get()));
     }
 

@@ -4,11 +4,13 @@ import com.kube.noon.common.security.TokenPair;
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import org.json.JSONObject;
 import org.springframework.http.RequestEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.nio.charset.StandardCharsets;
 
+@Component
 public class GoogleTokenSupport implements BearerTokenSupport {
 
     @Override
@@ -42,9 +44,9 @@ public class GoogleTokenSupport implements BearerTokenSupport {
                                     .encode(StandardCharsets.UTF_8)
                                     .toUriString())
                             .build();
-            return true;
-        } catch (Exception e) {
             return false;
+        } catch (Exception e) {
+            return true;
         }
     }
 
