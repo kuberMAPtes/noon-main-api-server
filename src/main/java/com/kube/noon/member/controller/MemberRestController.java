@@ -14,7 +14,7 @@ import com.kube.noon.common.security.support.KakaoTokenSupport;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.RequestDto.*;
 import com.kube.noon.member.dto.ResponseDto.SearchMemberResponseDto;
-import com.kube.noon.member.dto.auth.googleLoginRequestDto;
+import com.kube.noon.member.dto.auth.GoogleLoginRequestDto;
 import com.kube.noon.member.dto.member.*;
 import com.kube.noon.member.dto.memberRelationship.*;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
@@ -35,24 +35,24 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.View;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,10 +128,10 @@ public class MemberRestController {
         log.info("sendAuthentificationNumber :: " + phoneNumber);
         Boolean isSended = authService.sendAuthentificationNumber(phoneNumber);
 //        Boolean isSended = true;
-        if(isSended) {
+        if (isSended) {
             return ResponseEntity.ok(ApiResponseFactory.createResponse(phoneNumber + "로 인증 번호가 전송되었습니다.", true));
-        }else{
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponseFactory.createErrorResponse("인증 번호 전송 실패",false));
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponseFactory.createErrorResponse("인증 번호 전송 실패", false));
         }
     }
 
@@ -145,12 +145,12 @@ public class MemberRestController {
     public ResponseEntity<ApiResponse<Boolean>> confirmAuthentificationNumber(@RequestParam String phoneNumber, @RequestParam String authNumber) {
 
         log.info("confirmAuthentificationNumber :: " + phoneNumber + " " + authNumber);
-        
-        Map<String,Object> mapResult = authService.confirmAuthenticationNumber(phoneNumber, authNumber);
 
-        if ((boolean) mapResult.get("result")){//성공한거
+        Map<String, Object> mapResult = authService.confirmAuthenticationNumber(phoneNumber, authNumber);
+
+        if ((boolean) mapResult.get("result")) {//성공한거
             return ResponseEntity.ok(ApiResponseFactory.createResponse("인증이 확인되었습니다.", true));
-        }else {
+        } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponseFactory.createErrorResponse((String) mapResult.get("message"), false));
         }
 
@@ -170,14 +170,16 @@ public class MemberRestController {
         memberService.checkBadWord(memberId);
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 ID를 사용할 수 있습니다.", true));
     }
+
     @GetMapping("/checkMemberIdExisted")
-    public ResponseEntity<ApiResponse<Boolean>> checkMemberIdExisted(@RequestParam String memberId){
+    public ResponseEntity<ApiResponse<Boolean>> checkMemberIdExisted(@RequestParam String memberId) {
         log.info("checkMemberIdExisted :: " + memberId);
         memberService.checkMemberIdExisted(memberId);
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 ID를 사용할 수 있습니다.", true));
     }
+
     @GetMapping("/checkPhoneNumberAndMemberId")
-    public ResponseEntity<ApiResponse<Boolean>> checkPhoneNumberAndMemberId(@RequestParam String phoneNumber, @RequestParam String memberId){
+    public ResponseEntity<ApiResponse<Boolean>> checkPhoneNumberAndMemberId(@RequestParam String phoneNumber, @RequestParam String memberId) {
         log.info("checkPhoneNumberAndMemberId :: " + phoneNumber + " " + memberId);
         memberService.checkPhoneNumberAndMemberId(phoneNumber, memberId);
         return ResponseEntity.ok(ApiResponseFactory.createResponse("입력한 전화번호가 회원정보에 있는 전화번호와 일치합니다.", true));
@@ -258,7 +260,7 @@ public class MemberRestController {
         try {
             tokenType = TokenType.valueOf(tokenTypeStr);
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid refresh token",false), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid refresh token", false), HttpStatus.FORBIDDEN);
         }
 
         for (BearerTokenSupport ts : this.tokenSupport) {
@@ -268,11 +270,11 @@ public class MemberRestController {
                     addTokenToCookie(response, tokenPair, tokenType);
                     return new ResponseEntity<>(ApiResponseFactory.createResponse("Success", true), HttpStatus.OK);
                 } catch (InvalidRefreshTokenException e) {
-                    return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid refresh token",false), HttpStatus.FORBIDDEN);
+                    return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid refresh token", false), HttpStatus.FORBIDDEN);
                 }
             }
         }
-        return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid token type",false), HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(ApiResponseFactory.createErrorResponse("Invalid token type", false), HttpStatus.FORBIDDEN);
     }
 
     @Operation(summary = "로그인", description = "사용자가 아이디와 비밀번호를 통해 로그인합니다.")
@@ -286,7 +288,7 @@ public class MemberRestController {
         String memberId = dto.getMemberId();
         String errorMessage = "";
 
-        if(loginAttemptCheckerAgent.isLoginLocked(memberId)) {
+        if (loginAttemptCheckerAgent.isLoginLocked(memberId)) {
             System.out.println("로그인 시도 횟수 초과 30초간 잠금상태입니다.");
 
             errorMessage = "로그인 시도 횟수 초과 30초간 잠금상태입니다.";
@@ -297,7 +299,7 @@ public class MemberRestController {
         memberService.checkNotSocialSignUp(memberId);
         memberService.checkLoginMemberNotLocked(memberId);
         memberService.checkLoginMemberIdPattern(memberId);
-        memberService.checkPassword(memberId,dto.getPwd());
+        memberService.checkPassword(memberId, dto.getPwd());
         MemberDto memberDto = memberService.findMemberById(memberId, memberId);
 
         LoginFlag loginFlag = LoginFlag.FAILURE;
@@ -433,10 +435,10 @@ public class MemberRestController {
         String trimmedHost = clientServerHost.trim();
         String trimmedPort = clientServerPort.trim();
 
-        if(!clientServerPort.isEmpty()) {
-            redirectClientUrl = trimmedHost + ":" + trimmedPort + "/member/kakaoNav/"+memberId+"?loginWay=" + "kakao";
-        }else{//비었으면 Host만
-            redirectClientUrl = trimmedHost + "/member/kakaoNav/"+memberId+"?loginWay=" + "kakao";
+        if (!clientServerPort.isEmpty()) {
+            redirectClientUrl = trimmedHost + ":" + trimmedPort + "/member/kakaoNav/" + memberId + "?loginWay=" + "kakao";
+        } else {//비었으면 Host만
+            redirectClientUrl = trimmedHost + "/member/kakaoNav/" + memberId + "?loginWay=" + "kakao";
         }
 
         System.out.println("리다이렉트 합니다 " + redirectClientUrl);
@@ -452,8 +454,21 @@ public class MemberRestController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "구글 로그인 실패")
     })
     @PostMapping("/googleLogin")
-    public ResponseEntity<?> googleLogin(@RequestBody googleLoginRequestDto dto, HttpServletResponse response) {
+    public ResponseEntity<?> googleLogin(@RequestBody GoogleLoginRequestDto dto, HttpServletResponse response) {
         log.info("구글 로그인 요청: {}", dto);
+
+        RequestEntity<Void> requestEntity =
+                RequestEntity.post(UriComponentsBuilder.fromHttpUrl("https://oauth2.googleapis.com/tokeninfo")
+                                .queryParam("id_token", dto.getOauthIdToken())
+                                .encode(StandardCharsets.UTF_8)
+                                .toUriString())
+                        .build();
+        JSONObject responseBody = new JSONObject(new RestTemplate().exchange(requestEntity, String.class).getBody());
+        log.trace("Google - contents of ID Token - responseBody={}", responseBody);
+        String memberId = responseBody.getString("email");
+        log.trace("memberId from ID Token={}", memberId);
+        log.trace("dto.getMemberId()={}", dto.getMemberId());
+        log.trace("dto.getMemberId().equals(memberId)={}", dto.getMemberId().equals(memberId));
 
         AtomicReference<MemberDto> memberDtoAtomicReference = new AtomicReference<>();
 
@@ -545,7 +560,7 @@ public class MemberRestController {
                 errors.put(fieldError.getField(), fieldError.getDefaultMessage());
             });
             log.info(errors.toString());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponseFactory.createErrorResponse("회원가입 실패",false));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponseFactory.createErrorResponse("회원가입 실패", false));
         }
 
         log.info("왜 로그가 안찍혀");
@@ -637,14 +652,15 @@ public class MemberRestController {
         System.out.println("회원조회업무 :: " + dto);
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 조회 업무", dto));
     }
+
     @GetMapping("/getMemberIdByPhoneNumber")
-    public ResponseEntity<ApiResponse<String>> getMemberByPhoneNumber(@RequestParam String phoneNumber){
+    public ResponseEntity<ApiResponse<String>> getMemberByPhoneNumber(@RequestParam String phoneNumber) {
         log.info("getMemberByPhoneNumber :: " + phoneNumber);
         MemberDto dto = memberService.findMemberByPhoneNumber(phoneNumber);
         System.out.println("회원조회업무 :: " + dto);
-        if(dto!=null) {
+        if (dto != null) {
             return ResponseEntity.ok(ApiResponseFactory.createResponse("", dto.getMemberId()));
-        }else{
+        } else {
             return ResponseEntity.ok(ApiResponseFactory.createResponse("", null));
         }
     }
@@ -709,7 +725,7 @@ public class MemberRestController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원 관계 목록 조회 실패")
     })
     @PostMapping("/getMemberRelationshipList")
-    public ResponseEntity<ApiResponse<Map<String,Object>>> getMemberRelationshipList(@RequestBody MemberRelationshipSearchCriteriaRequestDto requestDto) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMemberRelationshipList(@RequestBody MemberRelationshipSearchCriteriaRequestDto requestDto) {
         log.info("getMemberRelationshipList{}", requestDto);
         MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto = DtoEntityBinder.INSTANCE.toOtherDto(requestDto);
 
@@ -721,35 +737,35 @@ public class MemberRestController {
                 .map(memberRelationshipDto -> DtoEntityBinder.INSTANCE.toDto(memberRelationshipDto, MemberRelationshipSimpleDto.class))
                 .toList();
 
-        Map<String,Object> map = new HashMap<>();
-        map.put("dtoList",relationshipSimpleDtoList);
-        map.put("totalFollowingCount",responseDto.getMemberRelationshipCountDto().getFollowingCount());
-        map.put("totalFollowerCount",responseDto.getMemberRelationshipCountDto().getFollowerCount());
-        map.put("totalBlockingCount",responseDto.getMemberRelationshipCountDto().getBlockingCount());//내가 차단한 회원
-        map.put("totalBlockerCount",responseDto.getMemberRelationshipCountDto().getBlockerCount());//얘는 관리자만 사용
-        return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회",map));
+        Map<String, Object> map = new HashMap<>();
+        map.put("dtoList", relationshipSimpleDtoList);
+        map.put("totalFollowingCount", responseDto.getMemberRelationshipCountDto().getFollowingCount());
+        map.put("totalFollowerCount", responseDto.getMemberRelationshipCountDto().getFollowerCount());
+        map.put("totalBlockingCount", responseDto.getMemberRelationshipCountDto().getBlockingCount());//내가 차단한 회원
+        map.put("totalBlockerCount", responseDto.getMemberRelationshipCountDto().getBlockerCount());//얘는 관리자만 사용
+        return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회", map));
     }
 
     @GetMapping("/getFollowRelationship")
-    public ResponseEntity<ApiResponse<Map<String,Object>>> getFollowRelationship(@RequestParam String fromId, String toId) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getFollowRelationship(@RequestParam String fromId, String toId) {
         log.info("getMemberRelationship :: " + fromId + " " + toId);
         MemberRelationshipSimpleDto dto1 = memberService.findMemberRelationshipSimple(fromId, toId);
 
         //getRelationshipType이 FOLLOW가 아니면 null을 리턴
-        if(dto1!=null) {
+        if (dto1 != null) {
             if (dto1.getRelationshipType() != RelationshipType.FOLLOW) {
                 dto1 = null;
-            }else if( Boolean.FALSE.equals(dto1.getActivated())){
+            } else if (Boolean.FALSE.equals(dto1.getActivated())) {
                 dto1 = null;
             }
         }
 
         MemberRelationshipSimpleDto dto2 = memberService.findMemberRelationshipSimple(toId, fromId);
 
-        if(dto2!=null) {
+        if (dto2 != null) {
             if (dto2.getRelationshipType() != RelationshipType.FOLLOW) {
                 dto2 = null;
-            }else if( Boolean.FALSE.equals(dto2.getActivated())){
+            } else if (Boolean.FALSE.equals(dto2.getActivated())) {
                 dto2 = null;
             }
         }
@@ -760,26 +776,27 @@ public class MemberRestController {
 
         return ResponseEntity.ok(ApiResponseFactory.createResponse("관계를 성공적으로 조회", map));
     }
+
     @GetMapping("/getBlockRelationship")
-    public ResponseEntity<ApiResponse<Map<String,Object>>> getBlockRelationship(@RequestParam String fromId, String toId) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getBlockRelationship(@RequestParam String fromId, String toId) {
         log.info("getMemberRelationship :: " + fromId + " " + toId);
         MemberRelationshipSimpleDto dto1 = memberService.findMemberRelationshipSimple(fromId, toId);
 
         //getRelationshipType이 BLOCK이 아니면 null을 리턴
-        if(dto1!=null) {
+        if (dto1 != null) {
             if (dto1.getRelationshipType() != RelationshipType.BLOCK) {
                 dto1 = null;
-            }else if( Boolean.FALSE.equals(dto1.getActivated())){
+            } else if (Boolean.FALSE.equals(dto1.getActivated())) {
                 dto1 = null;
             }
         }
 
         MemberRelationshipSimpleDto dto2 = memberService.findMemberRelationshipSimple(toId, fromId);
 
-        if(dto2!=null) {
+        if (dto2 != null) {
             if (dto2.getRelationshipType() != RelationshipType.BLOCK) {
                 dto2 = null;
-            }else if( Boolean.FALSE.equals(dto2.getActivated())){
+            } else if (Boolean.FALSE.equals(dto2.getActivated())) {
                 dto2 = null;
             }
         }
@@ -841,7 +858,7 @@ public class MemberRestController {
     @GetMapping("/getProfilePhoto")
     public ResponseEntity<byte[]> getProfilePhoto(@Parameter(description = "회원 ID") @RequestParam String memberId) {
 
-         return memberService.findMemberProfilePhoto(memberId);
+        return memberService.findMemberProfilePhoto(memberId);
     }
 
     @Operation(summary = "회원 프로필 사진 추가", description = "회원의 프로필 사진을 추가합니다.")
@@ -857,6 +874,7 @@ public class MemberRestController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     private String wrapWithCookie(String cookieName, String value) {
         log.info("client-server-domain={}", this.clientServerDomain);
 
