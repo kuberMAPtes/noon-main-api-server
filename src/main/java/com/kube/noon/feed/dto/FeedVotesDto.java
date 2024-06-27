@@ -42,6 +42,8 @@ public class FeedVotesDto {
                 ", question : " + question +
                 ", options : " + options +
                 ", votes : " + votes +
-                ", voterIds : " + voterIds;
+                ", voterIds : " + voterIds +
+                ", memberId : " + memberId +
+                ", chosenOption : " + chosenOption;
     }
 }
