@@ -11,14 +11,17 @@ import lombok.*;
 @NoArgsConstructor
 public class googleLoginRequestDto {
 
-    @JsonProperty("memberId")
-    String memberId;
+    @JsonProperty("idToken")
+    String idToken;
 
-    @JsonProperty("authorizeCode")
-    String accessToken;
+    @JsonProperty("oauthIdToken")
+    String oauthIdToken;
 
     @JsonProperty("refreshToken")
     String refreshToken;
+
+    @JsonProperty("memberId")
+    String memberId;
 
     @JsonProperty("nickname")
     String nickname;
