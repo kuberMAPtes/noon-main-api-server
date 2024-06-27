@@ -24,6 +24,7 @@ public class ChatEntrance {
 //    private int chatroomId;
 //    ////////////
 
+    // Chatroom 이 삭제될 때 ChatEntrance 도 삭제되도록
     @ManyToOne
     @JoinColumn(name = "chatroom_id", nullable = false)
     private Chatroom chatroom;

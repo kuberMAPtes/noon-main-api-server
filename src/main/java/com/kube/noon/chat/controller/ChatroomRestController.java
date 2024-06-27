@@ -76,7 +76,17 @@ public class ChatroomRestController {
     public List<ChatroomDto> getChatrooms(@RequestParam("memberId") String memberId) throws Exception {
         System.out.println("        🐬[Controller] (memberId) => " + memberId);
         System.out.println("        🐬[Controller] getMyChatrooms return => " + chatroomSearchService.getChatroomListByMemberId(memberId));
-        return chatroomSearchService.getChatroomListByMemberId(memberId);
+        List<ChatroomDto> chatroomDtos = chatroomSearchService.getChatroomListByMemberId(memberId);
+
+        // 채팅방 조회시 채팅방 참여멤버수도 함께조회
+        if(!chatroomDtos.isEmpty()){
+            for(ChatroomDto chatroomDto : chatroomDtos){
+                List<ChatEntranceDto> chatEntrances = chatroomService.getChatEntranceListByChatroom(chatroomDto);
+
+                chatroomDto.setChatroomEntrancesSize(chatEntrances.size());
+            }
+        }
+        return chatroomDtos;
     }
 
     /**

@@ -99,7 +99,7 @@ public class ChatroomSearchServiceImpl implements ChatroomSearchService {
         dto.setChatroomName(chatroom.getChatroomName());
         dto.setChatroomMinTemp(chatroom.getChatroomMinTemp());
         dto.setChatroomCreator(chatroom.getChatroomCreator());
-        dto.setChatroomType(chatroom.getChatroomType().toString()); // Enum 값을 문자열로 변환하여 설정
+        dto.setChatroomType(chatroom.getChatroomType()); // Enum 값을 문자열로 변환하여 설정
         return dto;
     }
 

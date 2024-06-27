@@ -55,7 +55,7 @@ public class ChatMatchingRestController {
         // 1:1 채팅방을 생성하고 입장도 시킨다.
         ChatroomDto privateRoomDto = new ChatroomDto();
         privateRoomDto.setChatroomCreatorId(chatApplyDto.getFromId());
-        privateRoomDto.setChatroomType("PRIVATE_CHATTING");
+        privateRoomDto.setChatroomType(ChatroomType.PRIVATE_CHATTING);
         privateRoomDto.setChatroomName("사적채팅방 이름을 어떻게 하지 상대에 따라 유동적으로 가야될텐데");
         privateRoomDto.setChatroomMinTemp(0F);
         privateRoomDto.setInvitedMemberId(chatApplyDto.getToId());
