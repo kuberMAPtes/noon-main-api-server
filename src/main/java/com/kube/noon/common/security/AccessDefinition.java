@@ -107,6 +107,8 @@ public class AccessDefinition {
             "/chatMatching/newChatApplyList",
             "/chatMatching/getChatApply",
 
+            // Chat Admin (여기 뭐하는애들인지 물어보기 to.GODGDP)
+
             // Building Profile
             "/buildingProfile/deleteSubscription",
             "/buildingProfile/addSubscription",

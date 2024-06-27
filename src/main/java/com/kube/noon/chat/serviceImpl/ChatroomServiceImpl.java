@@ -9,10 +9,12 @@ import com.kube.noon.chat.domain.ChatroomMemberType;
 import com.kube.noon.chat.domain.ChatroomType;
 import com.kube.noon.chat.dto.ChatEntranceDto;
 import com.kube.noon.chat.dto.ChatroomDto;
+import com.kube.noon.chat.exceptions.ChatroomNotFoundException;
 import com.kube.noon.chat.repository.ChatEntranceRepository;
 import com.kube.noon.chat.repository.ChatroomRepository;
 import com.kube.noon.chat.service.ChatroomService;
 import com.kube.noon.member.domain.Member;
+import com.kube.noon.member.exception.MemberNotFoundException;
 import com.kube.noon.member.service.MemberService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +69,7 @@ public class ChatroomServiceImpl implements ChatroomService {
             chatroom.setBuilding(building);
 
             chatroom.setChatroomMinTemp(requestChatroom.getChatroomMinTemp());
-            ChatroomType roomType = ChatroomType.valueOf(requestChatroom.getChatroomType()); // String 을 Enum으로 변환해서 Entity 삽입
+            ChatroomType roomType = ChatroomType.GROUP_CHATTING;
             chatroom.setChatroomType(roomType);
             Chatroom savedChatroom = chatroomRepository.save(chatroom);
 
@@ -88,7 +90,7 @@ public class ChatroomServiceImpl implements ChatroomService {
         if(requestChatroom.getChatroomType().equals("PRIVATE_CHATTING")) {
             System.out.println("        🦐[addChatroom ServiceImpl Private Chatting]");
 
-            ChatroomType roomType = ChatroomType.valueOf(requestChatroom.getChatroomType()); // String 을 Enum으로 변환해서 Entity 삽입
+            ChatroomType roomType = ChatroomType.PRIVATE_CHATTING;
             chatroom.setChatroomType(roomType);
             Chatroom savedChatroom = chatroomRepository.save(chatroom);
 
@@ -126,6 +128,12 @@ public class ChatroomServiceImpl implements ChatroomService {
         return "delete success";
     }
 
+    @Override
+    public int scheduledDeleteGroupChatrooms() throws Exception {
+
+        return chatroomRepository.deactivateByChatroomType(ChatroomType.GROUP_CHATTING);
+    }
+
     // 채팅방에서 참여멤버 강퇴
     @Override
     public Map<String, Object> kickChatroom(int chatroomId, String memberId) throws Exception {
@@ -134,14 +142,14 @@ public class ChatroomServiceImpl implements ChatroomService {
         // 채팅방 찾기
         Chatroom chatroom = chatroomRepository.findChatroomByChatroomId(chatroomId);
         if (chatroom == null) {
-            throw new RuntimeException("Chatroom not found");
+            throw new ChatroomNotFoundException("Chatroom not found");
         }
         System.out.println("findCHatroomByChatroomId 완료");
 
         // 해당 채팅방에서 회원 추방
         int updatedRows = chatEntranceRepository.kickMember(chatroom, memberId);
         if (updatedRows == 0){
-            throw new RuntimeException("Member not found or already kicked");
+            throw new MemberNotFoundException("Member not found or already kicked");
         }
         System.out.println("kickMember" + memberId + "내보내기 완료");
 
@@ -164,7 +172,7 @@ public class ChatroomServiceImpl implements ChatroomService {
         System.out.println("        🦐[ServiceImpl] getChatEntranceListByChatroom requestChatroom => " + requestChatroom);
 
         // DB에서 찾아온 채팅방
-        Chatroom chatroom = chatroomRepository.findById(requestChatroom.getChatroomID()).orElse(null);
+        Chatroom chatroom = chatroomRepository.findChatroomByChatroomId(requestChatroom.getChatroomID());
         System.out.println("        🦐[ServiceImpl] chatroom Repository 로 찾은 채팅방 결과 => " + chatroom);
 
         // 채팅방에 참여멤버 목록
@@ -219,7 +227,7 @@ public class ChatroomServiceImpl implements ChatroomService {
     public ChatroomDto getChatroomByRoomId(int chatroomID) {
         System.out.println("        🦐[ServiceImpl] getChatroomByRoomId (chatroomId) => " + chatroomID);
 
-        Chatroom chatroom = chatroomRepository.findById(chatroomID).orElse(null);
+        Chatroom chatroom = chatroomRepository.findChatroomByChatroomId(chatroomID);
         if (chatroom != null) {
             System.out.println("        🦐[ServiceImpl] getChatroomByRoomId return => " + convertToChatroomDto(chatroom));
 
@@ -236,7 +244,7 @@ public class ChatroomServiceImpl implements ChatroomService {
         dto.setChatroomName(chatroom.getChatroomName());
         dto.setChatroomMinTemp(chatroom.getChatroomMinTemp());
         dto.setChatroomCreatorId(chatroom.getChatroomCreator().getMemberId());
-        dto.setChatroomType(chatroom.getChatroomType().toString()); // Enum 값을 문자열로 변환하여 설정
+        dto.setChatroomType(chatroom.getChatroomType()); // Enum 값을 문자열로 변환하여 설정
         return dto;
     }
 
