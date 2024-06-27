@@ -60,23 +60,28 @@ public class FeedVotesServiceImpl implements FeedVotesService {
         FeedVotes feedVotes = feedVotesRepository.findById(feedVotesDto.getFeedId()).orElse(null);
         // System.out.println(feedVotes);
 
-        if(feedVotes != null) {
-            // 1. 투표 수 더하기
-            List<Integer> votes = feedVotes.getVotes();
+        if (feedVotes != null) {
+            // 1. 투표자의 현황 갱신 및 추가하기
+            Map<String, Integer> voterIds = feedVotes.getVoterIds();
+            String memberId = feedVotesDto.getMemberId();
             int chosenOption = feedVotesDto.getChosenOption();
-            votes.set(chosenOption, votes.get(chosenOption) + 1);
+            int optionSize = feedVotesDto.getOptions().size();
+            voterIds.put(memberId, chosenOption);
+
+            // 2. 투표 수 갱신하기
+            List<Integer> votes = updateVotes(voterIds, optionSize);
+
+            // 3. repository에 내용 갱신
+            feedVotes.setVoterIds(voterIds);
             feedVotes.setVotes(votes);
 
-            // 2. 투표를 한 맴버 추가
-            Map<String, Integer> voterIds = feedVotes.getVoterIds();
-            voterIds.put(feedVotesDto.getMemberId(), chosenOption);
-            feedVotes.setVoterIds(voterIds);
-
             return FeedVotesDto.toDto(feedVotesRepository.save(feedVotes));
+        } else {
+            return null;
         }
-
-        return null;
     }
+
+
 
 
     @Override
@@ -85,5 +90,26 @@ public class FeedVotesServiceImpl implements FeedVotesService {
                 feedVotesRepository.findById(feedId)
                         .orElse(null)
         );
+    }
+
+    // feedVotes 내의 voterIds를 확인하여 votes를 갱신한다.
+    private List<Integer> updateVotes(Map<String, Integer> voterIds, int optionSize) {
+        // 1. 새로운 배열을 만듬
+        List<Integer> votes = new ArrayList<>(Collections.nCopies(optionSize, 0));
+
+        // 2. 투표 개수를 계산할 Map을 만듬
+        Map<Integer, Integer> valueCountMap = new HashMap<>();
+        for (Integer value : voterIds.values()) {
+            valueCountMap.put(value, valueCountMap.getOrDefault(value, 0) + 1);
+        }
+        
+        // 3. 각 투표 계산 결과를 votes에 반영
+        Iterator<Integer> iterator = valueCountMap.keySet().iterator();
+        while (iterator.hasNext()) {
+            int key = iterator.next();
+            votes.set(key, valueCountMap.get(key));
+        }
+        
+        return votes;
     }
 }

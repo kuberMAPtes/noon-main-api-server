@@ -80,6 +80,14 @@ public class FeedRestController {
         return feedListByBuildingSubscription;
     }
 
+    @Operation(summary = "건물 내 피드 중 확성기 피드 정보 가져오기", description = "확성기 관련 피드 내용을 가져옵니다.")
+    @GetMapping("/getFeedListByBuildingAndMegaphone")
+    public List<FeedMegaphoneDto> getFeedListByBuildingAndMegaphone(@Parameter(description = "확성기를 가져올 건물 ID") @RequestParam int buildingId){
+        List<FeedMegaphoneDto> feedListByBuildingAndMegaphone = feedService.getFeedListByBuildingAndMegaphone(buildingId);
+
+        return feedListByBuildingAndMegaphone;
+    }
+
     @Operation(summary = "인기도 순으로 나열한 전체 피드 목록", description = "인기도가 높은 순서대로 피드 전체 목록을 출력합니다.")
     @GetMapping("/getAllFeedOrderByPopolarity")
     public List<FeedSummaryDto> getAllFeedOrderByPopolarity(
