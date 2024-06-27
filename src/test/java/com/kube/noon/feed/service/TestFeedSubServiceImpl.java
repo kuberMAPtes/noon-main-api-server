@@ -242,7 +242,7 @@ public class TestFeedSubServiceImpl {
                 .writtenTime(LocalDateTime.now())
                 .activated(true)
                 .build();
-        int commentId = feedSubServiceImpl.addFeedComment(feedCommentDto);
+        int commentId = feedSubServiceImpl.addFeedComment(feedCommentDto).getCommentId();
 
         FeedComment feedComment = feedCommentRepository.findByCommentId(commentId);
 
