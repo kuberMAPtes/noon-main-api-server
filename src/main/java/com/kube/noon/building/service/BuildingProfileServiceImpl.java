@@ -471,14 +471,14 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
         log.info("buildingChart={}",buildingChart);
 
-        //cnt 기준 내림차순 정렬
-        buildingChart.sort(Comparator.comparingInt(BuildingChartDto::getCnt).reversed());
-        log.info("sorted buildingChart={}",buildingChart);
-
-        // 높은순 CHART_DATA_LIMIT개 데이터만 제공함
-        if (buildingChart.size() > CHART_DATA_LIMIT) {
-            buildingChart = buildingChart.subList(0, CHART_DATA_LIMIT);
-        }
+//        //cnt 기준 내림차순 정렬
+//        buildingChart.sort(Comparator.comparingInt(BuildingChartDto::getCnt).reversed());
+//        log.info("sorted buildingChart={}",buildingChart);
+//
+//        // 높은순 CHART_DATA_LIMIT개 데이터만 제공함
+//        if (buildingChart.size() > CHART_DATA_LIMIT) {
+//            buildingChart = buildingChart.subList(0, CHART_DATA_LIMIT);
+//        }
 
         return buildingChart;
     }
