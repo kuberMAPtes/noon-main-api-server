@@ -15,7 +15,10 @@ public class googleLoginRequestDto {
     String memberId;
 
     @JsonProperty("authorizeCode")
-    String authorizeCode;
+    String accessToken;
+
+    @JsonProperty("refreshToken")
+    String refreshToken;
 
     @JsonProperty("nickname")
     String nickname;
