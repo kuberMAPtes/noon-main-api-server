@@ -72,6 +72,7 @@ public class ChatroomServiceImpl implements ChatroomService {
             ChatroomType roomType = ChatroomType.GROUP_CHATTING;
             chatroom.setChatroomType(roomType);
             Chatroom savedChatroom = chatroomRepository.save(chatroom);
+            System.out.println("        🦐[addChatroom ServiceImpl Public Chatting ] 최종 만들 chatroom Entity => " + savedChatroom);
 
             // 채팅생성자가 채팅참여멤버에 안들어갓누
             ChatEntrance chatEntrance = new ChatEntrance();
@@ -245,6 +246,7 @@ public class ChatroomServiceImpl implements ChatroomService {
         dto.setChatroomMinTemp(chatroom.getChatroomMinTemp());
         dto.setChatroomCreatorId(chatroom.getChatroomCreator().getMemberId());
         dto.setChatroomType(chatroom.getChatroomType()); // Enum 값을 문자열로 변환하여 설정
+        dto.setBuildingId(chatroom.getBuilding().getBuildingId());
         return dto;
     }
 

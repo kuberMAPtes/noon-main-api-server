@@ -42,6 +42,6 @@ public class Chatroom {
     @Column(name = "chatroom_dajung_temp_min")
     private Float chatroomMinTemp;
 
-    @OneToMany(mappedBy = "chatroom", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "chatroom", fetch = FetchType.EAGER)
     private List<ChatEntrance> chatEntranceList;
 }
