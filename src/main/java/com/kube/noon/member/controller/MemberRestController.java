@@ -373,7 +373,7 @@ public class MemberRestController {
 
         TokenPair tokenPair = this.kakaoService.generateTokenPairAndAddMemberIfNotExists(authorizeCode);
         addTokenToCookie(response, tokenPair, TokenType.KAKAO_TOKEN);
-
+        log.info("토큰을 생성합니다");
 
         String memberId = "";
         for (BearerTokenSupport element : tokenSupport) {
@@ -470,9 +470,6 @@ public class MemberRestController {
             memberDtoAtomicReference.set(memberDto);
 
         });
-
-//        addTokenToCookie();
-
         return ResponseEntity.ok(ApiResponseFactory.createResponse("로그인 업무", memberDtoAtomicReference.get()));
     }
 
