@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-@ControllerAdvice
+@ControllerAdvice(basePackages = "com.kube.noon.chat.controller")
 public class ChatroomGlobalExceptionHandler {
 
     @ExceptionHandler(ChatroomNotFoundException.class)
