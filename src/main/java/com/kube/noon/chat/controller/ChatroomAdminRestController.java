@@ -66,6 +66,7 @@ public class ChatroomAdminRestController {
 
     @GetMapping("/chatroomDeleteTime")
     public long getNextTriggerTime() {
+        System.out.println("        🐬[Admin Controller] 채팅방 폭파시간 알아오기 실행)");
         try {
             /**
              * TriggerKey를 통해 Quartz Scheduler에 등록된 특정 트리거를 식별하고 가져올 수 있다.
@@ -74,6 +75,9 @@ public class ChatroomAdminRestController {
             Trigger trigger = scheduler.getTrigger(new TriggerKey("deleteChatRoomsTrigger"));
             if (trigger != null) {
                 Date nextFireTime = trigger.getNextFireTime(); // 다음 트리거 실행시간
+                System.out.println("nextFireTime: " + nextFireTime.getTime());
+                System.out.println("System.currentTimeMillis(): " + System.currentTimeMillis());
+                System.out.println("남은시간" + (nextFireTime.getTime() - System.currentTimeMillis()));
                 return nextFireTime.getTime() - System.currentTimeMillis(); // 남은 시간 (= 다음 트리거 실행시간 - 현재시간)
             }
         } catch (SchedulerException e) {
