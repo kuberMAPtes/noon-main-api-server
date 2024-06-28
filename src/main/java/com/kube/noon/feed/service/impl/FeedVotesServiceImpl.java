@@ -63,7 +63,13 @@ public class FeedVotesServiceImpl implements FeedVotesService {
         if (feedVotes != null) {
             // 1. 투표자의 현황 갱신 및 추가하기
             Map<String, Integer> voterIds = feedVotes.getVoterIds();
+
+            // 회원 처리에 대한 null 처리
             String memberId = feedVotesDto.getMemberId();
+            if(memberId == null || memberId == "") {
+                return null;
+            }
+
             int chosenOption = feedVotesDto.getChosenOption();
             int optionSize = feedVotesDto.getOptions().size();
             voterIds.put(memberId, chosenOption);
@@ -80,9 +86,6 @@ public class FeedVotesServiceImpl implements FeedVotesService {
             return null;
         }
     }
-
-
-
 
     @Override
     public FeedVotesDto getVoteById(int feedId) {

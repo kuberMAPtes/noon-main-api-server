@@ -4,6 +4,7 @@ import com.kube.noon.common.FeedCategory;
 import com.kube.noon.common.PublicRange;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -23,4 +24,5 @@ public class UpdateFeedDto {
     private PublicRange publicRange;
     private FeedCategory feedCategory;
     private List<String> updateTagList; // 피드를 수정할 때 태그 리스트를 가져올 리스트
+    private LocalDateTime eventDate;  // 이벤트 피드일 때 가져올 날짜
 }

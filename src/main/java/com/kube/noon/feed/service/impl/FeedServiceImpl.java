@@ -6,6 +6,7 @@ import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.*;
 import com.kube.noon.feed.dto.*;
+import com.kube.noon.feed.repository.FeedEventRepository;
 import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.feed.repository.TagFeedRepository;
 import com.kube.noon.feed.repository.TagRepository;
@@ -23,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;;
 import java.util.List;
 import java.util.Random;
@@ -38,6 +40,7 @@ public class FeedServiceImpl implements FeedService {
     private final TagRepository tagRepository;
     private final TagFeedRepository tagFeedRepository;
     private final ZzimRepository zzimRepository;
+    private final FeedEventRepository feedEventRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -309,6 +312,18 @@ public class FeedServiceImpl implements FeedService {
         entityManager.flush();
         entityManager.clear();
 
+        // 피드 종류가 이벤트일 때, 이벤트 지정하기
+        FeedCategory feedCategory = feedDto.getFeedCategory();
+        LocalDateTime eventDate = feedDto.getEventDate();
+        if(feedCategory == FeedCategory.EVENT && eventDate != null) {
+            FeedEvent event = FeedEvent.builder()
+                    .feedId(feedId)
+                    .eventDate(eventDate)
+                    .build();
+
+            feedEventRepository.save(event);
+        }
+
         return feedId;
     }
 
@@ -361,6 +376,18 @@ public class FeedServiceImpl implements FeedService {
             }
         }
 
+        // 피드 종류가 이벤트일 때, 이벤트 지정하기
+        FeedCategory feedCategory = updateFeedDto.getFeedCategory();
+        LocalDateTime eventDate = updateFeedDto.getEventDate();
+        if(feedCategory == FeedCategory.EVENT && eventDate != null) {
+            FeedEvent event = FeedEvent.builder()
+                    .feedId(feedId)
+                    .eventDate(eventDate)
+                    .build();
+
+            feedEventRepository.save(event);
+        }
+
         return updateFeedId;
     }
 
@@ -397,6 +424,14 @@ public class FeedServiceImpl implements FeedService {
         List<Tag> tagList = tagRepository.getTagByFeedId(Feed.builder().feedId(feedId).build());
         resultFeed.setTags(TagDto.toDtoList(tagList));
         resultFeed.setUpdateTagList(tagList.stream().map(s -> s.getTagText()).collect(Collectors.toList()));
+
+        // 피드가 이벤트 피드일 때 이벤트 날짜를 가져온다.
+        if(getFeed.getFeedCategory() == FeedCategory.EVENT) {
+            FeedEvent feedEvent = feedEventRepository.findByFeedId(feedId);
+            if(feedEvent != null) {
+                resultFeed.setEventDate(feedEvent.getEventDate());
+            }
+        }
 
         return resultFeed;
     }
