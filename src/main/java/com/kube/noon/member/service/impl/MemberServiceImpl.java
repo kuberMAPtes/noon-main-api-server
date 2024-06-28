@@ -154,34 +154,32 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public MemberProfileDto findMemberProfileById(String fromId, String memberId) {
+    public ProfileAccessResultDto findMemberProfileById(String fromId, String memberId) {
         try {
             log.info("회원 프로필 조회 중: FromID={}, MemberID={}", fromId, memberId);
 
-            // fromId로 조회한 회원 정보를 기반으로 프로필 조회를 처리
             return memberRepository.findMemberById(fromId)
                     .flatMap(fromMember -> {
                         log.info("회원 프로필 처리 중: FromID={}, MemberID={}", fromId, memberId);
                         return handleProfileRetrieval(fromMember, fromId, memberId);
-                    })
-                    .orElseThrow(() -> new MemberNotFoundException("회원이 없습니다."));
+                    }).orElse(new ProfileAccessResultDto(false, "회원 프로필을 찾을 수 없습니다.", null));
 
         } catch (MemberNotFoundException e) {
             log.error("회원 프로필 조회 중 오류 발생: FromID={}, MemberID={}", fromId, memberId, e);
-            throw e;
+            return new ProfileAccessResultDto(false, "회원 프로필 조회 중 오류가 발생했습니다.", null);
         }
     }
 
-    private Optional<MemberProfileDto> handleProfileRetrieval(Member fromMember, String fromId, String memberId) {
+    private Optional<ProfileAccessResultDto> handleProfileRetrieval(Member fromMember, String fromId, String memberId) {
         log.info("프로필 조회 처리 중: FromID={}, MemberID={}", fromId, memberId);
         if (fromMember.getMemberRole().equals(Role.ADMIN)) {
             log.info("관리자 권한으로 모든 회원의 프로필 조회 중: MemberID={}", memberId);
             return memberRepository.findMemberById(memberId)
-                    .map(findedMember -> createMemberProfileDto(findedMember, memberId));
+                    .map(findedMember -> new ProfileAccessResultDto(true, "프로필 조회 성공", createMemberProfileDto(findedMember, memberId)));
         } else if (fromId.equals(memberId)) {
             log.info("자기 자신을 조회 중: MemberID={}", memberId);
             return memberRepository.findMemberById(memberId)
-                    .map(findedMember -> createMemberProfileDto(findedMember, memberId));
+                    .map(findedMember -> new ProfileAccessResultDto(true, "프로필 조회 성공", createMemberProfileDto(findedMember, memberId)));
         } else {
             log.info("다른 회원의 프로필 조회 중: FromID={}, MemberID={}", fromId, memberId);
             return findOtherMemberProfile(fromId, memberId);
@@ -189,31 +187,25 @@ public class MemberServiceImpl implements MemberService {
     }
 
     public ResponseEntity<byte[]> findMemberProfilePhoto(String memberId) {
-        // memberProfileDto에서 profilePhotoUrl을 가져오기
-
         Member member = memberRepository.findMemberById(memberId).orElse(null);
         MemberProfileDto memberProfileDto = null;
-        if(member!=null) {
+        if(member != null) {
             memberProfileDto = DtoEntityBinder.INSTANCE.toDto(member, MemberProfileDto.class);
-        }else{
+        } else {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
 
-        // profilePhotoUrl에서 파일명 추출
         String[] fileNames = memberProfileDto.getProfilePhotoUrl().split("/");
         String fileName = fileNames[fileNames.length - 1];
 
-        // 오브젝트 스토리지에서 파일 읽기
         S3ObjectInputStream inputStream = objectStorageAPIProfile.getObject(fileName);
 
         try {
-            // 이미지 파일을 byte 배열로 읽기
             byte[] imageBytes = inputStream.readAllBytes();
             HttpHeaders headers = new HttpHeaders();
             MediaType mediaType = getMediaType(fileName);
             headers.setContentType(mediaType);
 
-            // ResponseEntity로 반환
             return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
         } catch(IOException e) {
             e.printStackTrace();
@@ -221,73 +213,76 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-
-    // 파일 확장자를 기반으로 MIME 타입을 반환하는 메소드
     private MediaType getMediaType(String fileName) {
         String[] parts = fileName.split("\\.");
-        String extension = parts[parts.length - 1].toLowerCase(); // 파일 확장자를 소문자로 변환하여 비교
+        String extension = parts[parts.length - 1].toLowerCase();
 
         switch (extension) {
             case "jpg": case "jpeg":
             case "png": case "gif":
-                return MediaType.IMAGE_JPEG; // 이미지 파일인 경우
+                return MediaType.IMAGE_JPEG;
             case "mp4":
-                return MediaType.valueOf("video/mp4"); // 동영상 파일인 경우
+                return MediaType.valueOf("video/mp4");
             default:
-                return MediaType.APPLICATION_OCTET_STREAM; // 기타 파일은 바이너리 스트림으로 처리
+                return MediaType.APPLICATION_OCTET_STREAM;
         }
     }
 
-
-    private Optional<MemberProfileDto> findOtherMemberProfile(String fromId, String memberId) {
+    private Optional<ProfileAccessResultDto> findOtherMemberProfile(String fromId, String memberId) {
         log.info("다른 회원 프로필 조회 중: FromID={}, MemberID={}", fromId, memberId);
-        // 차단 여부 확인
         if (fromMemberIsBlocked(memberId, fromId)) {
             log.info("차단된 회원: FromID={}, MemberID={}", fromId, memberId);
-            return Optional.empty();  // 차단된 경우 빈 Optional 반환
+            return Optional.of(new ProfileAccessResultDto(false, "차단된 회원입니다.", null));
         }
 
-        // 회원 관계 확인
         MemberRelationshipDto memberRelationshipDto = findMemberRelationship(fromId, memberId);
         return memberRepository.findMemberById(memberId)
-                .filter(findedMember -> {
+                .map(findedMember -> {
                     PublicRange profilePublicRange = findedMember.getMemberProfilePublicRange();
                     log.info("프로필 공개 범위 확인: MemberID={}, 공개 범위={}", memberId, profilePublicRange);
-                    // 프로필 공개 범위에 따른 접근 권한 확인
                     switch (profilePublicRange) {
                         case PUBLIC:
                             log.info("프로필 공개: 누구나 접근 가능");
-                            return true;  // 공개된 프로필은 누구나 접근 가능
+                            return new ProfileAccessResultDto(true, "프로필에 접근할 수 있습니다.", createMemberProfileDto(findedMember, memberId));
                         case PRIVATE:
                             log.info("프로필 비공개: 접근 불가");
-                            return false;  // 비공개 프로필은 접근 불가
+                            return new ProfileAccessResultDto(false, "비공개된 프로필입니다.", null);
                         case FOLLOWER_ONLY:
                             log.info("팔로워 전용 프로필: 접근 가능 여부={}", memberRelationshipDto.getRelationshipType() == RelationshipType.FOLLOW);
-                            return memberRelationshipDto.getRelationshipType() == RelationshipType.FOLLOW;  // 팔로우 관계일 때 접근 가능
+                            if (memberRelationshipDto.getRelationshipType() == RelationshipType.FOLLOW) {
+                                return new ProfileAccessResultDto(true, "팔로워로서 프로필에 접근할 수 있습니다.", createMemberProfileDto(findedMember, memberId));
+                            } else {
+                                return new ProfileAccessResultDto(false, "팔로워만 볼 수 있는 프로필입니다.", null);
+                            }
                         case MUTUAL_ONLY:
                             boolean isMutual = isMutualFollow(fromId, memberId);
                             log.info("상호 팔로우 전용 프로필: 접근 가능 여부={}", isMutual);
-                            return isMutual;  // 상호 팔로우 관계일 때 접근 가능
+                            if (isMutual) {
+                                return new ProfileAccessResultDto(true, "상호 팔로우 관계에서 프로필에 접근할 수 있습니다.", createMemberProfileDto(findedMember, memberId));
+                            } else {
+                                return new ProfileAccessResultDto(false, "맞팔로우 관계에서만 볼 수 있는 프로필입니다.", null);
+                            }
                         default:
                             log.info("기타 경우: 접근 불가");
-                            return false;  // 기타 경우 접근 불가
+                            return new ProfileAccessResultDto(false, "프로필을 볼 수 없습니다.", null);
                     }
-                })
-                .map(findedMember -> createMemberProfileDto(findedMember, memberId));
+                });
     }
 
     private boolean isMutualFollow(String fromId, String memberId) {
-        // fromId가 memberId를 팔로우하고, memberId가 fromId를 팔로우하는지 확인
         MemberRelationshipDto relationship1 = findMemberRelationship(fromId, memberId);
         MemberRelationshipDto relationship2 = findMemberRelationship(memberId, fromId);
-        return relationship1.getRelationshipType() == RelationshipType.FOLLOW && relationship2.getRelationshipType() == RelationshipType.FOLLOW;
+
+        if (relationship1 == null || relationship2 == null) {
+            return false;
+        }
+
+        return relationship1.getRelationshipType() == RelationshipType.FOLLOW &&
+                relationship2.getRelationshipType() == RelationshipType.FOLLOW;
     }
 
-    //MemberProfileDto 객체 생성
     private MemberProfileDto createMemberProfileDto(Member findedMember, String memberId) {
-        // Member 객체를 MemberProfileDto 객체로 변환
         MemberProfileDto memberProfileDto = DtoEntityBinder.INSTANCE.toDto(findedMember, MemberProfileDto.class);
-        // 회원의 피드 목록 설정
         memberProfileDto.setFeedDtoList(feedService.getFeedListByMember(memberId));
         return memberProfileDto;
     }
