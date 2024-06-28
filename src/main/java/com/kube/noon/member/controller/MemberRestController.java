@@ -32,6 +32,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -517,6 +518,7 @@ public class MemberRestController {
     public ResponseEntity<ApiResponse<Boolean>> logout(
             @CookieValue(value = "token_type", required = false) String tokenTypeStr,
             @CookieValue(value = "refresh_token", required = false) String refreshToken,
+            HttpServletRequest request,
             HttpServletResponse response
     ) {
         response.addCookie(getDestructionCookie(SecurityConstants.ACCESS_TOKEN_COOKIE_KEY.get()));
@@ -536,6 +538,15 @@ public class MemberRestController {
             }
         }
 
+        // 모든 쿠키 삭제
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                log.info("쿠키 삭제: {}", cookie.getName());
+                response.addCookie(getDestructionCookie(cookie.getName()));
+            }
+        }
+
         return ResponseEntity.ok(ApiResponseFactory.createResponse("로그아웃 업무", true));
     }
 
@@ -544,6 +555,11 @@ public class MemberRestController {
         cookie.setMaxAge(0);
         cookie.setDomain(this.clientServerDomain);
         cookie.setPath("/");
+        if(!this.clientServerDomain.equals("localhost")) {
+            cookie.setHttpOnly(true);  // 필요한 경우 설정
+            cookie.setSecure(true);    // HTTPS인 경우 설정
+        }
+
         return cookie;
     }
 
