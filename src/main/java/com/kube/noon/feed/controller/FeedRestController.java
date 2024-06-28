@@ -33,8 +33,9 @@ public class FeedRestController {
     @GetMapping("/getFeedListByMember")
     public List<FeedSummaryDto> getMemberFeedList(
             @Parameter(description = "회원 ID") @RequestParam String memberId,
+            @Parameter(description = "로그인한 회원 ID") @RequestParam String loginMemberId,
             @Parameter(description = "가져올 페이지(default = 1)") @RequestParam(required = false, defaultValue = "1") int page) {
-        List<FeedSummaryDto> feedListByMember = feedService.getFeedListByMember(memberId, page - 1, PAGE_SIZE);
+        List<FeedSummaryDto> feedListByMember = feedService.getFeedListByMember(memberId, loginMemberId, page - 1, PAGE_SIZE);
 
         return feedListByMember;
     }
@@ -54,8 +55,9 @@ public class FeedRestController {
     @GetMapping("/getFeedListByMemberLike")
     public List<FeedSummaryDto> getMemberLikeFeedList(
             @Parameter(description = "회원 ID") @RequestParam String memberId,
+            @Parameter(description = "로그인한 회원 ID") @RequestParam String loginMemberId,
             @Parameter(description = "가져올 페이지(default = 1)") @RequestParam(required = false, defaultValue = "1") int page) {
-        List<FeedSummaryDto> feedListByMemberLike = feedService.getFeedListByMemberLike(memberId, page - 1, PAGE_SIZE);
+        List<FeedSummaryDto> feedListByMemberLike = feedService.getFeedListByMemberLike(memberId, loginMemberId, page - 1, PAGE_SIZE);
 
         return feedListByMemberLike;
     }
@@ -64,8 +66,9 @@ public class FeedRestController {
     @GetMapping("/getFeedListByMemberBookmark")
     public List<FeedSummaryDto> getBookmarkFeedList(
             @Parameter(description = "회원 ID") @RequestParam String memberId,
+            @Parameter(description = "로그인한 회원 ID") @RequestParam String loginMemberId,
             @Parameter(description = "가져올 페이지(default = 1)") @RequestParam(required = false, defaultValue = "1") int page) {
-        List<FeedSummaryDto> feedListByMemberBookmark = feedService.getFeedListByMemberBookmark(memberId, page - 1, PAGE_SIZE);
+        List<FeedSummaryDto> feedListByMemberBookmark = feedService.getFeedListByMemberBookmark(memberId, loginMemberId, page - 1, PAGE_SIZE);
 
         return feedListByMemberBookmark;
     }
@@ -74,8 +77,9 @@ public class FeedRestController {
     @GetMapping("/getFeedListByMemberSubscription")
     public List<FeedSummaryDto> getBuildingSubscriptionFeedList(
             @Parameter(description = "회원 ID") @RequestParam String memberId,
+            @Parameter(description = "로그인한 회원 ID") @RequestParam String loginMemberId,
             @Parameter(description = "가져올 페이지(default = 1)") @RequestParam(required = false, defaultValue = "1") int page) {
-        List<FeedSummaryDto> feedListByBuildingSubscription = feedService.getFeedListByBuildingSubscription(memberId, page - 1, PAGE_SIZE);
+        List<FeedSummaryDto> feedListByBuildingSubscription = feedService.getFeedListByBuildingSubscription(memberId, loginMemberId, page - 1, PAGE_SIZE);
 
         return feedListByBuildingSubscription;
     }

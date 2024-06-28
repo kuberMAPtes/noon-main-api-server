@@ -18,7 +18,7 @@ import java.util.List;
 public interface FeedService {
     // 회원별 피드 목록을 가져온다,
     List<FeedSummaryDto> getFeedListByMember(String memberId);
-    List<FeedSummaryDto> getFeedListByMember(String memberId, int page, int pageSize);
+    List<FeedSummaryDto> getFeedListByMember(String memberId, String loginMemberId, int page, int pageSize);
 
     // 건물별 피드 목록을 가져온다. 필요에 따라 피드를 추천한다.
     List<FeedSummaryDto> getFeedListByBuilding(String memberId, int buildingId);
@@ -30,15 +30,15 @@ public interface FeedService {
 
     // 회원이 좋아요를 누른 피드 목록을 가져온다.
     List<FeedSummaryDto> getFeedListByMemberLike(String memberId);
-    List<FeedSummaryDto> getFeedListByMemberLike(String memberId, int page, int pageSize);
+    List<FeedSummaryDto> getFeedListByMemberLike(String memberId, String loginMemberId, int page, int pageSize);
 
     // 회원이 북마크를 누른 피드 목록을 가져온다.
     List<FeedSummaryDto> getFeedListByMemberBookmark(String memberId);
-    List<FeedSummaryDto> getFeedListByMemberBookmark(String memberId, int page, int pageSize);
+    List<FeedSummaryDto> getFeedListByMemberBookmark(String memberId, String loginMemberId, int page, int pageSize);
 
     // 회원이 건물을 구독한 피드 목록을 가져온다.
     List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId);
-    List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId, int page, int pageSize);
+    List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId, String loginMemberId, int page, int pageSize);
 
     // 건물 내 피드 중 확성기 관련 피드만 가져온다.
     List<FeedMegaphoneDto> getFeedListByBuildingAndMegaphone(int buildingId);
