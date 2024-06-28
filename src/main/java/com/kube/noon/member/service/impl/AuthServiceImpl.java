@@ -47,10 +47,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public boolean sendAuthentificationNumber(String phoneNumber){
 
-        if(memberService.findMemberByPhoneNumber(phoneNumber) != null){
-            log.info("이미 가입된 회원이므로 가입하실 수 없습니다. : {}", phoneNumber);
-            throw new RuntimeException("이미 가입된 회원이므로 가입하실 수 없습니다.");
-        }
+//        if(memberService.findMemberByPhoneNumber(phoneNumber) != null){
+//            log.info("이미 가입된 회원이므로 가입하실 수 없습니다. : {}", phoneNumber);
+//            throw new RuntimeException("이미 가입된 회원이므로 가입하실 수 없습니다.");
+//        } 어차피 여기 오기 전에 막힘
 
         String messageFormat = "인증번호 : ";
         String authNumber = RandomData.getRandomAuthNumber();
