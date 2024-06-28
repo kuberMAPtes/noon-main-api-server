@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Slf4j
 @Repository
@@ -50,14 +51,21 @@ public class BuildingSummaryRepositoryImpl implements BuildingSummaryRepository 
         log.info("requestBody={}", requestBody);
 
 
-        return client.post()
-                .header(SUMMARY_ACCESS_KEY_HEADER, this.accessKey)
-                .header(SUMMARY_SECRET_KEY_HEADER, secretKey)
-                .header("Content-Type", "application/json")
-                .bodyValue(requestBody)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block(); //테스트 코드에서는 동기식으로 작성함. 추후 수정
+        try {
+            return client.post()
+                    .header(SUMMARY_ACCESS_KEY_HEADER, this.accessKey)
+                    .header(SUMMARY_SECRET_KEY_HEADER, this.secretKey)
+                    .header("Content-Type", "application/json")
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+        } catch (WebClientResponseException e) {
+            if (e.getStatusCode().is4xxClientError()) {
+                return "{ summary : '요약 데이터가 충분 or 적절하지 않아요' }";
+            }
+            throw e;
+        }
 
 
     }
