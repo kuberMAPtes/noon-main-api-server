@@ -257,7 +257,7 @@ public class FeedRestController {
 
     @Operation(summary = "피드 댓글 추가", description = "하나의 피드에 댓글을 추가합니다.")
     @PostMapping("/addFeedComment")
-    public int addFeedComment(@RequestBody FeedCommentDto feedCommentDto) {
+    public FeedCommentDto addFeedComment(@RequestBody FeedCommentDto feedCommentDto) {
         return feedSubService.addFeedComment(feedCommentDto);
     }
 

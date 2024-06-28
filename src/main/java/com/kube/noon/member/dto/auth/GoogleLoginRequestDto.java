@@ -9,13 +9,19 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class googleLoginRequestDto {
+public class GoogleLoginRequestDto {
+
+    @JsonProperty("idToken")
+    String idToken;
+
+    @JsonProperty("oauthIdToken")
+    String oauthIdToken;
+
+    @JsonProperty("refreshToken")
+    String refreshToken;
 
     @JsonProperty("memberId")
     String memberId;
-
-    @JsonProperty("authorizeCode")
-    String authorizeCode;
 
     @JsonProperty("nickname")
     String nickname;

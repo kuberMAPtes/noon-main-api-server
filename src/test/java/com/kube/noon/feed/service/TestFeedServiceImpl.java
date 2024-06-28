@@ -6,10 +6,13 @@ import com.kube.noon.common.zzim.Zzim;
 import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.Feed;
+import com.kube.noon.feed.domain.FeedEvent;
 import com.kube.noon.feed.domain.TagFeed;
 import com.kube.noon.feed.dto.FeedDto;
+import com.kube.noon.feed.dto.FeedEventDto;
 import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.feed.dto.UpdateFeedDto;
+import com.kube.noon.feed.repository.FeedEventRepository;
 import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.feed.service.impl.FeedServiceImpl;
 import com.kube.noon.feed.service.impl.FeedStatisticsServiceImpl;
@@ -45,6 +48,9 @@ public class TestFeedServiceImpl {
     
     @Autowired
     private ZzimRepository zzimRepository;
+
+    @Autowired
+    private FeedEventRepository feedEventRepository;
 
     /**
      * 피드 목록을 가져오는 테스트를 한다.
@@ -160,7 +166,51 @@ public class TestFeedServiceImpl {
     }
 
     /**
-     * feed_id = 10000인 피드를 수정한다. 이때, 피으의 Text를 수정하고 확인한다.
+     * 이벤트 피드를 하나 추가한다.
+     * building_id = 10015, writer_id = 'member_15'
+     */
+    @Transactional
+    @Test
+    public void addEventFeedTest() {
+        // 태그 추가
+        List<String> updateTagList = new ArrayList<>();
+        updateTagList.add("집에");
+        updateTagList.add("가고");
+        updateTagList.add("싶다");
+
+        FeedDto feedDto = FeedDto.builder()
+                .writerId("member_15")
+                .buildingId(10015)
+                .mainActivate(false)
+                .publicRange(PublicRange.PUBLIC)
+                .title("WinterHana Test")
+                .feedText("테스트 중입니다.")
+                .viewCnt(9999L)
+                .writtenTime(LocalDateTime.now())
+                .feedCategory(FeedCategory.EVENT)
+                .modified(false)
+                .updateTagList(updateTagList)
+                .eventDate(LocalDateTime.of(2024, 05, 02, 3, 5,20))
+                .build();
+
+        int feedId = feedServiceImpl.addFeed(feedDto);
+
+        FeedDto getFeedDto = feedServiceImpl.getFeedById(feedId);
+        // FeedEventDto getFeedEventDto = FeedEventDto.toDto(feedEventRepository.findByFeedId(feedId));
+        log.info(getFeedDto);
+
+        assertThat(getFeedDto).isNotNull();
+        assertThat(getFeedDto.getWriterId()).isEqualTo("member_15");
+        assertThat(getFeedDto.getBuildingId()).isEqualTo(10015);
+        assertThat(getFeedDto.getTitle()).isEqualTo("WinterHana Test");
+        assertThat(getFeedDto.getTagFeeds().size()).isEqualTo(3);
+        assertThat(getFeedDto.getTags().size()).isEqualTo(3);
+        // assertThat(getFeedEventDto.getEventDate().isBefore(LocalDateTime.now())).isTrue();
+        assertThat(getFeedDto.getEventDate().isEqual(LocalDateTime.of(2024, 05, 02, 3, 5,20))).isTrue();
+    }
+
+    /**
+     * feed_id = 10000인 피드를 수정한다. 이때, 피드의 Text를 수정하고 확인한다.
      */
     @Transactional
     @Test
@@ -193,6 +243,44 @@ public class TestFeedServiceImpl {
         assertThat(getFeedDto.getFeedText()).isEqualTo("수정 테스트 중입니다.");
         assertThat(getFeedDto.getTagFeeds().size()).isEqualTo(3);
         assertThat(getFeedDto.getTags().size()).isEqualTo(3);
+    }
+
+    /**
+     * feed_id = 10001인 피드를 이벤트 피드로 수정해서 테스트한다.
+     */
+    @Transactional
+    @Test
+    public void updateEventFeedTest() {
+        List<String> updateTagList = new ArrayList<>();
+        updateTagList.add("집에");
+        updateTagList.add("가고");
+        updateTagList.add("싶다");
+
+        FeedDto feedDto = feedServiceImpl.getFeedById(10001);
+        UpdateFeedDto updateFeedDto = UpdateFeedDto.builder()
+                .feedId(feedDto.getFeedId())
+                .feedText("수정 테스트 중입니다.")
+                .title(feedDto.getTitle())
+                .publicRange(feedDto.getPublicRange())
+                .feedCategory(FeedCategory.EVENT)
+                .updateTagList(updateTagList)
+                .eventDate(LocalDateTime.of(2024, 05, 02, 3, 5,20))
+                .build();
+
+        int feedId = feedServiceImpl.updateFeed(updateFeedDto);
+
+        FeedDto getFeedDto = feedServiceImpl.getFeedById(feedId);
+
+        log.info(getFeedDto);
+
+        assertThat(getFeedDto).isNotNull();
+        assertThat(getFeedDto.getWriterId()).isEqualTo("member_1");
+        assertThat(getFeedDto.getBuildingId()).isEqualTo(10002);
+        assertThat(getFeedDto.getTitle()).isEqualTo("Title_2");
+        assertThat(getFeedDto.getFeedText()).isEqualTo("수정 테스트 중입니다.");
+        assertThat(getFeedDto.getTagFeeds().size()).isEqualTo(3);
+        assertThat(getFeedDto.getTags().size()).isEqualTo(3);
+        assertThat(getFeedDto.getEventDate().isBefore(LocalDateTime.now())).isTrue();
     }
 
     /**

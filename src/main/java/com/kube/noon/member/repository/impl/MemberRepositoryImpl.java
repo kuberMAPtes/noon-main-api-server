@@ -21,6 +21,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,6 +50,11 @@ public class MemberRepositoryImpl implements MemberRepository {
             member.setBuildingSubscriptionPublicRange(PublicRange.PUBLIC);
             member.setAllFeedPublicRange(PublicRange.PUBLIC);
             member.setReceivingAllNotificationAllowed(true);
+            String dateTimeString = "0001-01-01 01:01:01";
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime unlockTime = LocalDateTime.parse(dateTimeString, formatter);
+            member.setUnlockTime(unlockTime);
             memberJpaRepository.save(member);
             log.info("회원 추가 성공: {}", member);
         } catch (DataAccessException e) {
