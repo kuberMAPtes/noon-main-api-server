@@ -674,10 +674,14 @@ public class MemberRestController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "회원 프로필 조회 실패")
     })
     @PostMapping("/getMemberProfile")
-    public ResponseEntity<ApiResponse<MemberProfileDto>> getMemberProfile(@RequestBody GetMemberProfileRequestDto requestDto) {
+    public ResponseEntity<ApiResponse<ProfileAccessResultDto>> getMemberProfile(@RequestBody GetMemberProfileRequestDto requestDto) {
         log.info("getMemberProfile" + requestDto);
-        MemberProfileDto dto = memberService.findMemberProfileById(requestDto.getFromId(), requestDto.getToId());
-        System.out.println(dto.toString());
+        ProfileAccessResultDto dto = memberService.findMemberProfileById(requestDto.getFromId(), requestDto.getToId());
+        if(dto!=null) {
+            System.out.println(dto.toString());
+        }
+
+        //boolean canAccess, String message, MemberProfileDto
         return ResponseEntity.ok(ApiResponseFactory.createResponse("회원 프로필 조회 업무", dto));
     }
 

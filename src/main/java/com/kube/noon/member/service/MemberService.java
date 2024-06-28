@@ -23,7 +23,7 @@ public interface MemberService {
     //다른 서비스가 사용하는 목적으로 존재
     Optional<Member> findMemberById(String memberId);
 
-    MemberProfileDto findMemberProfileById(String fromId, String memberId);
+    ProfileAccessResultDto findMemberProfileById(String fromId, String memberId);
 
     MemberDto findMemberByNickname(String fromId, String nickname);//JPA
 
