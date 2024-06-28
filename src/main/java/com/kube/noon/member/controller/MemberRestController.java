@@ -527,8 +527,8 @@ public class MemberRestController {
     private Cookie getDestructionCookie(String key) {
         Cookie cookie = new Cookie(key, null);
         cookie.setMaxAge(0);
-        cookie.setDomain(cookie.getDomain() != null ? cookie.getDomain() : this.clientServerDomain);
-        cookie.setPath(cookie.getPath() != null ? cookie.getPath() : "/");
+        cookie.setDomain(this.clientServerDomain);
+        cookie.setPath("/");
         if(!this.clientServerDomain.equals("localhost")) {
             cookie.setHttpOnly(true);  // 필요한 경우 설정
             cookie.setSecure(true);    // HTTPS인 경우 설정
