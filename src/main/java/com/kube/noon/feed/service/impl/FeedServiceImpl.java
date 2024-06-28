@@ -47,6 +47,8 @@ public class FeedServiceImpl implements FeedService {
 
     // FeedSumaryDto에 좋아요, 북마크 정보 저장
     private List<FeedSummaryDto> setFeedSummaryDtoLikeAndBookmark(String memberId, List<FeedSummaryDto> feedList) {
+        if(memberId == null) return feedList;
+
         List<Integer> zzimLikeList = zzimRepository.getFeedIdByMemberIdAndZzimType(memberId, ZzimType.LIKE);
         List<Integer> zzimBookmarkList = zzimRepository.getFeedIdByMemberIdAndZzimType(memberId, ZzimType.BOOKMARK);
 
@@ -97,7 +99,7 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public List<FeedSummaryDto> getFeedListByMember(String memberId, int page, int pageSize) {
+    public List<FeedSummaryDto> getFeedListByMember(String memberId, String loginMemberId, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize);
 
         List<Feed> entities = feedRepository.findByWriterAndActivatedTrue(
@@ -105,7 +107,7 @@ public class FeedServiceImpl implements FeedService {
                 pageable
         );
 
-        List<FeedSummaryDto> feedListByMember = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entities));
+        List<FeedSummaryDto> feedListByMember = setFeedSummaryDtoLikeAndBookmark(loginMemberId, FeedSummaryDto.toDtoList(entities));
 
         return feedListByMember;
     }
@@ -192,14 +194,14 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public List<FeedSummaryDto> getFeedListByMemberLike(String memberId, int page, int pageSize) {
+    public List<FeedSummaryDto> getFeedListByMemberLike(String memberId, String loginMemberId, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize);
 
         List<Feed> entites = feedRepository.findByMemberLikeFeed(
                 Member.builder().memberId(memberId).build(), pageable
         );
 
-        List<FeedSummaryDto> feedListByMemberLike = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
+        List<FeedSummaryDto> feedListByMemberLike = setFeedSummaryDtoLikeAndBookmark(loginMemberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByMemberLike;
     }
@@ -218,14 +220,14 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public List<FeedSummaryDto> getFeedListByMemberBookmark(String memberId, int page, int pageSize) {
+    public List<FeedSummaryDto> getFeedListByMemberBookmark(String memberId, String loginMemberId, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize);
 
         List<Feed> entites = feedRepository.findByMemberBookmarkFeed(
                 Member.builder().memberId(memberId).build(), pageable
         );
 
-        List<FeedSummaryDto> feedListByMemberBookmark = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
+        List<FeedSummaryDto> feedListByMemberBookmark = setFeedSummaryDtoLikeAndBookmark(loginMemberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByMemberBookmark;
     }
@@ -244,14 +246,14 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId, int page, int pageSize) {
+    public List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId, String loginMemberId, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize);
 
         List<Feed> entites = feedRepository.findByMemberBuildingSubscription(
                 Member.builder().memberId(memberId).build(), pageable
         );
 
-        List<FeedSummaryDto> feedListByBuildingSubscription = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
+        List<FeedSummaryDto> feedListByBuildingSubscription = setFeedSummaryDtoLikeAndBookmark(loginMemberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByBuildingSubscription;
     }
