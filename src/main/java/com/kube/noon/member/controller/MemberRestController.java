@@ -51,7 +51,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.View;
 import org.springframework.web.util.UriComponentsBuilder;
-
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -192,7 +193,8 @@ public class MemberRestController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 닉네임")
     })
     @GetMapping("/checkNickname")
-    public ResponseEntity<ApiResponse<Boolean>> checkNickname(@RequestParam String nickname) {
+    public ResponseEntity<ApiResponse<Boolean>> checkNickname(@RequestParam String nickname) throws UnsupportedEncodingException {
+        nickname = URLDecoder.decode(nickname, StandardCharsets.UTF_8.toString());
         log.info("checkNickname :: " + nickname);
         memberService.checkNickname(nickname);
         memberService.checkBadWord(nickname);

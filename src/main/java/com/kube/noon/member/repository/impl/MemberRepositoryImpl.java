@@ -142,9 +142,10 @@ public class MemberRepositoryImpl implements MemberRepository {
     public Optional<MemberRelationship> findMemberRelationship(String fromId, String toId) {
         try {
             Optional<MemberRelationship> omr = memberRelationshipJpaRepository.
-                    findByFromMember_MemberIdAndToMember_MemberId(
+                    findByFromMember_MemberIdAndToMember_MemberIdAndActivated(
                             fromId,
-                            toId);
+                            toId,
+                            true);
             omr.ifPresentOrElse(
                     memberRelationship -> log.info("회원 관계 찾기 성공 : {}", memberRelationship),
                     () -> log.info("회원 관계 찾기 실패 : 해당 관계가 없음")

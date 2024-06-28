@@ -6,6 +6,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * 로그인 성공,실패 시 호출되는 함수
  */
@@ -36,7 +38,7 @@ public class LoginAttemptCheckerAgent {
         ops.set(key, attempts.toString());
 
         if (attempts >= MAX_ATTEMPTS) {
-            redisTemplate.expire(key, LOCK_TIME, java.util.concurrent.TimeUnit.MINUTES);
+            redisTemplate.expire(key, LOCK_TIME, TimeUnit.SECONDS);
         }
     }
 
