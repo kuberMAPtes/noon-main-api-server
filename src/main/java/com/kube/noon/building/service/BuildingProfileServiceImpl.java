@@ -281,11 +281,16 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
         Building building = buildingProfileRepository.findBuildingProfileByBuildingId(buildingId);
         return BuildingDto.fromEntity(building);
     }
-
+    /**
+     * profile Activated가 false이거나(등록 신청) null(신청 이력X)인 건물 도로명주소로 검색
+     *
+     * @param roadAddr
+     * @return
+     */
     @Override
     public BuildingDto getBuildingProfileByRoadAddr(String roadAddr) {
 
-        Building building = buildingProfileRepository.findBuildingProfileByRoadAddr(roadAddr);
+        Building building = buildingProfileRepository.findAppliedBuildingByRoadAddr(roadAddr);
 
         log.info("findBuildingByRoadAddr result={}", building);
 

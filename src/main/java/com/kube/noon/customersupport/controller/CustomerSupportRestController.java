@@ -216,8 +216,9 @@ public class CustomerSupportRestController {
      * @return 블러된 이미지 URL이 포함된 피드 첨부파일 정보
      */
     @PostMapping("/addBlurFile")
-    public FeedAttachmentDto addBlurFile(@RequestBody FeedAttachmentDto feedAttachmentDto) {
+    public FeedAttachmentDto addBlurFile(@RequestBody FeedAttachmentDto feedAttachmentDto,  @RequestParam String blurIntensity) {
 
+        log.info("blurIntensity={}",blurIntensity);
         log.info("feedAttachmentDto={}",feedAttachmentDto);
 
         try {
