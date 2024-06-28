@@ -20,9 +20,4 @@ public class FeedEvent {
 
     @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
-
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "feed_id")
-    private Feed feed;
 }
