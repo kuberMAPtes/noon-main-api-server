@@ -18,6 +18,15 @@ public interface ChatroomService {
     public ChatroomDto addChatroom(ChatroomDto requestChatroom) throws Exception;
 
     /**
+     * 채팅방 입장시키기
+     * @param roomId
+     * @param memberId
+     * @return 채팅방 멤버목록을 리턴
+     * @throws Exception
+     */
+    public ChatEntranceDto enterChatroom(int roomId, String memberId) throws Exception;
+    
+    /**
      * 채팅방 삭제 (관리자 기능)
      * @param chatroomId
      * @return

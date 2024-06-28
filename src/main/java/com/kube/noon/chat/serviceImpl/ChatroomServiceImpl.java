@@ -15,6 +15,7 @@ import com.kube.noon.chat.repository.ChatroomRepository;
 import com.kube.noon.chat.service.ChatroomService;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.exception.MemberNotFoundException;
+import com.kube.noon.member.repository.MemberJpaRepository;
 import com.kube.noon.member.service.MemberService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,15 +41,18 @@ public class ChatroomServiceImpl implements ChatroomService {
     @Autowired
     private BuildingProfileService buildingProfileService;
 
+    @Autowired
+    private MemberJpaRepository memberJpaRepository;
+
     // 채팅방 생성
     @Override
     public ChatroomDto addChatroom(ChatroomDto requestChatroom) {
-
         // 채팅방 저장할 chatroom entity 제작해서 저장
         Chatroom chatroom = new Chatroom();
 
         System.out.println("        🦐[addChatroom ServiceImpl] 채팅 생성자Id => " + requestChatroom.getChatroomCreatorId());
         chatroom.setChatroomName(requestChatroom.getChatroomName());
+
         // requestChatroom.getChatroomID() 로 멤버를 조회하여 멤버 ID 아닌 멤버 객체를 addChatroom 에 넣어주기
         Optional<Member> optionalMember = memberService.findMemberById(requestChatroom.getChatroomCreatorId());
         if (optionalMember.isPresent()) {
@@ -57,13 +61,12 @@ public class ChatroomServiceImpl implements ChatroomService {
             chatroom.setChatroomCreator(member);
         } else {
             // Member를 찾지 못한 경우 처리
-            System.out.println("누구세요? 신청 안바다여");
+            System.out.println("누구세요? 신청 안받아요");
         }
 
-
-        // public_chatting 요청시 addChatroom 에는 빌딩에 대한 정보도 넣어함
-        if(!requestChatroom.getChatroomType().equals("PRIVATE_CHATTING")) {
-            System.out.println("        🦐[addChatroom ServiceImpl Public Chatting ] 채팅방을 세울 빌딩Id => " + requestChatroom.getBuildingId());
+        // public_chatting 요청시 addChatroom 에는 빌딩에 대한 정보도 넣어야 함
+        if (requestChatroom.getChatroomType().equals(ChatroomType.GROUP_CHATTING)) {
+            System.out.println("        🦐[addChatroom ServiceImpl Public Chatting] 채팅방을 세울 빌딩Id => " + requestChatroom.getBuildingId());
             Building building = new Building();
             building.setBuildingId(requestChatroom.getBuildingId());
             chatroom.setBuilding(building);
@@ -72,49 +75,95 @@ public class ChatroomServiceImpl implements ChatroomService {
             ChatroomType roomType = ChatroomType.GROUP_CHATTING;
             chatroom.setChatroomType(roomType);
             Chatroom savedChatroom = chatroomRepository.save(chatroom);
-            System.out.println("        🦐[addChatroom ServiceImpl Public Chatting ] 최종 만들 chatroom Entity => " + savedChatroom);
+            System.out.println("        🦐[addChatroom ServiceImpl Public Chatting] 최종 만들 chatroom Entity => " + savedChatroom);
 
-            // 채팅생성자가 채팅참여멤버에 안들어갓누
+            // 채팅 생성자가 채팅 참여 멤버에 안 들어갔누
             ChatEntrance chatEntrance = new ChatEntrance();
             chatEntrance.setChatroom(savedChatroom);
-            chatEntrance.setChatroomMemberId(requestChatroom.getChatroomCreatorId());
+
+            Optional<Member> chatroomCreator = memberJpaRepository.findMemberByMemberId(requestChatroom.getChatroomCreatorId());
+            if (chatroomCreator.isPresent()) {
+                chatEntrance.setChatroomMember(chatroomCreator.get());
+            } else {
+                //
+            }
             chatEntrance.setChatroomMemberType(ChatroomMemberType.OWNER);
             ChatEntrance savedChatEntrance = chatEntranceRepository.save(chatEntrance);
 
-            System.out.println("        🦐[ServiceImpl] 생성자를 채팅멤버에 저장 => " + savedChatEntrance);
+            System.out.println("        🦐[ServiceImpl] 생성자를 채팅 멤버에 저장 => " + savedChatEntrance);
 
-            // Entity를 Dto 로 변환해서 리턴
+            // Entity를 Dto로 변환해서 리턴
             return convertToChatroomDto(savedChatroom);
         }
 
-        // private_chatting 요청시 addChatroom 에는 빌딩에 대한 정보 안넣어줌 다정온도도 안들어감
-        if(requestChatroom.getChatroomType().equals("PRIVATE_CHATTING")) {
+        // private_chatting 요청시 addChatroom 에는 빌딩에 대한 정보 안 넣어줌, 다정 온도도 안 들어감
+        if (requestChatroom.getChatroomType().equals(ChatroomType.PRIVATE_CHATTING)){
             System.out.println("        🦐[addChatroom ServiceImpl Private Chatting]");
 
             ChatroomType roomType = ChatroomType.PRIVATE_CHATTING;
             chatroom.setChatroomType(roomType);
             Chatroom savedChatroom = chatroomRepository.save(chatroom);
 
-            // 채팅생성자 및 피신청자도 채팅참여멤버에 들어가자
+            // 채팅 생성자 및 피신청자도 채팅 참여 멤버에 들어가자
             ChatEntrance chatEntrance1 = new ChatEntrance();
             chatEntrance1.setChatroom(savedChatroom);
-            chatEntrance1.setChatroomMemberId(requestChatroom.getChatroomCreatorId());
+
+            Optional<Member> chatroomCreator1 = memberJpaRepository.findMemberByMemberId(requestChatroom.getChatroomCreatorId());
+            if (chatroomCreator1.isPresent()) {
+                chatEntrance1.setChatroomMember(chatroomCreator1.get());
+            } else {
+                //
+            }
             chatEntrance1.setChatroomMemberType(ChatroomMemberType.OWNER);
             ChatEntrance savedChatEntrance1 = chatEntranceRepository.save(chatEntrance1);
 
             ChatEntrance chatEntrance2 = new ChatEntrance();
             chatEntrance2.setChatroom(savedChatroom);
-            chatEntrance2.setChatroomMemberId(requestChatroom.getInvitedMemberId());
+            Optional<Member> chatroomCreator2 = memberJpaRepository.findMemberByMemberId(requestChatroom.getChatroomCreatorId());
+            if (chatroomCreator2.isPresent()) {
+                chatEntrance2.setChatroomMember(chatroomCreator2.get());
+            } else {
+                //
+            }
             chatEntrance2.setChatroomMemberType(ChatroomMemberType.MEMBER);
             ChatEntrance savedChatEntrance2 = chatEntranceRepository.save(chatEntrance2);
 
-            System.out.println("        🦐[ServiceImpl] 생성자를 채팅멤버에 저장 => " + savedChatEntrance1 + savedChatEntrance2);
+            System.out.println("        🦐[ServiceImpl] 생성자를 채팅 멤버에 저장 => " + savedChatEntrance1 + savedChatEntrance2);
 
-            // Entity를 Dto 로 변환해서 리턴
+            // Entity를 Dto로 변환해서 리턴
             return convertToChatroomDto(savedChatroom);
         }
 
         return null;
+    }
+
+
+    // 채팅방입장
+    @Override
+    public ChatEntranceDto enterChatroom(int roomId, String memberId){
+
+        // 채팅방 검색
+        Chatroom chatroom = chatroomRepository.findChatroomByChatroomId(roomId);
+        System.out.println("        🦐[enterChatroom ServiceImpl] 새로운 입장멤버를 저장할 채팅방" + chatroom);
+
+        // 멤버 검색(?)
+        Optional<Member> member = memberJpaRepository.findMemberByMemberId(memberId);
+        System.out.println("        🦐[addChatroom ServiceImpl] 저장할 채팅 멤버" + member);
+
+        // 받은 memberId를 채팅방으 entrance 에 추가
+        ChatEntrance chatEntrance = new ChatEntrance();
+        chatEntrance.setChatroom(chatroom);
+
+        Optional<Member> chatroomCreator = memberJpaRepository.findMemberByMemberId(memberId);
+        if (chatroomCreator.isPresent()) {
+            chatEntrance.setChatroomMember(chatroomCreator.get());
+        } else {
+            //
+        }
+        chatEntrance.setChatroomMemberType(ChatroomMemberType.MEMBER);
+        ChatEntrance savedChatEntrance = chatEntranceRepository.save(chatEntrance);
+
+        return convertToChatEntranceDto(savedChatEntrance);
     }
 
     @Override
@@ -188,7 +237,7 @@ public class ChatroomServiceImpl implements ChatroomService {
                 ChatEntranceDto entranceDto = new ChatEntranceDto();
 
                 entranceDto.setChatroomId(entrance.getChatroom().getChatroomId());
-                entranceDto.setChatroomMemberId(entrance.getChatroomMemberId());
+                entranceDto.setChatroomMember(entrance.getChatroomMember());
                 entranceDto.setChatroomMemberType(entrance.getChatroomMemberType());
                 entranceDto.setChatroomEnteredTime(entrance.getChatroomEnteredTime());
                 entranceDto.setKicked(entrance.isKicked());
@@ -254,7 +303,7 @@ public class ChatroomServiceImpl implements ChatroomService {
         ChatEntranceDto dto = new ChatEntranceDto();
         dto.setChatEntranceId(chatEntrance.getChatEntranceId());
         dto.setChatroomId(chatEntrance.getChatroom().getChatroomId()); // chatroom 엔티티의 ID 가져오기
-        dto.setChatroomMemberId(chatEntrance.getChatroomMemberId());
+        dto.setChatroomMember(chatEntrance.getChatroomMember());
         dto.setChatroomMemberType(chatEntrance.getChatroomMemberType()); // Enum 값을 문자열로 변환하여 설정
         dto.setChatroomEnteredTime(chatEntrance.getChatroomEnteredTime());
         dto.setKicked(chatEntrance.isKicked());

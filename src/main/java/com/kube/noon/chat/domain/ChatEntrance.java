@@ -1,5 +1,6 @@
 package com.kube.noon.chat.domain;
 
+import com.kube.noon.member.domain.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,8 +30,9 @@ public class ChatEntrance {
     @JoinColumn(name = "chatroom_id", nullable = false)
     private Chatroom chatroom;
 
-    @Column(name = "chatroom_member_id", length = 20, nullable = false)
-    private String chatroomMemberId;
+    @OneToOne
+    @JoinColumn(name = "chatroom_member_id", nullable = false)
+    private Member chatroomMember;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "chatroom_member_type", nullable = false)

@@ -146,13 +146,13 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
 
 
     @Override
-    public String addBlurredFile(String fileUrl, int attachmentId) {
+    public String addBlurredFile(String fileUrl, int attachmentId, int blurIntensity) {
 
         log.info("fileUrl={}",fileUrl);
 
         try {
             //블러 이미지 생성
-            String blurredImageLocation = makeBlurredImage(fileUrl,attachmentId);
+            String blurredImageLocation = makeBlurredImage(fileUrl,attachmentId, blurIntensity);
 
             //블러 이미지 Object Storage에 저장
             String blurredFileUrl = objectStorageAWS3S.uploadFile(blurredImageLocation);
@@ -208,12 +208,30 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
      *
      * @author 허예지
      */
-    public String   makeBlurredImage(String fileUrl, int attachmentId) throws IOException {
+    public String   makeBlurredImage(String fileUrl, int attachmentId, int blurIntensity) throws IOException {
         URL imageUrl = new URL(fileUrl);
         BufferedImage input = ImageIO.read(imageUrl);
 
-        int radius = 5; // 블러 반경, 값이 클수록 더 강한 블러 효과
-        int iterations = 5; // 블러 반복 횟수, 값이 클수록 더 강한 블러 효과
+        int radius = 5; // 블러 반경
+        int iterations = 5; // 블러 반복 횟수
+
+        switch (blurIntensity){
+            //1: 약, 2: 중, 3: 강
+            case 1 :
+                radius = 2;
+                iterations = 2;
+                break;
+            case 2:
+                radius = 5;
+                iterations = 5;
+                break;
+            case 3:
+                radius = 8;
+                iterations = 8;
+                break;
+            default:
+                break;
+        }
 
         BufferedImage output = applyBoxBlur(input, radius, iterations);
 
