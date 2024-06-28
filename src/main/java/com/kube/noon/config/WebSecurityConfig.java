@@ -2,15 +2,13 @@ package com.kube.noon.config;
 
 import com.kube.noon.common.security.AccessDefinition;
 import com.kube.noon.common.security.authentication.authtoken.generator.*;
-import com.kube.noon.common.security.authentication.provider.JwtAuthenticationProvider;
-import com.kube.noon.common.security.authentication.provider.KakaoTokenAuthenticationProvider;
-import com.kube.noon.common.security.authentication.provider.NoAuthenticationProvider;
-import com.kube.noon.common.security.authentication.provider.SimpleJsonAuthenticationProvider;
+import com.kube.noon.common.security.authentication.provider.*;
 import com.kube.noon.common.security.filter.AccessControlFilter;
 import com.kube.noon.common.security.filter.AuthFilter;
 import com.kube.noon.common.security.filter.TokenAuthenticationFilter;
 import com.kube.noon.common.security.filter.TokenRefreshFilter;
 import com.kube.noon.common.security.support.BearerTokenSupport;
+import com.kube.noon.common.security.support.GoogleTokenSupport;
 import com.kube.noon.common.security.support.JwtSupport;
 import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.repository.MemberRepository;
@@ -82,6 +80,19 @@ public class WebSecurityConfig {
     @ConditionalOnBean(KakaoTokenAuthenticationProvider.class)
     public KakaoTokenAuthenticationGenerator kakaoTokenAuthenticationGenerator() {
         return new KakaoTokenAuthenticationGenerator();
+    }
+
+    @Bean
+    @Profile({ "prod", "accesscontrol" })
+    public GoogleTokenAuthenticationProvider googleTokenAuthenticationProvider(GoogleTokenSupport googleTokenSupport,
+                                                                               UserDetailsService userDetailsService) {
+        return new GoogleTokenAuthenticationProvider(googleTokenSupport, userDetailsService);
+    }
+
+    @Bean
+    @ConditionalOnBean(GoogleTokenAuthenticationProvider.class)
+    public GoogleTokenAuthenticationGenerator googleTokenAuthenticationGenerator() {
+        return new GoogleTokenAuthenticationGenerator();
     }
 
     @Bean
