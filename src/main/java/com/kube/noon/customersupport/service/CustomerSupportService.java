@@ -31,7 +31,7 @@ public interface CustomerSupportService {
     List<FeedAttachmentDto> getAllImageList();
 
     FeedAttachmentDto getImageByAttatchmentId(int attachmentId);
-    FeedAttachmentDto addBluredImage(FeedAttachmentDto attachmentDto) throws IOException;
+    FeedAttachmentDto addBluredImage(FeedAttachmentDto attachmentDto, int blurIntensity) throws IOException;
     FeedAttachmentDto deleteBluredImage(FeedAttachmentDto attachmentDto) throws IOException;
     FeedDto deleteBadFeed(FeedDto feedDto, String reqUnlockDuration);
     List<FeedAttachmentDto> getFilteredListByAI();

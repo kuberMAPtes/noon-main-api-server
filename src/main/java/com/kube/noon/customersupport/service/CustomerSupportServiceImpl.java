@@ -424,10 +424,12 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
      * @return Object Storage에 업로드된 블러 파일의 url이 저장된 첨부파일 Dto
      */
     @Override
-    public FeedAttachmentDto addBluredImage(FeedAttachmentDto attachmentDto) throws IOException {
+    public FeedAttachmentDto addBluredImage(FeedAttachmentDto attachmentDto, int blurIntensity) throws IOException {
+
+        log.info("블러 세기={}", blurIntensity);
 
         // 블러 파일 생성 및 Object Storage 저장, 저장 url 요청
-        String blurredFileUrl = attachmentFilteringRepository.addBlurredFile(attachmentDto.getFileUrl(), attachmentDto.getAttachmentId());
+        String blurredFileUrl = attachmentFilteringRepository.addBlurredFile(attachmentDto.getFileUrl(), attachmentDto.getAttachmentId(), blurIntensity);
 
         attachmentDto.setBlurredFileUrl(blurredFileUrl);
         feedAttachmentRepository.save(FeedAttachmentDto.toEntity(attachmentDto));
