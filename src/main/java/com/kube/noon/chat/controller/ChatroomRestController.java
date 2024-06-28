@@ -34,7 +34,7 @@ public class ChatroomRestController {
     // 채팅방 생성
     @PostMapping("/addChatroom")
     public Map<String, Object> addChatroom(@RequestBody ChatroomDto requestChatroom) throws Exception {
-        System.out.println("        🐬[Controller] 받은 채팅방 DTO => " + requestChatroom);
+        System.out.println("        🐬[Controller addChatroom] 받은 채팅방 DTO => " + requestChatroom);
 
         // chatroom 테이블 칼럼생성
         ChatroomDto reponseChatroom = chatroomService.addChatroom(requestChatroom);
@@ -71,12 +71,32 @@ public class ChatroomRestController {
         return result;
     }
 
+    // 채팅방 입장하기
+    @GetMapping("enterChatroom")
+    public ChatEntranceDto enterChatroom(@RequestParam("roomId") int roomId, @RequestParam("memberId") String memberId) throws Exception {
+        System.out.println("        🐬[Controller enterChatroom] 받은 멤버 ID, 채팅방 ID => " + roomId + " " + memberId);
+        ChatEntranceDto entrance = chatroomService.enterChatroom(roomId, memberId);
+
+        System.out.println("        🐬[Controller enterChatroom] 새로운 멤버를 입장시킨 입장멤버> " + entrance);
+        return entrance;
+    }
+
     // 내 채팅방 목록 조회
     @GetMapping("getMyChatrooms")
     public List<ChatroomDto> getChatrooms(@RequestParam("memberId") String memberId) throws Exception {
         System.out.println("        🐬[Controller] (memberId) => " + memberId);
         System.out.println("        🐬[Controller] getMyChatrooms return => " + chatroomSearchService.getChatroomListByMemberId(memberId));
-        return chatroomSearchService.getChatroomListByMemberId(memberId);
+        List<ChatroomDto> chatroomDtos = chatroomSearchService.getChatroomListByMemberId(memberId);
+
+        // 채팅방 조회시 채팅방 참여멤버수도 함께조회
+        if(!chatroomDtos.isEmpty()){
+            for(ChatroomDto chatroomDto : chatroomDtos){
+                List<ChatEntranceDto> chatEntrances = chatroomService.getChatEntranceListByChatroom(chatroomDto);
+
+                chatroomDto.setChatroomEntrancesSize(chatEntrances.size());
+            }
+        }
+        return chatroomDtos;
     }
 
     /**

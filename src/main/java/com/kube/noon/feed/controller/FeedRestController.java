@@ -33,8 +33,9 @@ public class FeedRestController {
     @GetMapping("/getFeedListByMember")
     public List<FeedSummaryDto> getMemberFeedList(
             @Parameter(description = "회원 ID") @RequestParam String memberId,
+            @Parameter(description = "로그인한 회원 ID") @RequestParam String loginMemberId,
             @Parameter(description = "가져올 페이지(default = 1)") @RequestParam(required = false, defaultValue = "1") int page) {
-        List<FeedSummaryDto> feedListByMember = feedService.getFeedListByMember(memberId, page - 1, PAGE_SIZE);
+        List<FeedSummaryDto> feedListByMember = feedService.getFeedListByMember(memberId, loginMemberId, page - 1, PAGE_SIZE);
 
         return feedListByMember;
     }
@@ -54,8 +55,9 @@ public class FeedRestController {
     @GetMapping("/getFeedListByMemberLike")
     public List<FeedSummaryDto> getMemberLikeFeedList(
             @Parameter(description = "회원 ID") @RequestParam String memberId,
+            @Parameter(description = "로그인한 회원 ID") @RequestParam String loginMemberId,
             @Parameter(description = "가져올 페이지(default = 1)") @RequestParam(required = false, defaultValue = "1") int page) {
-        List<FeedSummaryDto> feedListByMemberLike = feedService.getFeedListByMemberLike(memberId, page - 1, PAGE_SIZE);
+        List<FeedSummaryDto> feedListByMemberLike = feedService.getFeedListByMemberLike(memberId, loginMemberId, page - 1, PAGE_SIZE);
 
         return feedListByMemberLike;
     }
@@ -64,8 +66,9 @@ public class FeedRestController {
     @GetMapping("/getFeedListByMemberBookmark")
     public List<FeedSummaryDto> getBookmarkFeedList(
             @Parameter(description = "회원 ID") @RequestParam String memberId,
+            @Parameter(description = "로그인한 회원 ID") @RequestParam String loginMemberId,
             @Parameter(description = "가져올 페이지(default = 1)") @RequestParam(required = false, defaultValue = "1") int page) {
-        List<FeedSummaryDto> feedListByMemberBookmark = feedService.getFeedListByMemberBookmark(memberId, page - 1, PAGE_SIZE);
+        List<FeedSummaryDto> feedListByMemberBookmark = feedService.getFeedListByMemberBookmark(memberId, loginMemberId, page - 1, PAGE_SIZE);
 
         return feedListByMemberBookmark;
     }
@@ -74,10 +77,19 @@ public class FeedRestController {
     @GetMapping("/getFeedListByMemberSubscription")
     public List<FeedSummaryDto> getBuildingSubscriptionFeedList(
             @Parameter(description = "회원 ID") @RequestParam String memberId,
+            @Parameter(description = "로그인한 회원 ID") @RequestParam String loginMemberId,
             @Parameter(description = "가져올 페이지(default = 1)") @RequestParam(required = false, defaultValue = "1") int page) {
-        List<FeedSummaryDto> feedListByBuildingSubscription = feedService.getFeedListByBuildingSubscription(memberId, page - 1, PAGE_SIZE);
+        List<FeedSummaryDto> feedListByBuildingSubscription = feedService.getFeedListByBuildingSubscription(memberId, loginMemberId, page - 1, PAGE_SIZE);
 
         return feedListByBuildingSubscription;
+    }
+
+    @Operation(summary = "건물 내 피드 중 확성기 피드 정보 가져오기", description = "확성기 관련 피드 내용을 가져옵니다.")
+    @GetMapping("/getFeedListByBuildingAndMegaphone")
+    public List<FeedMegaphoneDto> getFeedListByBuildingAndMegaphone(@Parameter(description = "확성기를 가져올 건물 ID") @RequestParam int buildingId){
+        List<FeedMegaphoneDto> feedListByBuildingAndMegaphone = feedService.getFeedListByBuildingAndMegaphone(buildingId);
+
+        return feedListByBuildingAndMegaphone;
     }
 
     @Operation(summary = "인기도 순으로 나열한 전체 피드 목록", description = "인기도가 높은 순서대로 피드 전체 목록을 출력합니다.")
@@ -249,7 +261,7 @@ public class FeedRestController {
 
     @Operation(summary = "피드 댓글 추가", description = "하나의 피드에 댓글을 추가합니다.")
     @PostMapping("/addFeedComment")
-    public int addFeedComment(@RequestBody FeedCommentDto feedCommentDto) {
+    public FeedCommentDto addFeedComment(@RequestBody FeedCommentDto feedCommentDto) {
         return feedSubService.addFeedComment(feedCommentDto);
     }
 
@@ -322,23 +334,9 @@ public class FeedRestController {
     }
 
     @Operation(summary = "[투표] 특정 투표 내용에 투표하기", description = "실제로 투표에 참여한다.")
-    @PostMapping("/addVoting/{feedId}/{optionIndex}")
-    public int addVoting(
-            @Parameter(description = "참여할 투표에 대한 피드 ID") @PathVariable("feedId") int feedId,
-            @Parameter(description = "옵션의 번호") @PathVariable("optionIndex") int optionIndex) {
-        feedVotesService.addVoting(feedId, optionIndex);
-
-        return feedId;
-    }
-
-    @Operation(summary = "[투표] 특정 투표 취소하기", description = "투표를 취소한다.")
-    @PostMapping("/deleteVoting/{feedId}/{optionIndex}")
-    public int deleteVoting(
-            @Parameter(description = "취소할 투표에 대한 피드 ID") @PathVariable("feedId") int feedId,
-            @Parameter(description = "옵션의 번호") @PathVariable("optionIndex") int optionIndex) {
-        feedVotesService.deleteVoting(feedId, optionIndex);
-
-        return feedId;
+    @PostMapping("/addVoting")
+    public FeedVotesDto addVoting(@RequestBody FeedVotesDto feedVotesDto){
+        return feedVotesService.addVoting(feedVotesDto);
     }
 
     @Operation(summary = "[투표] 투표 내용 가져오기", description = "투표를 취소한다.")

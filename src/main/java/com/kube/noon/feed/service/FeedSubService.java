@@ -55,7 +55,7 @@ public interface FeedSubService {
     List<FeedCommentDto> getFeedCommentList(int feedId);
 
     // 피드에 댓글을 하나 추가한다.
-    int addFeedComment(FeedCommentDto feedCommentDto);
+    FeedCommentDto addFeedComment(FeedCommentDto feedCommentDto);
 
     // 댓글을 삭제한다.
     int deleteFeedComment(int commentId);

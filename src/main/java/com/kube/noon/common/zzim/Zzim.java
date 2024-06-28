@@ -22,8 +22,8 @@ public class Zzim {
     @Column(name = "feed_id")
     private Integer feedId;
 
-    @Column(name = "building_id", nullable = false)
-    private int buildingId;
+    @Column(name = "building_id")
+    private Integer buildingId;
 
     @Column(name = "subscription_provider_id", length = 20)
     private String subscriptionProviderId;

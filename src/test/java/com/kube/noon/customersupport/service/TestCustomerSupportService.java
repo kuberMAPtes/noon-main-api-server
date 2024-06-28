@@ -129,6 +129,7 @@ public class TestCustomerSupportService {
     void addBluredImage(){
 
         Feed feed = Feed.builder().feedId(10000).build();
+        int blurIntensity = 2;
         FeedAttachment feedAttachment = FeedAttachment.builder()
                 .feed(feed)
                 .fileUrl("https://kr.object.ncloudstorage.com/noon-images/KakaoTalk_20240606_141731630.jpg")
@@ -139,7 +140,7 @@ public class TestCustomerSupportService {
 
 
         try {
-            customerSupportService.addBluredImage(FeedAttachmentDto.toDto(feedAttachment));
+            customerSupportService.addBluredImage(FeedAttachmentDto.toDto(feedAttachment), blurIntensity);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

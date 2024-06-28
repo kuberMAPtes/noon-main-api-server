@@ -111,7 +111,7 @@ class TestJwtSupport {
     void generateRefreshToken_twice() throws InterruptedException {
         String firstToken = this.jwtSupport.generateToken(SAMPLE_MEMBER_ID).getRefreshToken();
         assertThat(this.jwtSupport.isValidRefreshToken(firstToken)).isTrue();
-        Thread.sleep(500);
+        Thread.sleep(1500);
         String secondToken = this.jwtSupport.generateToken(SAMPLE_MEMBER_ID).getRefreshToken();
         log.info("tokenFirst={}", secondToken);
         log.info("tokenSecond={}", secondToken);

@@ -11,9 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Log4j2
@@ -32,6 +30,7 @@ public class FeedVotesServiceImpl implements FeedVotesService {
                 .question(feedVotesDto.getQuestion())
                 .options(feedVotesDto.getOptions())
                 .votes(new ArrayList<>(Collections.nCopies(feedVotesDto.getOptions().size(), 0))) // 0으로 초기화
+                .voterIds(new HashMap<String, Integer>())
                 .build();
 
         return FeedVotesDto.toDto(feedVotesRepository.save(feedVotes));
@@ -40,10 +39,11 @@ public class FeedVotesServiceImpl implements FeedVotesService {
     @Transactional
     @Override
     public FeedVotesDto updateVote(FeedVotesDto feedVotesDto) {
-        FeedVotes feedVotes = feedVotesRepository.findById(feedVotesDto.getFeedId()).orElseThrow(() -> new IllegalArgumentException("유효한 ID가 아님"));
+        FeedVotes feedVotes = feedVotesRepository.findById(feedVotesDto.getFeedId()).orElse(null);
         feedVotes.setQuestion(feedVotesDto.getQuestion());
         feedVotes.setOptions(feedVotesDto.getOptions());
-        feedVotes.setVotes(new ArrayList<>(Collections.nCopies(feedVotesDto.getOptions().size(), 0))); // ㅊ기화
+        feedVotes.setVotes(new ArrayList<>(Collections.nCopies(feedVotesDto.getOptions().size(), 0))); // 초기화
+        feedVotes.setVoterIds(new HashMap<String, Integer>()); // 초기화
 
         return FeedVotesDto.toDto(feedVotesRepository.save(feedVotes));
     }
@@ -56,23 +56,36 @@ public class FeedVotesServiceImpl implements FeedVotesService {
 
     @Transactional
     @Override
-    public void addVoting(int feedId, int optionIndex) {
-        FeedVotes feedVotes = feedVotesRepository.findById(feedId).orElseThrow(() -> new IllegalArgumentException("Invalid feed ID"));
-        List<Integer> votes = feedVotes.getVotes();
-        votes.set(optionIndex, votes.get(optionIndex) + 1);
-        feedVotes.setVotes(votes);
-        feedVotesRepository.save(feedVotes);
-    }
+    public FeedVotesDto addVoting(FeedVotesDto feedVotesDto) {
+        FeedVotes feedVotes = feedVotesRepository.findById(feedVotesDto.getFeedId()).orElse(null);
+        // System.out.println(feedVotes);
 
-    @Override
-    public void deleteVoting(int feedId, int optionIndex) {
-        FeedVotes feedVotes = feedVotesRepository.findById(feedId).orElseThrow(() -> new IllegalArgumentException("Invalid feed ID"));
-        List<Integer> votes = feedVotes.getVotes();
-        votes.set(optionIndex, votes.get(optionIndex) - 1);
-        feedVotes.setVotes(votes);
-        feedVotesRepository.save(feedVotes);
-    }
+        if (feedVotes != null) {
+            // 1. 투표자의 현황 갱신 및 추가하기
+            Map<String, Integer> voterIds = feedVotes.getVoterIds();
 
+            // 회원 처리에 대한 null 처리
+            String memberId = feedVotesDto.getMemberId();
+            if(memberId == null || memberId == "") {
+                return null;
+            }
+
+            int chosenOption = feedVotesDto.getChosenOption();
+            int optionSize = feedVotesDto.getOptions().size();
+            voterIds.put(memberId, chosenOption);
+
+            // 2. 투표 수 갱신하기
+            List<Integer> votes = updateVotes(voterIds, optionSize);
+
+            // 3. repository에 내용 갱신
+            feedVotes.setVoterIds(voterIds);
+            feedVotes.setVotes(votes);
+
+            return FeedVotesDto.toDto(feedVotesRepository.save(feedVotes));
+        } else {
+            return null;
+        }
+    }
 
     @Override
     public FeedVotesDto getVoteById(int feedId) {
@@ -80,5 +93,26 @@ public class FeedVotesServiceImpl implements FeedVotesService {
                 feedVotesRepository.findById(feedId)
                         .orElse(null)
         );
+    }
+
+    // feedVotes 내의 voterIds를 확인하여 votes를 갱신한다.
+    private List<Integer> updateVotes(Map<String, Integer> voterIds, int optionSize) {
+        // 1. 새로운 배열을 만듬
+        List<Integer> votes = new ArrayList<>(Collections.nCopies(optionSize, 0));
+
+        // 2. 투표 개수를 계산할 Map을 만듬
+        Map<Integer, Integer> valueCountMap = new HashMap<>();
+        for (Integer value : voterIds.values()) {
+            valueCountMap.put(value, valueCountMap.getOrDefault(value, 0) + 1);
+        }
+        
+        // 3. 각 투표 계산 결과를 votes에 반영
+        Iterator<Integer> iterator = valueCountMap.keySet().iterator();
+        while (iterator.hasNext()) {
+            int key = iterator.next();
+            votes.set(key, valueCountMap.get(key));
+        }
+        
+        return votes;
     }
 }

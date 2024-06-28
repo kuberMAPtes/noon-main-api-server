@@ -63,7 +63,7 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
      * @param buildingId 구독자를 조회하려는 건물아이디
      * @return 구독자 아이디 목록
      */
-    @Query("SELECT zzim.memberId FROM Zzim zzim WHERE zzim.buildingId = :buildingId")
+    @Query("SELECT zzim.memberId FROM Zzim zzim WHERE zzim.buildingId = :buildingId AND zzim.activated = TRUE ")
     List<String> findMemberIdsByBuildingId(int buildingId);
 
 

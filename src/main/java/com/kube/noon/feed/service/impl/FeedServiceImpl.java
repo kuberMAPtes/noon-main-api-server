@@ -5,10 +5,8 @@ import com.kube.noon.common.FeedCategory;
 import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.*;
-import com.kube.noon.feed.dto.FeedDto;
-import com.kube.noon.feed.dto.FeedSummaryDto;
-import com.kube.noon.feed.dto.TagDto;
-import com.kube.noon.feed.dto.UpdateFeedDto;
+import com.kube.noon.feed.dto.*;
+import com.kube.noon.feed.repository.FeedEventRepository;
 import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.feed.repository.TagFeedRepository;
 import com.kube.noon.feed.repository.TagRepository;
@@ -26,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;;
 import java.util.List;
 import java.util.Random;
@@ -41,12 +40,15 @@ public class FeedServiceImpl implements FeedService {
     private final TagRepository tagRepository;
     private final TagFeedRepository tagFeedRepository;
     private final ZzimRepository zzimRepository;
+    private final FeedEventRepository feedEventRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
 
     // FeedSumaryDto에 좋아요, 북마크 정보 저장
     private List<FeedSummaryDto> setFeedSummaryDtoLikeAndBookmark(String memberId, List<FeedSummaryDto> feedList) {
+        if(memberId == null) return feedList;
+
         List<Integer> zzimLikeList = zzimRepository.getFeedIdByMemberIdAndZzimType(memberId, ZzimType.LIKE);
         List<Integer> zzimBookmarkList = zzimRepository.getFeedIdByMemberIdAndZzimType(memberId, ZzimType.BOOKMARK);
 
@@ -97,7 +99,7 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public List<FeedSummaryDto> getFeedListByMember(String memberId, int page, int pageSize) {
+    public List<FeedSummaryDto> getFeedListByMember(String memberId, String loginMemberId, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize);
 
         List<Feed> entities = feedRepository.findByWriterAndActivatedTrue(
@@ -105,7 +107,7 @@ public class FeedServiceImpl implements FeedService {
                 pageable
         );
 
-        List<FeedSummaryDto> feedListByMember = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entities));
+        List<FeedSummaryDto> feedListByMember = setFeedSummaryDtoLikeAndBookmark(loginMemberId, FeedSummaryDto.toDtoList(entities));
 
         return feedListByMember;
     }
@@ -192,14 +194,14 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public List<FeedSummaryDto> getFeedListByMemberLike(String memberId, int page, int pageSize) {
+    public List<FeedSummaryDto> getFeedListByMemberLike(String memberId, String loginMemberId, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize);
 
         List<Feed> entites = feedRepository.findByMemberLikeFeed(
                 Member.builder().memberId(memberId).build(), pageable
         );
 
-        List<FeedSummaryDto> feedListByMemberLike = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
+        List<FeedSummaryDto> feedListByMemberLike = setFeedSummaryDtoLikeAndBookmark(loginMemberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByMemberLike;
     }
@@ -218,14 +220,14 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public List<FeedSummaryDto> getFeedListByMemberBookmark(String memberId, int page, int pageSize) {
+    public List<FeedSummaryDto> getFeedListByMemberBookmark(String memberId, String loginMemberId, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize);
 
         List<Feed> entites = feedRepository.findByMemberBookmarkFeed(
                 Member.builder().memberId(memberId).build(), pageable
         );
 
-        List<FeedSummaryDto> feedListByMemberBookmark = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
+        List<FeedSummaryDto> feedListByMemberBookmark = setFeedSummaryDtoLikeAndBookmark(loginMemberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByMemberBookmark;
     }
@@ -244,16 +246,24 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId, int page, int pageSize) {
+    public List<FeedSummaryDto> getFeedListByBuildingSubscription(String memberId, String loginMemberId, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize);
 
         List<Feed> entites = feedRepository.findByMemberBuildingSubscription(
                 Member.builder().memberId(memberId).build(), pageable
         );
 
-        List<FeedSummaryDto> feedListByBuildingSubscription = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
+        List<FeedSummaryDto> feedListByBuildingSubscription = setFeedSummaryDtoLikeAndBookmark(loginMemberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByBuildingSubscription;
+    }
+
+    @Override
+    public List<FeedMegaphoneDto> getFeedListByBuildingAndMegaphone(int buildingId) {
+        Building building = Building.builder().buildingId(buildingId).build();
+        List<Feed> feedList = feedRepository.findByBuildingAndFeedCategoryAndActivatedTrue(building, FeedCategory.MEGAPHONE);
+
+        return FeedMegaphoneDto.toDtoList(feedList);
     }
 
     @Override
@@ -303,6 +313,18 @@ public class FeedServiceImpl implements FeedService {
 
         entityManager.flush();
         entityManager.clear();
+
+        // 피드 종류가 이벤트일 때, 이벤트 지정하기
+        FeedCategory feedCategory = feedDto.getFeedCategory();
+        LocalDateTime eventDate = feedDto.getEventDate();
+        if(feedCategory == FeedCategory.EVENT && eventDate != null) {
+            FeedEvent event = FeedEvent.builder()
+                    .feedId(feedId)
+                    .eventDate(eventDate)
+                    .build();
+
+            feedEventRepository.save(event);
+        }
 
         return feedId;
     }
@@ -356,6 +378,18 @@ public class FeedServiceImpl implements FeedService {
             }
         }
 
+        // 피드 종류가 이벤트일 때, 이벤트 지정하기
+        FeedCategory feedCategory = updateFeedDto.getFeedCategory();
+        LocalDateTime eventDate = updateFeedDto.getEventDate();
+        if(feedCategory == FeedCategory.EVENT && eventDate != null) {
+            FeedEvent event = FeedEvent.builder()
+                    .feedId(feedId)
+                    .eventDate(eventDate)
+                    .build();
+
+            feedEventRepository.save(event);
+        }
+
         return updateFeedId;
     }
 
@@ -392,6 +426,14 @@ public class FeedServiceImpl implements FeedService {
         List<Tag> tagList = tagRepository.getTagByFeedId(Feed.builder().feedId(feedId).build());
         resultFeed.setTags(TagDto.toDtoList(tagList));
         resultFeed.setUpdateTagList(tagList.stream().map(s -> s.getTagText()).collect(Collectors.toList()));
+
+        // 피드가 이벤트 피드일 때 이벤트 날짜를 가져온다.
+        if(getFeed.getFeedCategory() == FeedCategory.EVENT) {
+            FeedEvent feedEvent = feedEventRepository.findByFeedId(feedId);
+            if(feedEvent != null) {
+                resultFeed.setEventDate(feedEvent.getEventDate());
+            }
+        }
 
         return resultFeed;
     }

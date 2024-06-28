@@ -15,6 +15,7 @@ import com.kube.noon.feed.dto.TagDto;
 import com.kube.noon.feed.repository.*;
 import com.kube.noon.feed.service.FeedSubService;
 import com.kube.noon.member.domain.Member;
+import com.kube.noon.member.repository.MemberJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpHeaders;
@@ -40,6 +41,7 @@ public class FeedSubServiceImpl implements FeedSubService {
     private final TagRepository tagRepository;
     private final ZzimRepository zzimRepository;
     private final ObjectStorageAPI objectStorageAPI;
+    private final MemberJpaRepository memberJpaRepository;
     private final ObjectStorageAPIProfile objectStorageAPIProfile; // test
 
     @Override
@@ -161,7 +163,7 @@ public class FeedSubServiceImpl implements FeedSubService {
                     .memberId(memberId)
                     .feedId(feedId)
                     .zzimType(ZzimType.LIKE)
-                    .buildingId(feed.getBuilding().getBuildingId())
+                    // .buildingId(feed.getBuilding().getBuildingId())
                     .subscriptionProviderId(null)
                     .activated(true)
                     .build();
@@ -179,12 +181,23 @@ public class FeedSubServiceImpl implements FeedSubService {
     public int deleteFeedLike(int feedId, String memberId) {
         List<Zzim> zzimLikeList = zzimRepository.findByFeedIdAndMemberIdAndZzimTypeOrderByZzimId(feedId, memberId, ZzimType.LIKE);
         Zzim deleteZzim = (zzimLikeList.isEmpty() ? null : zzimLikeList.get(0));
+        Feed feed = feedRepository.findByFeedId(feedId);
 
         if(deleteZzim != null) {
             deleteZzim.setActivated(false);
             return zzimRepository.save(deleteZzim).getZzimId();
         } else {
-            return -1; // error
+            // return -1; // error
+            // 새로 만들어서 취소하는 로직 구현
+            deleteZzim = Zzim.builder()
+                    .memberId(memberId)
+                    .feedId(feedId)
+                    .zzimType(ZzimType.LIKE)
+                    // .buildingId(feed.getBuilding().getBuildingId())
+                    .subscriptionProviderId(null)
+                    .activated(false)
+                    .build();
+            return zzimRepository.save(deleteZzim).getZzimId();
         }
     }
 
@@ -202,7 +215,7 @@ public class FeedSubServiceImpl implements FeedSubService {
                     .memberId(memberId)
                     .feedId(feedId)
                     .zzimType(ZzimType.BOOKMARK)
-                    .buildingId(feed.getBuilding().getBuildingId())
+                    // .buildingId(feed.getBuilding().getBuildingId())
                     .subscriptionProviderId(null)
                     .activated(true)
                     .build();
@@ -225,7 +238,16 @@ public class FeedSubServiceImpl implements FeedSubService {
             deleteZzim.setActivated(false);
             return zzimRepository.save(deleteZzim).getZzimId();
         } else {
-            return -1; // error
+            // 새로 만들어서 취소하는 로직 구현
+            deleteZzim = Zzim.builder()
+                    .memberId(memberId)
+                    .feedId(feedId)
+                    .zzimType(ZzimType.BOOKMARK)
+                    // .buildingId(feed.getBuilding().getBuildingId())
+                    .subscriptionProviderId(null)
+                    .activated(false)
+                    .build();
+            return zzimRepository.save(deleteZzim).getZzimId();
         }
     }
 
@@ -244,10 +266,17 @@ public class FeedSubServiceImpl implements FeedSubService {
     }
 
     @Override
-    public int addFeedComment(FeedCommentDto feedCommentDto) {
+    public FeedCommentDto addFeedComment(FeedCommentDto feedCommentDto) {
         FeedComment addFeedComment = FeedCommentDto.toEntity(feedCommentDto);
         addFeedComment.setActivated(true);
-        return feedCommentRepository.save(addFeedComment).getCommentId();
+
+        Member member = memberJpaRepository.findById(feedCommentDto.getMemberId())
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+        addFeedComment.setMember(member);
+
+        FeedComment savedFeedComment = feedCommentRepository.save(addFeedComment);
+        
+        return FeedCommentDto.toDto(feedCommentRepository.save(savedFeedComment));
     }
 
     @Override

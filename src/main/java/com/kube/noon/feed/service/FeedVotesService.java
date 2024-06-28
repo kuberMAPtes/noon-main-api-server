@@ -16,10 +16,7 @@ public interface FeedVotesService {
     void deleteVote(int feedId);
 
     // 투표에 참여한다.
-    void addVoting(int feedId, int optionIndex);
-
-    // 투표 참여를 취소한다.
-    void deleteVoting(int feedId, int optionIndex);
+    FeedVotesDto addVoting(FeedVotesDto feedVotesDto);
 
     // 특정 투표를 조회한다.
     FeedVotesDto getVoteById(int feedId);

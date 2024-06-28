@@ -168,7 +168,12 @@
             <version>0.13.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt -->
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-quartz</artifactId>
+            <version>LATEST</version>
+        </dependency>
+        <!--   스케쥴링을 위한 의존성   -->
     </dependencies>
 
     <build>
