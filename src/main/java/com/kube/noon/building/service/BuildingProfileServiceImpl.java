@@ -181,7 +181,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
         log.info("해당 도로명 주소로 조회={}", roadAddr);
 
-        Building building = buildingProfileRepository.findBuildingProfileByRoadAddr(roadAddr);
+        Building building = buildingProfileRepository.findAppliedBuildingByRoadAddr(roadAddr);
 
         if(building==null){
             log.info("처음 신청된 건물={}", roadAddr);

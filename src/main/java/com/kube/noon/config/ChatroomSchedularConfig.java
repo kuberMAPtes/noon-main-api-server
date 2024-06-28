@@ -6,6 +6,7 @@ import org.quartz.impl.JobDetailImpl;
 import org.quartz.impl.triggers.SimpleTriggerImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import java.util.Calendar;
 
 import java.util.Date;
 
@@ -45,10 +46,16 @@ public class ChatroomSchedularConfig {
     public SimpleTriggerImpl deleteChatRoomsTrigger(JobDetail deleteChatRoomsJobDetail) {
         SimpleTriggerImpl trigger = new SimpleTriggerImpl();
         trigger.setJobKey(deleteChatRoomsJobDetail.getKey()); // Job키를 받기
-        trigger.setRepeatInterval(3600*30); // 1시간 간격 (밀리초 단위)
+        trigger.setRepeatInterval(1000*3600*24); // 5분간격 (밀리초 단위)
         trigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY); // 무한 반복
         trigger.setKey(new TriggerKey("deleteChatRoomsTrigger"));
-        trigger.setStartTime(new Date()); // 트리거 시작 시간 설정
+
+        // 현재 시간으로부터 24시간 후의 시간을 설정
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.HOUR_OF_DAY, 24);
+        Date startTime = cal.getTime();
+
+        trigger.setStartTime(startTime); // 트리거 시작 시간 설정
         return trigger;
     }
 
