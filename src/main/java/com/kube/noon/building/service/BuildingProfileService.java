@@ -18,7 +18,7 @@ public interface BuildingProfileService {
     List<MemberDto> getSubscribers(String roadAddr);
     BuildingZzimDto deleteSubscription(String memberId, int buildingId);
     List<BuildingDto> addSubscriptionFromSomeone(String memberId, String someoneId);
-    List<BuildingDto> getMemberBuildingSubscriptionList(String memberId);
+    List<MemberBuildingSubscriptionResponseDto> getMemberBuildingSubscriptionList(String memberId);
     BuildingDto getBuildingProfile(int buildingId);
     BuildingDto getBuildingProfileByRoadAddr(String roadAddr);
     BuildingDto getBuildingProfileByPosition(Position position) throws PlaceNotFoundException, NotRegisteredBuildingException;

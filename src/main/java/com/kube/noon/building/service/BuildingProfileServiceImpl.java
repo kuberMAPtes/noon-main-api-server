@@ -11,6 +11,7 @@ import com.kube.noon.building.service.buildingwiki.BuildingWikiRestTemplateServi
 import com.kube.noon.chat.dto.ChatroomDto;
 import com.kube.noon.chat.dto.LiveliestChatroomDto;
 import com.kube.noon.chat.serviceImpl.ChatroomSearchServiceImpl;
+import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.common.constant.PagingConstants;
 import com.kube.noon.common.zzim.Zzim;
 import com.kube.noon.common.zzim.ZzimRepository;
@@ -268,12 +269,23 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
 
     @Override
-    public List<BuildingDto> getMemberBuildingSubscriptionList(String memberId) {
+    public List<MemberBuildingSubscriptionResponseDto> getMemberBuildingSubscriptionList(String memberId) {
         List<Building> buildings = buildingProfileMapper.findBuildingSubscriptionListByMemberId(memberId);
 
         return buildings.stream()
                 .map(BuildingDto::fromEntity)
-                .collect(Collectors.toList());
+                .map((b) -> {
+                    List<String> subscriberIds = this.zzimRepository.findMemberIdsByBuildingId(b.getBuildingId());
+                    return new MemberBuildingSubscriptionResponseDto(
+                            b,
+                            subscriberIds.stream()
+                                    .map(this.memberRepositoryImpl::findMemberById)
+                                    .map(Optional::orElseThrow)
+                                    .map((m) -> DtoEntityBinder.INSTANCE.toDto(m, MemberDto.class))
+                                    .collect(Collectors.toList())
+                    );
+                })
+                .toList();
     }
 
     @Override
