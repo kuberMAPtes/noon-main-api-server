@@ -5,12 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
-import java.util.List;
-
 @AllArgsConstructor
 @Getter
 @ToString
 public class MemberBuildingSubscriptionResponseDto {
     private final BuildingDto building;
-    private final List<MemberDto> subscriptionProviderList;
+    private final MemberDto subscriptionProvider;
 }

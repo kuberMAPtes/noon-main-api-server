@@ -275,14 +275,14 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
         return buildings.stream()
                 .map(BuildingDto::fromEntity)
                 .map((b) -> {
-                    List<String> subscriberIds = this.zzimRepository.findMemberIdsByBuildingId(b.getBuildingId());
+                    Zzim subscription = this.zzimRepository.findByBuildingIdAndMemberId(b.getBuildingId(), memberId);
+                    subscription = subscription == null
+                            ? new Zzim(0, "", 0, 0, "", null, false)
+                            : subscription;
                     return new MemberBuildingSubscriptionResponseDto(
                             b,
-                            subscriberIds.stream()
-                                    .map(this.memberRepositoryImpl::findMemberById)
-                                    .map(Optional::orElseThrow)
-                                    .map((m) -> DtoEntityBinder.INSTANCE.toDto(m, MemberDto.class))
-                                    .collect(Collectors.toList())
+                            DtoEntityBinder.INSTANCE.toDto(this.memberRepositoryImpl.findMemberById(subscription.getSubscriptionProviderId())
+                                    .orElse(null), MemberDto.class)
                     );
                 })
                 .toList();
