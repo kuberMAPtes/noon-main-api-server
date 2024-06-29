@@ -115,7 +115,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     /**
      * 회원이 북마크를 한 피드 목록을 가져온다. 단, 활성화가 된 피드만 가져온다.
      *
-     * @param writer Member 객체를 받는다.
+     * @param member Member 객체를 받는다.
      * @return List<Feed>
      */
     @Query("""

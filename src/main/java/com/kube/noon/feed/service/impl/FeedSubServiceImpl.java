@@ -27,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Service
@@ -294,6 +296,10 @@ public class FeedSubServiceImpl implements FeedSubService {
 
     @Override
     public FeedCommentDto addFeedComment(FeedCommentDto feedCommentDto) {
+        // 한국 시간으로 변경
+        ZonedDateTime kstDateTime = feedCommentDto.getWrittenTime().atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+        feedCommentDto.setWrittenTime(kstDateTime.toLocalDateTime());
+
         FeedComment addFeedComment = FeedCommentDto.toEntity(feedCommentDto);
         addFeedComment.setActivated(true);
 
