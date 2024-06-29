@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -205,8 +206,7 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
     @Override
     public List<NoticeDto> getNoticeListByPageable(int pageNumber) {
 
-        //pageSize 메타데이터화 논의 필요. 임의로 5
-        Pageable pageable = PageRequest.of(pageNumber, 5);
+        Pageable pageable = PageRequest.of(pageNumber, 5, Sort.by(Sort.Direction.DESC, "writtenTime"));
 
         Page<Feed> noticePage = noticeRepository.findByFeedCategoryAndActivated(FeedCategory.NOTICE, true, pageable);
 
