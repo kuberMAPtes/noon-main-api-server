@@ -214,6 +214,9 @@ public class BuildingProfileRestController {
 
     }
 
-
+    @GetMapping("/liveliestChatrooms")
+    public List<LiveliestChatroomBuildingDto> getLiveliestChatrooms() {
+        return this.buildingProfileService.getLiveliestChatroomBuilding();
+    }
 
 }

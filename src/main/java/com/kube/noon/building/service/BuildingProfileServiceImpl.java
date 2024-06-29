@@ -1,5 +1,7 @@
 package com.kube.noon.building.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kube.noon.building.domain.Building;
 import com.kube.noon.building.dto.*;
 import com.kube.noon.building.exception.NotRegisteredBuildingException;
@@ -8,8 +10,10 @@ import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
 import com.kube.noon.building.repository.BuildingProfileRepository;
 import com.kube.noon.building.service.buildingwiki.BuildingWikiEmptyServiceImpl;
 import com.kube.noon.building.service.buildingwiki.BuildingWikiRestTemplateServiceImpl;
+import com.kube.noon.chat.domain.Chatroom;
 import com.kube.noon.chat.dto.ChatroomDto;
 import com.kube.noon.chat.dto.LiveliestChatroomDto;
+import com.kube.noon.chat.repository.ChatroomRepository;
 import com.kube.noon.chat.serviceImpl.ChatroomSearchServiceImpl;
 import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.common.constant.PagingConstants;
@@ -28,13 +32,17 @@ import com.kube.noon.places.exception.PlaceNotFoundException;
 import com.kube.noon.places.service.PlacesService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.web.config.SortHandlerMethodArgumentResolverCustomizer;
+import org.springframework.http.RequestEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,6 +67,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     private final FeedRepository feedRepository;
     private final PlacesService placesService;
     private final BuildingWikiService buildingWikiService;
+    private final ChatroomRepository chatroomRepository;
 
 
     public static final int SUMMARY_LENGTH_LIMIT = 2000;
@@ -288,10 +297,61 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
                 .toList();
     }
 
+    @Value("${chat-server-url}")
+    private String chatServerUrl;
+
+    @Override
+    public List<LiveliestChatroomBuildingDto> getLiveliestChatroomBuilding() {
+        String uri = UriComponentsBuilder.fromHttpUrl(this.chatServerUrl)
+                .path("/node/activeRoomsGroupByBuilding")
+                .build()
+                .toUriString();
+        RequestEntity<Void> requestEntity = RequestEntity.get(uri).build();
+        RestTemplate restTemplate = new RestTemplate();
+        JSONArray responseBody = new JSONArray(restTemplate.exchange(requestEntity, String.class).getBody());
+        List<LiveliestChatroomBuildingDto> ret = new LinkedList<>();
+        for (int i = 0; i < responseBody.length(); i++) {
+            JSONObject obj = responseBody.getJSONObject(i);
+            log.trace("{}", obj);
+            int buildingId = Integer.parseInt(obj.getString("buildingID"));
+            int chatroomId = Integer.parseInt(obj.getJSONArray("chatrooms").getJSONObject(0).getString("chatroomID"));
+            int messageCount = obj.getJSONArray("chatrooms").getJSONObject(0).getInt("messageCount");
+            BuildingDto buildingDto = getBuildingProfile(buildingId);
+            log.trace("chatroomId={}", chatroomId);
+            Chatroom chatroom = this.chatroomRepository.findChatroomByChatroomId(chatroomId);
+            log.trace("chatroom={}", chatroom);
+            if (buildingDto == null || chatroom == null) {
+                continue;
+            }
+
+            int liveliness;
+            if (messageCount < 200) {
+                liveliness = 1;
+            } else if (messageCount < 400) {
+                liveliness = 2;
+            } else if (messageCount < 600) {
+                liveliness = 3;
+            } else if (messageCount < 800) {
+                liveliness = 4;
+            } else {
+                liveliness = 5;
+            }
+
+            LiveliestChatroomBuildingDto item = LiveliestChatroomBuildingDto.builder()
+                    .building(buildingDto)
+                    .chatroomId(chatroom.getChatroomId())
+                    .chatroomName(chatroom.getChatroomName())
+                    .liveliness(liveliness)
+                    .build();
+            ret.add(item);
+        }
+        return ret;
+    }
+
     @Override
     public BuildingDto getBuildingProfile(int buildingId) {
         Building building = buildingProfileRepository.findBuildingProfileByBuildingId(buildingId);
-        return BuildingDto.fromEntity(building);
+        return building == null ? null : BuildingDto.fromEntity(building);
     }
     /**
      * profile Activated가 false이거나(등록 신청) null(신청 이력X)인 건물 도로명주소로 검색

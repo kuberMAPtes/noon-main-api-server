@@ -2,7 +2,6 @@ package com.kube.noon.building.service;
 
 import com.kube.noon.building.dto.*;
 import com.kube.noon.building.exception.NotRegisteredBuildingException;
-import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.dto.member.MemberDto;
 import com.kube.noon.places.domain.Position;
 import com.kube.noon.places.domain.PositionRange;
@@ -19,6 +18,8 @@ public interface BuildingProfileService {
     BuildingZzimDto deleteSubscription(String memberId, int buildingId);
     List<BuildingDto> addSubscriptionFromSomeone(String memberId, String someoneId);
     List<MemberBuildingSubscriptionResponseDto> getMemberBuildingSubscriptionList(String memberId);
+    List<LiveliestChatroomBuildingDto> getLiveliestChatroomBuilding();
+
     BuildingDto getBuildingProfile(int buildingId);
     BuildingDto getBuildingProfileByRoadAddr(String roadAddr);
     BuildingDto getBuildingProfileByPosition(Position position) throws PlaceNotFoundException, NotRegisteredBuildingException;
