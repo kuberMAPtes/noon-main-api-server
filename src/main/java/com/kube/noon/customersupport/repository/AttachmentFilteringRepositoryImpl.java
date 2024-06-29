@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.imageio.ImageIO;
@@ -90,22 +91,28 @@ public class AttachmentFilteringRepositoryImpl implements AttachmentFilteringRep
 
 
             // Green Eye Request
-            JSONObject response = new JSONObject(
-                    client.post()
-                            .header(GREENEYE_SECRET_KEY_HEADER, this.secretKey)
-                            .header("Content-Type", "application/json")
-                            .bodyValue(requestBody)
-                            .retrieve()
-                            .bodyToMono(String.class)
-                            .block()
-                    );
+            try{
+                JSONObject response = new JSONObject(
+                        client.post()
+                                .header(GREENEYE_SECRET_KEY_HEADER, this.secretKey)
+                                .header("Content-Type", "application/json")
+                                .bodyValue(requestBody)
+                                .retrieve()
+                                .onStatus(status -> status.is4xxClientError(), ClientResponse::createException)
+                                .bodyToMono(String.class)
+                                .block()
+                );
 
-            // 유해성 결과 체크, 유해 사진만 모으기
-            if(checkHarmful(response)){
-                badImageList.add(feedAttachment);
+                // 유해성 결과 체크, 유해 사진만 모으기
+                if(checkHarmful(response)){
+                    badImageList.add(feedAttachment);
+                }
+
+            }catch(Exception e){
+                System.err.println("GreenEye 요청이 잘못됨: "+e.getMessage());
             }
 
-        }
+        }///end of for
 
         return badImageList;
 
