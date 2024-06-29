@@ -85,16 +85,23 @@ public class FeedSubServiceImpl implements FeedSubService {
         }
     }
 
-    // 파일 확장자를 기반으로 MIME 타입을 반환하는 메소드
+    @Override
+    public FeedAttachmentDto getFeedAttachmentDto(int attachmentId) {
+        FeedAttachmentDto feedAttachmentDto = FeedAttachmentDto.toDto(feedAttachmentRepository.findByAttachmentId(attachmentId));
+
+        return feedAttachmentDto;
+    }
+
+    // 파일 확장자를 기반으로 MIME 타입을 반환하는 메소드 : 한 번 더 걸러주는 역할
     private MediaType getMediaType(String fileName) {
         String[] parts = fileName.split("\\.");
         String extension = parts[parts.length - 1].toLowerCase(); // 파일 확장자를 소문자로 변환하여 비교
 
         switch (extension) {
             case "jpg": case "jpeg":
-            case "png": case "gif":
+            case "png": case "gif": case "webp":
                 return MediaType.IMAGE_JPEG; // 이미지 파일인 경우
-            case "mp4":
+            case "mp4": case "mp3":
                 return MediaType.valueOf("video/mp4"); // 동영상 파일인 경우
             default:
                 return MediaType.APPLICATION_OCTET_STREAM; // 기타 파일은 바이너리 스트림으로 처리
@@ -118,18 +125,22 @@ public class FeedSubServiceImpl implements FeedSubService {
                 for(MultipartFile file : multipartFileList) {
                     String originalFileName = file.getOriginalFilename();
 
-                    // Object Storage에 넣기
-                    String Url = objectStorageAPI.putObject(originalFileName, file);
-                    // String Url = objectStorageAPIProfile.putObject(originalFileName, file); // test
+                    FileType fileType = getFileType(originalFileName);
+                    // 정해진 확장자만 저장한다.
+                    if(fileType != null) {
+                        // Object Storage에 넣기
+                        String Url = objectStorageAPI.putObject(originalFileName, file);
+                        // String Url = objectStorageAPIProfile.putObject(originalFileName, file); // test
 
-                    // DB에 넣기
-                    feedAttachmentRepository.save(FeedAttachment.builder()
-                            .feed(Feed.builder().feedId(feedId).build())
-                            .fileUrl(Url)
-                            .fileType(FileType.PHOTO) // 임시
-                            .blurredFileUrl(null)
-                            .activated(true)
-                            .build());
+                        // DB에 넣기
+                        feedAttachmentRepository.save(FeedAttachment.builder()
+                                .feed(Feed.builder().feedId(feedId).build())
+                                .fileUrl(Url)
+                                .fileType(fileType)
+                                .blurredFileUrl(null)
+                                .activated(true)
+                                .build());
+                    }
                 }
             }
         } catch (Exception e) {
@@ -139,6 +150,22 @@ public class FeedSubServiceImpl implements FeedSubService {
         return feedId;
     }
 
+    // 파일 확장자를 기반으로 사진/동영상을 판단한다.
+    private FileType getFileType(String fileName) {
+        String[] parts = fileName.split("\\.");
+        String extension = parts[parts.length - 1].toLowerCase(); // 파일 확장자를 소문자로 변환하여 비교
+
+        switch (extension) {
+            case "jpg": case "jpeg":
+            case "png": case "gif": case "webp":
+                return FileType.PHOTO; // 이미지 파일인 경우
+            case "mp4": case "mp3":
+                return FileType.VIDEO; // 동영상 파일인 경우
+            default:
+                return null; // 기타 파일일 경우  null 반환
+        }
+    }
+    
     @Transactional
     @Override
     public int deleteFeedAttachment(int attachmentId) {
