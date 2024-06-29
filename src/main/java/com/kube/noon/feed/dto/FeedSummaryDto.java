@@ -51,7 +51,7 @@ public class FeedSummaryDto {
                 .title(feed.getTitle())
                 .feedText(feed.getFeedText())
                 .buildingId(feed.getBuilding() == null ? 0 : feed.getBuilding().getBuildingId())
-                .buildingName(feed.getBuilding().getBuildingName())
+                .buildingName(feed.getBuilding() == null ? null : feed.getBuilding().getBuildingName())
                 .writtenTime(feed.getWrittenTime())
                 .feedCategory(feed.getFeedCategory())
                 .mainActivated(feed.isMainActivated())

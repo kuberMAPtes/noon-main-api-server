@@ -57,7 +57,8 @@ public class ObjectStorageAPIProfile {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(multipartFile.getContentType());
         objectMetadata.setContentLength(multipartFile.getSize());
-        PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, objectName,multipartFile.getInputStream(), objectMetadata);
+        PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, objectName,multipartFile.getInputStream(), objectMetadata)
+                .withCannedAcl(CannedAccessControlList.PublicRead);
 
         try {
             s3.putObject(putObjectRequest);
