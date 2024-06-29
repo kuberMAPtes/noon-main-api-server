@@ -187,12 +187,20 @@ public class FeedRestController {
         return feedAttachmentDtoList;
     }
 
-    @Operation(summary = "피드의 첨부파일 하나 조회", description = "피드에 첨부된 파일 하나를 만듭니다.")
+    @Operation(summary = "피드의 첨부파일 하나 조회", description = "피드에 첨부된 파일 하나를 가져옵니다.")
     @GetMapping("/getFeedAttachment")
     public ResponseEntity<byte[]> getFeedAttachment(@Parameter(description = "첨부파일 ID") @RequestParam int attachmentId) {
         ResponseEntity<byte[]> resultEntity = feedSubService.getFeedAttachment(attachmentId);
 
         return resultEntity;
+    }
+
+    @Operation(summary = "피드의 첨부파일에 대한 정보(dto) 하나 조회", description = "피드에 첨부된 파일에 대한 정보를 가져옵니다.")
+    @GetMapping("/getFeedAttachmentDto")
+    public FeedAttachmentDto getFeedAttachmentDto(@Parameter(description = "첨부파일 ID") @RequestParam int attachmentId) {
+        FeedAttachmentDto resultFeedAttachmentDto = feedSubService.getFeedAttachmentDto(attachmentId);
+
+        return resultFeedAttachmentDto;
     }
 
     @Operation(summary = "피드 내 첨부파일 추가", description = "피드에 첨부파일 하나를 추가합니다.")

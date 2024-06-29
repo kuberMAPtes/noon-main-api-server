@@ -25,6 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;;
 import java.util.List;
 import java.util.Random;
@@ -281,6 +283,10 @@ public class FeedServiceImpl implements FeedService {
     @Transactional
     @Override
     public int addFeed(FeedDto feedDto) {
+        // 한국 시간으로 변경
+        ZonedDateTime kstDateTime = feedDto.getWrittenTime().atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+        feedDto.setWrittenTime(kstDateTime.toLocalDateTime());
+
         Feed addFeed = FeedDto.toEntity(feedDto);
         if(addFeed.getFeedCategory() == FeedCategory.NOTICE) {
             addFeed.setBuilding(null);
