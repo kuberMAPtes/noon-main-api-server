@@ -76,7 +76,7 @@ public class BuildingProfileRestController {
      * 회원의 건물 구독 목록 가져오기\
      */
     @GetMapping("/getMemberSubscriptionList")
-    public List<BuildingDto> getMemberSubscriptionList(@RequestParam("memberId") String memberId) {
+    public List<MemberBuildingSubscriptionResponseDto> getMemberSubscriptionList(@RequestParam("memberId") String memberId) {
         return buildingProfileService.getMemberBuildingSubscriptionList(memberId);
     }
 
@@ -214,6 +214,9 @@ public class BuildingProfileRestController {
 
     }
 
-
+    @GetMapping("/liveliestChatrooms")
+    public List<LiveliestChatroomBuildingDto> getLiveliestChatrooms() {
+        return this.buildingProfileService.getLiveliestChatroomBuilding();
+    }
 
 }
