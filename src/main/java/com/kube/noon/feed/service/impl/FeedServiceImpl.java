@@ -525,4 +525,11 @@ public class FeedServiceImpl implements FeedService {
 
         return feedRepository.save(feed).getFeedId();
     }
+
+    @Override
+    public List<FeedEventDto> getFeedEventList(int buildingId) {
+        List<FeedEventDto> feedEventDtoList = feedRepository.findFeedWithEventDates(buildingId);
+
+        return feedEventDtoList;
+    }
 }

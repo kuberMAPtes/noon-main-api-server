@@ -3,6 +3,7 @@ package com.kube.noon.feed.repository;
 import com.kube.noon.building.domain.Building;
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.feed.domain.Feed;
+import com.kube.noon.feed.dto.FeedEventDto;
 import com.kube.noon.member.domain.Member;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -49,7 +50,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     List<Feed> findByBuildingAndActivatedTrue(Building building, Pageable pageable);
 
     /**
-     * 건물별 피드 중 카테고리에 알맞는 피드를 가져온다 : 주사용처 -> 확성기
+     * 건물별 피드 중 카테고리에 알맞는 피드를 가져온다 : 주사용처 -> 확성기, 이벤트
      */
     List<Feed> findByBuildingAndFeedCategoryAndActivatedTrue(Building building, FeedCategory feedCategory);
 
@@ -235,6 +236,15 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     Integer findMaxId();
 
     /**
-     *
+     * 이벤트 피드를 출력하기 위한 정보를 가져온다. : 편의상 domain이 아닌 dto 사용
      */
+    @Query(value = """
+            SELECT new com.kube.noon.feed.dto.FeedEventDto(f.feedId, f.title, f.building.buildingId, e.eventDate)
+            FROM Feed f
+            INNER JOIN FeedEvent e ON f.feedId = e.feedId
+            WHERE f.feedCategory = 'EVENT'
+            AND f.building.buildingId = :#{#buildingId}
+            AND f.activated = true
+            """)
+    List<FeedEventDto> findFeedWithEventDates(int buildingId);
 }

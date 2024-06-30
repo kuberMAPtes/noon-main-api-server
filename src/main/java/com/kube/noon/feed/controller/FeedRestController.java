@@ -1,5 +1,6 @@
 package com.kube.noon.feed.controller;
 
+import com.kube.noon.feed.domain.FeedEvent;
 import com.kube.noon.feed.dto.*;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.feed.service.FeedStatisticsService;
@@ -142,7 +143,13 @@ public class FeedRestController {
             return feedService.getFeedById(memberId, feedId);
         }
     }
-    
+
+    @Operation(summary = "건물에 따른 이벤트 피드 정보 확인하기", description = "이벤트 피드에 대한 정보를 가져옵니다.")
+    @GetMapping("/getFeedEvent")
+    public List<FeedEventDto> getEventFeedByBuilding(@Parameter(description = "이벤트 피드를 확인할 건물 ID") @RequestParam int buildingId) {
+        return feedService.getFeedEventList(buildingId);
+    }
+
     @Operation(summary = "메인 피드 설정", description = "자신의 피드 중 메인 피드를 하나 설정합니다. (사용하는 정보 : 피드 ID, 회원 ID)")
     @PostMapping("/setMainFeed")
     public int setMainFeed(@RequestBody FeedDto feedDto) {
