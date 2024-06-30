@@ -1,11 +1,8 @@
 package com.kube.noon.chat.dto;
 
-import com.kube.noon.chat.domain.ChatroomMemberType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -18,5 +15,5 @@ public class ChatApplyDto {
     private String fromId; // applicant
     private String toId; // respondent
     private String chatroomType;
-    private boolean accepted; // 신청 수락
+    private boolean activated; // 신청 수락
 }

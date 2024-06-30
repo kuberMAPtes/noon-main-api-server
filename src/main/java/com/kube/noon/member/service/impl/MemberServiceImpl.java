@@ -230,9 +230,9 @@ public class MemberServiceImpl implements MemberService {
 
     private Optional<ProfileAccessResultDto> findOtherMemberProfile(String fromId, String memberId) {
         log.info("다른 회원 프로필 조회 중: FromID={}, MemberID={}", fromId, memberId);
-        if (fromMemberIsBlocked(memberId, fromId)) {
+        if (fromMemberIsBlocked(fromId, memberId)) {
             log.info("차단된 회원: FromID={}, MemberID={}", fromId, memberId);
-            return Optional.of(new ProfileAccessResultDto(false, "차단된 회원입니다.", null));
+            return Optional.of(new ProfileAccessResultDto(false, "차단한 회원의 프로필입니다.", null));
         }
 
         MemberRelationshipDto memberRelationshipDto = findMemberRelationship(fromId, memberId,RelationshipType.FOLLOW);
