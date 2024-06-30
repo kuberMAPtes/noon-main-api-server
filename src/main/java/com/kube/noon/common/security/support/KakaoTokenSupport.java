@@ -6,8 +6,11 @@ import com.kube.noon.common.security.TokenPair;
 import com.kube.noon.common.security.authentication.authtoken.TokenType;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.auth.KakaoResponseDto;
+import com.kube.noon.member.dto.util.RandomData;
+import com.kube.noon.member.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -45,9 +48,11 @@ public class KakaoTokenSupport implements BearerTokenSupport {
     private final String mainServerHost;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate = new RestTemplate();
+    private final MemberService memberService;
 
     public KakaoTokenSupport(@Value("${kakao.api.key}") String apiKey,
-                             @Value("${main.server.host}") String mainServerHost) {
+                             @Value("${main.server.host}") String mainServerHost,
+                             @Autowired MemberService memberService) {
         this.apiKey = apiKey;
         this.mainServerHost = mainServerHost;
         HttpClient httpClient = HttpClient.create();
@@ -55,6 +60,7 @@ public class KakaoTokenSupport implements BearerTokenSupport {
         this.webClientAuth = WebClient.builder().clientConnector(connector).baseUrl(KAKAO_KAUTH_DOMAIN).build();
         this.webClientApi = WebClient.builder().clientConnector(connector).baseUrl(KAKAO_KAPI_DOMAIN).build();
         this.objectMapper = new ObjectMapper();
+        this.memberService = memberService;
     }
 
     @Override
@@ -143,6 +149,11 @@ public class KakaoTokenSupport implements BearerTokenSupport {
                     }
 
                     String nickname = kakaoResponseDto.getKakaoAccount().getProfile().getNickname();
+
+                    if(memberService.findMemberByNickname(nickname)!=null) {
+                        nickname = nickname + RandomData.getRandomAuthNumber();
+                    }
+
                     String email = kakaoResponseDto.getKakaoAccount().getEmail();
                     log.debug("nickname={}", nickname);
                     log.debug("email={}", email);
