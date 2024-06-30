@@ -97,7 +97,7 @@ public class MemberServiceImpl implements MemberService {
 
             MemberRelationship memberRelationship = DtoEntityBinder.INSTANCE.toEntity(dto);
 
-            memberRepository.findMemberRelationship(dto.getFromId(), dto.getToId())
+            memberRepository.findMemberRelationship(dto.getFromId(), dto.getToId(), dto.getRelationshipType())
                     .ifPresentOrElse(
                             mr -> {
                                 log.info("기존 회원 관계 업데이트 중: 관계 ID={}", mr);
@@ -230,12 +230,12 @@ public class MemberServiceImpl implements MemberService {
 
     private Optional<ProfileAccessResultDto> findOtherMemberProfile(String fromId, String memberId) {
         log.info("다른 회원 프로필 조회 중: FromID={}, MemberID={}", fromId, memberId);
-        if (fromMemberIsBlocked(memberId, fromId)) {
+        if (fromMemberIsBlocked(fromId, memberId)) {
             log.info("차단된 회원: FromID={}, MemberID={}", fromId, memberId);
-            return Optional.of(new ProfileAccessResultDto(false, "차단된 회원입니다.", null));
+            return Optional.of(new ProfileAccessResultDto(false, "차단한 회원의 프로필입니다.", null));
         }
 
-        MemberRelationshipDto memberRelationshipDto = findMemberRelationship(fromId, memberId);
+        MemberRelationshipDto memberRelationshipDto = findMemberRelationship(fromId, memberId,RelationshipType.FOLLOW);
         return memberRepository.findMemberById(memberId)
                 .map(findedMember -> {
                     PublicRange profilePublicRange = findedMember.getMemberProfilePublicRange();
@@ -270,8 +270,8 @@ public class MemberServiceImpl implements MemberService {
     }
 
     private boolean isMutualFollow(String fromId, String memberId) {
-        MemberRelationshipDto relationship1 = findMemberRelationship(fromId, memberId);
-        MemberRelationshipDto relationship2 = findMemberRelationship(memberId, fromId);
+        MemberRelationshipDto relationship1 = findMemberRelationship(fromId, memberId, RelationshipType.FOLLOW);
+        MemberRelationshipDto relationship2 = findMemberRelationship(memberId, fromId, RelationshipType.FOLLOW);
 
         if (relationship1 == null || relationship2 == null) {
             return false;
@@ -335,7 +335,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     private boolean fromMemberIsBlocked(String memberId, String fromId) {
-        MemberRelationshipDto blockRelationshipDto = findMemberRelationship(memberId, fromId);
+        MemberRelationshipDto blockRelationshipDto = findMemberRelationship(memberId, fromId,RelationshipType.BLOCK);
         if(blockRelationshipDto == null){
             return false;
         }
@@ -374,11 +374,11 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public MemberRelationshipDto findMemberRelationship(String fromId, String toId) {
+    public MemberRelationshipDto findMemberRelationship(String fromId, String toId, RelationshipType relationshipType) {
         try {
             log.info("회원 관계 조회 중: fromId={}, toId={}", fromId, toId);
 
-            return memberRepository.findMemberRelationship(fromId, toId)
+            return memberRepository.findMemberRelationship(fromId, toId, relationshipType)
                     .map(mr -> DtoEntityBinder.INSTANCE.toDto(mr, MemberRelationshipDto.class))
                     .orElse(null);
         } catch (MemberRelationshipNotFoundException e) {
@@ -387,9 +387,9 @@ public class MemberServiceImpl implements MemberService {
         }
     }
     @Override
-    public MemberRelationshipSimpleDto findMemberRelationshipSimple(String fromId, String toId) {
+    public MemberRelationshipSimpleDto findMemberRelationshipSimple(String fromId, String toId, RelationshipType relationshipType) {
         try {
-            MemberRelationship memberRelationship = memberRepository.findMemberRelationship(fromId, toId)
+            MemberRelationship memberRelationship = memberRepository.findMemberRelationship(fromId, toId, relationshipType)
                     .orElse(null);
             if(memberRelationship != null){
                 return DtoEntityBinder.INSTANCE.toDto(
@@ -429,8 +429,9 @@ public class MemberServiceImpl implements MemberService {
         return this.memberRepository.findMemberByNickname(searchKeyword, requesterId, page)
                 .map((p) -> SearchMemberResponseDto.of(
                         p,
-                        this.memberRepository.findMemberRelationship(p.getMemberId(), requesterId).isPresent(),
-                        this.memberRepository.findMemberRelationship(requesterId, p.getMemberId()).isPresent()
+                        //이쪽 부분 봐주세요 경도님 여기 팔로워만 필요한거지요?
+                        this.memberRepository.findMemberRelationship(p.getMemberId(), requesterId,RelationshipType.FOLLOW).isPresent(),
+                        this.memberRepository.findMemberRelationship(requesterId, p.getMemberId(),RelationshipType.FOLLOW).isPresent()
                 ));
     }
 

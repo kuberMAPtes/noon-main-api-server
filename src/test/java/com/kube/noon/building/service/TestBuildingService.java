@@ -1,25 +1,33 @@
 package com.kube.noon.building.service;
 import com.kube.noon.building.domain.Building;
-import com.kube.noon.building.dto.BuildingApplicantDto;
-import com.kube.noon.building.dto.BuildingDto;
-import com.kube.noon.building.dto.BuildingSearchResponseDto;
-import com.kube.noon.building.dto.BuildingZzimDto;
+import com.kube.noon.building.dto.*;
 import com.kube.noon.building.repository.BuildingProfileRepository;
+import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.member.dto.member.MemberDto;
 import com.kube.noon.places.domain.Position;
 import com.kube.noon.places.domain.PositionRange;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 @SpringBootTest
@@ -43,6 +51,154 @@ public class TestBuildingService {
         log.info("구독제공자아이디={}", zzimDto.getSubscriptionProviderId());
         log.info("찜activated={}", zzimDto.isActivated());
 
+    }
+
+    @Autowired
+    DataSource dataSource;
+
+    @Transactional
+    @Test
+    void getMemberBuildingSubscriptionList() throws Exception {
+        PlatformTransactionManager txManager = new DataSourceTransactionManager(this.dataSource);
+
+        TransactionStatus status = txManager.getTransaction(new DefaultTransactionAttribute());
+
+        String sql;
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DataSourceUtils.getConnection(this.dataSource);
+            sql = """
+                INSERT INTO building (building_id, building_name, profile_activated, road_addr, longitude, latitude, feed_ai_summary)
+                VALUES (500, 'sample-building-1', TRUE, 'sample-addr', 127.151424, 36.551242, NULL)
+                """;
+            stmt = conn.prepareStatement(sql, new String[] { "building_id" });
+            stmt.executeUpdate();
+            rs = stmt.getGeneratedKeys();
+            int buildingId = 0;
+            if (rs.next()) {
+                buildingId = rs.getInt(1);
+            }
+            if (buildingId == 0) {
+                throw new RuntimeException();
+            }
+
+            log.info("buildingId={}", buildingId);
+
+            rs.close();
+            stmt.close();
+            DataSourceUtils.releaseConnection(conn, this.dataSource);
+
+            conn = DataSourceUtils.getConnection(this.dataSource);
+            sql = """
+                    INSERT INTO members (member_id, nickname, pwd, phone_number)
+                    VALUES (?, ?, ?, ?)
+                    """;
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, "test-member-1");
+            stmt.setString(2, "test-nickname-1");
+            stmt.setString(3, "1q2w3e4r");
+            stmt.setString(4, "010-5432-5432");
+            stmt.executeUpdate();
+            stmt.close();
+
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, "test-member-2");
+            stmt.setString(2, "test-nickname-2");
+            stmt.setString(3, "1q2w3e4r");
+            stmt.setString(4, "010-5433-5433");
+            stmt.executeUpdate();
+            stmt.close();
+            DataSourceUtils.releaseConnection(conn, this.dataSource);
+
+            conn = DataSourceUtils.getConnection(this.dataSource);
+            sql = """
+                    INSERT INTO zzim (member_id, feed_id, building_id, subscription_provider_id, zzim_type, activated)
+                    VALUES (?, NULL, ?, ?, ?, ?)
+                    """;
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, "test-member-1");
+            stmt.setInt(2, buildingId);
+            stmt.setString(3, "test-member-1");
+            stmt.setString(4, ZzimType.SUBSCRIPTION.name());
+            stmt.setBoolean(5, true);
+
+            stmt.executeUpdate();
+
+            stmt.close();
+            DataSourceUtils.releaseConnection(conn, this.dataSource);
+
+            conn = DataSourceUtils.getConnection(this.dataSource);
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, "test-member-2");
+            stmt.setInt(2, buildingId);
+            stmt.setString(3, "test-member-1");
+            stmt.setString(4, ZzimType.SUBSCRIPTION.name());
+            stmt.setBoolean(5, true);
+
+            stmt.executeUpdate();
+
+            stmt.close();
+            DataSourceUtils.releaseConnection(conn, this.dataSource);
+            txManager.commit(status);
+
+            status = txManager.getTransaction(new DefaultTransactionAttribute());
+
+            List<MemberBuildingSubscriptionResponseDto> result1 =
+                    this.buildingProfileService.getMemberBuildingSubscriptionList("test-member-1");
+            List<MemberBuildingSubscriptionResponseDto> result2 =
+                    this.buildingProfileService.getMemberBuildingSubscriptionList("test-member-2");
+
+            log.info("result1={}", result1);
+            log.info("result2={}", result2);
+
+            assertThat(result1.size()).isEqualTo(1);
+            assertThat(result2.size()).isEqualTo(1);
+
+            MemberBuildingSubscriptionResponseDto dto1 = result1.get(0);
+            MemberBuildingSubscriptionResponseDto dto2 = result2.get(0);
+
+            log.info("dto1={}", dto1);
+            log.info("dto2={}", dto2);
+
+            assertThat(dto1.getSubscriptionProvider().getMemberId()).isEqualTo("test-member-1");
+            assertThat(dto2.getSubscriptionProvider().getMemberId()).isEqualTo("test-member-1");
+        } finally {
+            conn = DataSourceUtils.getConnection(this.dataSource);
+            sql = """
+                    DELETE FROM zzim WHERE building_id = 500
+                    """;
+            stmt = conn.prepareStatement(sql);
+            stmt.executeUpdate();
+            stmt.close();
+
+            conn = DataSourceUtils.getConnection(this.dataSource);
+            sql = """
+                    DELETE FROM members WHERE member_id = 'test-member-1'
+                    """;
+            stmt = conn.prepareStatement(sql);
+            stmt.executeUpdate();
+            stmt.close();
+
+            conn = DataSourceUtils.getConnection(this.dataSource);
+            sql = """
+                    DELETE FROM members WHERE member_id = 'test-member-2'
+                    """;
+            stmt = conn.prepareStatement(sql);
+            stmt.executeUpdate();
+            stmt.close();
+
+            conn = DataSourceUtils.getConnection(this.dataSource);
+            sql = """
+                    DELETE FROM building WHERE building_id = 500
+                    """;
+            stmt = conn.prepareStatement(sql);
+            stmt.executeUpdate();
+            stmt.close();
+            txManager.commit(status);
+        }
     }
 
     @DisplayName("memberId, roadAddr, longitude, latitude로 건물 등록 신청")
@@ -215,14 +371,14 @@ public class TestBuildingService {
 
         List<BuildingSearchResponseDto> sampleBuildingPage1 =
                 this.buildingProfileService.searchBuilding("sample building", 1);
-        Assertions.assertThat(sampleBuildingPage1.size()).isEqualTo(10);
+        assertThat(sampleBuildingPage1.size()).isEqualTo(10);
 
         List<BuildingSearchResponseDto> sampleBuildingPage3 =
                 this.buildingProfileService.searchBuilding("sample building", 3);
-        Assertions.assertThat(sampleBuildingPage3.size()).isEqualTo(10);
+        assertThat(sampleBuildingPage3.size()).isEqualTo(10);
 
         List<BuildingSearchResponseDto> sampleBuildingPage4 =
                 this.buildingProfileService.searchBuilding("sample building", 4);
-        Assertions.assertThat(sampleBuildingPage4).isEmpty();
+        assertThat(sampleBuildingPage4).isEmpty();
     }
 }

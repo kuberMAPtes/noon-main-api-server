@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface ChatApplyRepository extends JpaRepository<ChatApply,Integer> {
-    List<ChatApply> findByRespondentAndAcceptedFalse(String respondent);
+    List<ChatApply> findByRespondentAndActivatedFalse(String respondent);
     ChatApply findByChatApplyId(@Param("chatApplyId") Integer chatApplyId);
 
     /**
@@ -20,7 +20,7 @@ public interface ChatApplyRepository extends JpaRepository<ChatApply,Integer> {
      */
     @Modifying
     @Transactional
-    @Query("UPDATE ChatApply c SET c.accepted = true WHERE c.chatApplyId = :chatApplyId")
+    @Query("UPDATE ChatApply c SET c.activated = true WHERE c.chatApplyId = :chatApplyId")
     int acceptChatApply(@Param("chatApplyId") Integer chatApplyId);
 
 }
