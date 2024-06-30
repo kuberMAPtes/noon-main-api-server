@@ -16,5 +16,5 @@ public interface FeedMyBatisRepository {
 
     List<MemberLikeTagDto> getMemberLikeTag();
 
-    List<FeedSummaryDto> getAllFeedOrderByPopolarity(@Param("limit") int limit, @Param("offset") int offset);
+    List<FeedPopularityDto> getAllFeedOrderByPopolarity(@Param("limit") int limit, @Param("offset") int offset);
 }
