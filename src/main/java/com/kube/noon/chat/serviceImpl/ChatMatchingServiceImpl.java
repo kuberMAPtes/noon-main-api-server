@@ -1,9 +1,7 @@
 package com.kube.noon.chat.serviceImpl;
 
 import com.kube.noon.chat.domain.ChatApply;
-import com.kube.noon.chat.domain.ChatEntrance;
 import com.kube.noon.chat.dto.ChatApplyDto;
-import com.kube.noon.chat.dto.ChatEntranceDto;
 import com.kube.noon.chat.repository.ChatApplyRepository;
 import com.kube.noon.chat.service.ChatMatchingService;
 import org.jetbrains.annotations.NotNull;
@@ -28,7 +26,7 @@ public class ChatMatchingServiceImpl implements ChatMatchingService {
         chatApply.setApplicant(chatApplyDto.getFromId());
         chatApply.setRespondent(chatApplyDto.getToId());
         chatApply.setApplyMessage(chatApplyDto.getApplyMessage());
-
+        chatApply.setActivated(false);
         System.out.println(chatApplyRepository.save(chatApply));
 
         return "";
@@ -54,7 +52,7 @@ public class ChatMatchingServiceImpl implements ChatMatchingService {
         Optional<ChatApply> optionalChatApply = chatApplyRepository.findById(chatApplyDto.getChatApplyId());
         if (optionalChatApply.isPresent()) {
             ChatApply chatApply = optionalChatApply.get();
-            chatApply.setAccepted(true);
+            chatApply.setActivated(true);
             
             ChatApply resultChatApply = chatApplyRepository.save(chatApply);
             return convertToChatApplyDto(resultChatApply);
@@ -70,7 +68,7 @@ public class ChatMatchingServiceImpl implements ChatMatchingService {
         Optional<ChatApply> optionalChatApply = chatApplyRepository.findById(chatApplyDto.getChatApplyId());
         if (optionalChatApply.isPresent()) {
             ChatApply chatApply = optionalChatApply.get();
-            chatApply.setAccepted(true);
+            chatApply.setActivated(true);
             chatApply.setRejectMessage(chatApplyDto.getRejectMessage());
 
             ChatApply resultChatApply = chatApplyRepository.save(chatApply);
@@ -85,7 +83,7 @@ public class ChatMatchingServiceImpl implements ChatMatchingService {
     public List<ChatApplyDto> newChatApplyList(String memberId) throws Exception {
 
         // respondent(=memberId) 에 해당하는 chatApply 목록을 가져옴
-        List<ChatApply> chatApplies = chatApplyRepository.findByRespondentAndAcceptedFalse(memberId);
+        List<ChatApply> chatApplies = chatApplyRepository.findByRespondentAndActivatedFalse(memberId);
 
         System.out.println("        🦐[ServiceImpl] 새 대화신청목록  조회한 것 chatApplies => " + chatApplies);
 
@@ -100,7 +98,7 @@ public class ChatMatchingServiceImpl implements ChatMatchingService {
                 chatApplyDto.setFromId(chatApply.getApplicant());
                 chatApplyDto.setApplyMessage(chatApply.getApplyMessage());
                 chatApplyDto.setChatApplyId(chatApply.getChatApplyId());
-                chatApplyDto.setAccepted(chatApply.getAccepted());
+                chatApplyDto.setActivated(chatApply.getActivated());
                 chatApplyDtos.add(chatApplyDto);
 
             }
@@ -121,7 +119,7 @@ public class ChatMatchingServiceImpl implements ChatMatchingService {
         resultChatApplyDto.setToId(resultChatApply.getRespondent());
         resultChatApplyDto.setApplyMessage(resultChatApply.getApplyMessage());
         resultChatApplyDto.setRejectMessage(resultChatApply.getRejectMessage());
-        resultChatApplyDto.setAccepted(resultChatApply.getAccepted());
+        resultChatApplyDto.setActivated(resultChatApply.getActivated());
 
         return resultChatApplyDto;
     }

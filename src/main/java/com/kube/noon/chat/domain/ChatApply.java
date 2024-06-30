@@ -36,7 +36,7 @@ public class ChatApply {
     private String rejectMessage;
 
     //해야됨.. accepted 된거는 빼고 가져와야하니까
-    @Column(name = "activated")
-    private Boolean accepted;
+    @Column(name = "activated", columnDefinition = "TINYINT(1) DEFAULT 0")
+    private Boolean activated;
 
 }

@@ -1,18 +1,14 @@
 package com.kube.noon.chat.controller;
 
-import com.kube.noon.chat.domain.Chatroom;
 import com.kube.noon.chat.domain.ChatroomType;
 import com.kube.noon.chat.dto.ChatApplyDto;
 import com.kube.noon.chat.dto.ChatroomDto;
 import com.kube.noon.chat.service.ChatMatchingService;
 import com.kube.noon.chat.service.ChatroomService;
-import com.kube.noon.chat.serviceImpl.ChatMatchingServiceImpl;
-import com.kube.noon.chat.serviceImpl.ChatroomServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/chatMatching")
@@ -49,7 +45,7 @@ public class ChatMatchingRestController {
         System.out.println("        🐬[Controller acceptChatting] 받은 chatApply DTO => " + chatApplyDto);
 
         // accept 했다고 기록 남겨놓기
-        chatApplyDto.setAccepted(true);
+        chatApplyDto.setActivated(true);
         chatMatchingService.acceptChatting(chatApplyDto);
 
         // 1:1 채팅방을 생성하고 입장도 시킨다.
