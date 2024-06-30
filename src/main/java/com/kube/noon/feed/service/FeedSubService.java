@@ -22,8 +22,11 @@ public interface FeedSubService {
     // 첨부파일 타입별로 첨부파일을 가져온다.
     List<FeedAttachmentDto> getFeedAttachementListByFileType(FileType fileType);
 
-    // 첨부파일 하나를 가져온다.
+    // 첨부파일 하나를 가져온다. : 바이너리 데이터
     ResponseEntity<byte[]> getFeedAttachment(int attachmentId);
+
+    // 첨부파일 데이터 하나를 가져온다.
+    FeedAttachmentDto getFeedAttachmentDto(int attachmentId);
 
     // 피드와 연관있는 첨부파일 목록을 가져온다.
     List<FeedAttachmentDto> getFeedAttachmentList(int feedId);
@@ -55,7 +58,7 @@ public interface FeedSubService {
     List<FeedCommentDto> getFeedCommentList(int feedId);
 
     // 피드에 댓글을 하나 추가한다.
-    int addFeedComment(FeedCommentDto feedCommentDto);
+    FeedCommentDto addFeedComment(FeedCommentDto feedCommentDto);
 
     // 댓글을 삭제한다.
     int deleteFeedComment(int commentId);

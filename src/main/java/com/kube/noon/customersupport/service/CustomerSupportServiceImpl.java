@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -205,8 +206,7 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
     @Override
     public List<NoticeDto> getNoticeListByPageable(int pageNumber) {
 
-        //pageSize 메타데이터화 논의 필요. 임의로 5
-        Pageable pageable = PageRequest.of(pageNumber, 5);
+        Pageable pageable = PageRequest.of(pageNumber, 5, Sort.by(Sort.Direction.DESC, "writtenTime"));
 
         Page<Feed> noticePage = noticeRepository.findByFeedCategoryAndActivated(FeedCategory.NOTICE, true, pageable);
 
@@ -424,10 +424,12 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
      * @return Object Storage에 업로드된 블러 파일의 url이 저장된 첨부파일 Dto
      */
     @Override
-    public FeedAttachmentDto addBluredImage(FeedAttachmentDto attachmentDto) throws IOException {
+    public FeedAttachmentDto addBluredImage(FeedAttachmentDto attachmentDto, int blurIntensity) throws IOException {
+
+        log.info("블러 세기={}", blurIntensity);
 
         // 블러 파일 생성 및 Object Storage 저장, 저장 url 요청
-        String blurredFileUrl = attachmentFilteringRepository.addBlurredFile(attachmentDto.getFileUrl(), attachmentDto.getAttachmentId());
+        String blurredFileUrl = attachmentFilteringRepository.addBlurredFile(attachmentDto.getFileUrl(), attachmentDto.getAttachmentId(), blurIntensity);
 
         attachmentDto.setBlurredFileUrl(blurredFileUrl);
         feedAttachmentRepository.save(FeedAttachmentDto.toEntity(attachmentDto));

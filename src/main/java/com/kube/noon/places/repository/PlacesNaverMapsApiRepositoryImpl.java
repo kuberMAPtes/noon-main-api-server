@@ -171,7 +171,14 @@ public class PlacesNaverMapsApiRepositoryImpl implements PlacesRepository {
             JSONObject land = result.getJSONObject("land");
             String name = land.getString("name");
             String number = land.getString("number1");
-            return findByPlaceName(name + " " + number).get(0);
+            log.trace("land={}", land);
+            Place byRoadAddr = findByPlaceName(name + " " + number).get(0);
+            return Place.builder()
+                    .roadAddress(byRoadAddr.getRoadAddress())
+                    .latitude(byRoadAddr.getLatitude())
+                    .longitude(byRoadAddr.getLongitude())
+                    .placeName(land.getJSONObject("addition0").getString("value"))
+                    .build();
         } catch (URISyntaxException e) {
             throw new InvalidDataAccessResourceUsageException("URI syntax error for Naver Maps", e); // TODO
         }

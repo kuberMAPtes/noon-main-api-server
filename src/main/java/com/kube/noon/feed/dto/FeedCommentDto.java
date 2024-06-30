@@ -19,6 +19,7 @@ public class FeedCommentDto {
     private int feedId;
     private int commentId;
     private String memberId;
+    private String memberNickname;
     private String memberProfile;
     private String commentText;
     private LocalDateTime writtenTime;
@@ -29,6 +30,7 @@ public class FeedCommentDto {
                 .feedId(feedComment.getFeed().getFeedId())
                 .commentId(feedComment.getCommentId())
                 .memberId(feedComment.getMember().getMemberId())
+                .memberNickname(feedComment.getMember().getNickname())
                 .memberProfile(feedComment.getMember().getProfilePhotoUrl())
                 .commentText(feedComment.getCommentText())
                 .writtenTime(feedComment.getWrittenTime())

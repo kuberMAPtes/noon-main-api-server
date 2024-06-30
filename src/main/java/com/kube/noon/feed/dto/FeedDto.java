@@ -48,7 +48,8 @@ public class FeedDto {
     private List<TagDto> tags;
     private List<TagFeedDto> tagFeeds;
     private List<String> updateTagList; // 피드를 추가할 때 피드 내용을 가져올 리스트
-
+    private LocalDateTime eventDate;  // 이벤트 피드일 때 가져올 날짜
+    
     public static FeedDto toDto(Feed feed) {
         // NullPointException
         Building building = feed.getBuilding();

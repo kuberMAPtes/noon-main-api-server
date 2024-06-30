@@ -18,12 +18,28 @@ public interface ChatroomService {
     public ChatroomDto addChatroom(ChatroomDto requestChatroom) throws Exception;
 
     /**
+     * 채팅방 입장시키기
+     * @param roomId
+     * @param memberId
+     * @return 채팅방 멤버목록을 리턴
+     * @throws Exception
+     */
+    public ChatEntranceDto enterChatroom(int roomId, String memberId) throws Exception;
+    
+    /**
      * 채팅방 삭제 (관리자 기능)
      * @param chatroomId
      * @return
      * @throws Exception
      */
     public String deleteChatroom(int chatroomId) throws Exception;
+
+    /**
+     * Job 의 내용을 일정주기로 반복실행하는 스케쥴러, ChatroomSchedularConfig 에서 정의한 DeleteChatroomJob의 실제 실행 내용
+     * @return
+     * @throws Exception
+     */
+    public int scheduledDeleteGroupChatrooms() throws Exception;
 
     /**
      * 채팅방 추방

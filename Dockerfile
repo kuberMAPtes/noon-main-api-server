@@ -5,7 +5,7 @@ FROM openjdk:17-oracle
 EXPOSE 8080
 
 # 환경 변수 설정
-ENV SPRING_PROFILES_ACTIVE=prod,key,buildingId
+ENV SPRING_PROFILES_ACTIVE=accesscontrol,prod,key,buildingId,proddddd
 
 # Web Application Archive 복사
 COPY target/*.jar /

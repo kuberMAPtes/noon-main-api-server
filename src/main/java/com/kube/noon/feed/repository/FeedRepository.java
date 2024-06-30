@@ -1,6 +1,7 @@
 package com.kube.noon.feed.repository;
 
 import com.kube.noon.building.domain.Building;
+import com.kube.noon.common.FeedCategory;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.member.domain.Member;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
      * @return List<Feed>
      */
     List<Feed> findByActivatedTrue();
+
     List<Feed> findByActivatedTrue(Pageable pageable);
 
     /**
@@ -34,14 +36,22 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
      * @return List<Feed>
      */
     List<Feed> findByWriterAndActivatedTrue(Member writer);
+
     List<Feed> findByWriterAndActivatedTrue(Member writer, Pageable pageable);
+
     /**
      * 건물별로 작성된 피드를 가져온다. 단, 활성화가 된 피드만 가져온다.
      *
      * @return List<Feed>
      */
     List<Feed> findByBuildingAndActivatedTrue(Building building);
+
     List<Feed> findByBuildingAndActivatedTrue(Building building, Pageable pageable);
+
+    /**
+     * 건물별 피드 중 카테고리에 알맞는 피드를 가져온다 : 주사용처 -> 확성기
+     */
+    List<Feed> findByBuildingAndFeedCategoryAndActivatedTrue(Building building, FeedCategory feedCategory);
 
     /**
      * 회원의 메인 피드를 가져온다.
@@ -50,6 +60,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
      * @return Feed 회원의 메인 피드를 가져온다.
      */
     List<Feed> findByWriterAndMainActivatedTrue(Member writer);
+
     List<Feed> findByWriterAndMainActivatedTrue(Member writer, Pageable pageable);
 
     /**
@@ -74,7 +85,8 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
 
     /**
      * 하나의 빌딩 내에서 회원이 좋아요를 누른 피드 목록을 가져온다.
-     * @param member 멤버의 아이디를 가져온다
+     *
+     * @param member   멤버의 아이디를 가져온다
      * @param building 빌딩 번호를 가져온다.
      * @return 피드 목록 결과를 가져온다.
      */
@@ -103,7 +115,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     /**
      * 회원이 북마크를 한 피드 목록을 가져온다. 단, 활성화가 된 피드만 가져온다.
      *
-     * @param writer Member 객체를 받는다.
+     * @param member Member 객체를 받는다.
      * @return List<Feed>
      */
     @Query("""
@@ -155,7 +167,8 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
 
     /**
      * 빌딩 내 건물 중 member가 좋아요를 누른 내용을 우선 정렬한다.
-     * @param member 좋아요를 누른 회원
+     *
+     * @param member   좋아요를 누른 회원
      * @param building 건물 번호
      * @return
      */
@@ -195,27 +208,33 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
 
     /**
      * 제목이나 내용을 통해 피드를 검색할 수 있도록 합니다.
+     *
      * @param keyword 검색할 keyword를 입력합니다.
      * @return List<Feed>
      */
     List<Feed> findByFeedTextContainingIgnoreCase(String keyword);
+
     List<Feed> findByTitleContainingIgnoreCase(String keyword);
 
     /**
      * 제목이나 내용을 통해 피드를 검색할 수 있도록 합니다.
      * 이 메서드를 이용하여 통합 검색과 페이징이 가능합니다.
+     *
      * @param keyword
      * @param pageable
      */
     @Query("SELECT f FROM Feed f WHERE f.title LIKE %:#{#keyword}% OR f.feedText LIKE %:#{#keyword}%")
     List<Feed> searchFeedByKeyword(String keyword, Pageable pageable);
 
-
-
     /**
      * 가장 최근에 추가한  feedId를 가져온다.
+     *
      * @return FeedId
      */
     @Query("SELECT MAX(fa.feedId) FROM Feed fa")
     Integer findMaxId();
+
+    /**
+     *
+     */
 }

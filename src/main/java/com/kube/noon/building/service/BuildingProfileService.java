@@ -1,9 +1,6 @@
 package com.kube.noon.building.service;
 
-import com.kube.noon.building.dto.BuildingApplicantDto;
-import com.kube.noon.building.dto.BuildingDto;
-import com.kube.noon.building.dto.BuildingSearchResponseDto;
-import com.kube.noon.building.dto.BuildingZzimDto;
+import com.kube.noon.building.dto.*;
 import com.kube.noon.building.exception.NotRegisteredBuildingException;
 import com.kube.noon.common.PublicRange;
 import com.kube.noon.member.dto.member.MemberDto;
@@ -30,4 +27,5 @@ public interface BuildingProfileService {
     String getFeedAISummary(int buildingId);
     int getSubscriberCnt(int buildingId);
     List<BuildingSearchResponseDto> searchBuilding(String searchKeyword, Integer page);
+    List<BuildingChartDto> getChart(String reqType) throws Exception;
 }
