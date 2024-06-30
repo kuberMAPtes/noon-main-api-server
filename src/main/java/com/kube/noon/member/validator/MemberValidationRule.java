@@ -141,7 +141,7 @@ public class MemberValidationRule {
             memberScanner.imoDataNotNull(dto.getToId());
             memberScanner.imoDataNotNull(dto.getRelationshipType());
             memberScanner.imoMemberNotSame(dto.getFromId(), dto.getToId());
-            memberScanner.imoMemberRelationshipExist(dto.getFromId(), dto.getToId());
+            memberScanner.imoMemberRelationshipExist(dto.getFromId(), dto.getToId(), dto.getRelationshipType());
         });
 
 

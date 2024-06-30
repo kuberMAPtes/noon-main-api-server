@@ -6,6 +6,7 @@ import com.kube.noon.member.dto.member.*;
 import com.kube.noon.member.dto.memberRelationship.*;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
+import com.kube.noon.member.enums.RelationshipType;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,9 +36,9 @@ public interface MemberService {
 
     FindMemberRelationshipListByCriteriaResponseDto findMemberRelationshipListByCriteria(String fromId, MemberRelationshipSearchCriteriaDto memberRelationshipSearchCriteriaDto, int page, int size);
 
-    MemberRelationshipDto findMemberRelationship(String fromId, String toId);
+    MemberRelationshipDto findMemberRelationship(String fromId, String toId, RelationshipType relationshipType);
 
-    MemberRelationshipSimpleDto findMemberRelationshipSimple(String fromId, String toId);
+    MemberRelationshipSimpleDto findMemberRelationshipSimple(String fromId, String toId, RelationshipType relationshipType);
 
     ResponseEntity<byte[]> findMemberProfilePhoto(String memberId);
 

@@ -774,7 +774,7 @@ public class MemberRestController {
     @GetMapping("/getFollowRelationship")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getFollowRelationship(@RequestParam String fromId, String toId) {
         log.info("getMemberRelationship :: " + fromId + " " + toId);
-        MemberRelationshipSimpleDto dto1 = memberService.findMemberRelationshipSimple(fromId, toId);
+        MemberRelationshipSimpleDto dto1 = memberService.findMemberRelationshipSimple(fromId, toId, RelationshipType.FOLLOW);
 
         //getRelationshipType이 FOLLOW가 아니면 null을 리턴
         if (dto1 != null) {
@@ -785,7 +785,7 @@ public class MemberRestController {
             }
         }
 
-        MemberRelationshipSimpleDto dto2 = memberService.findMemberRelationshipSimple(toId, fromId);
+        MemberRelationshipSimpleDto dto2 = memberService.findMemberRelationshipSimple(toId, fromId, RelationshipType.FOLLOW);
 
         if (dto2 != null) {
             if (dto2.getRelationshipType() != RelationshipType.FOLLOW) {
@@ -805,7 +805,7 @@ public class MemberRestController {
     @GetMapping("/getBlockRelationship")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getBlockRelationship(@RequestParam String fromId, String toId) {
         log.info("getMemberRelationship :: " + fromId + " " + toId);
-        MemberRelationshipSimpleDto dto1 = memberService.findMemberRelationshipSimple(fromId, toId);
+        MemberRelationshipSimpleDto dto1 = memberService.findMemberRelationshipSimple(fromId, toId, RelationshipType.BLOCK);
 
         //getRelationshipType이 BLOCK이 아니면 null을 리턴
         if (dto1 != null) {
@@ -816,7 +816,7 @@ public class MemberRestController {
             }
         }
 
-        MemberRelationshipSimpleDto dto2 = memberService.findMemberRelationshipSimple(toId, fromId);
+        MemberRelationshipSimpleDto dto2 = memberService.findMemberRelationshipSimple(toId, fromId, RelationshipType.BLOCK);
 
         if (dto2 != null) {
             if (dto2.getRelationshipType() != RelationshipType.BLOCK) {
