@@ -257,11 +257,11 @@ public class TestMemberRepository {
     @Test
     @DisplayName("회원 관계 삭제 테스트")
     void deleteMemberRelationship() {
-        MemberRelationship mr = memberRepository.findMemberRelationship("member_1","member_3").orElseThrow();
+        MemberRelationship mr = memberRepository.findMemberRelationship("member_1","member_3", FOLLOW).orElseThrow();
         assertThat(mr.getActivated()).isTrue();
         mr.setActivated(false);
         memberRepository.updateMemberRelationship(mr);
-        assertThat(memberRepository.findMemberRelationship("member_1","member_3").get().getActivated()).isFalse();
+        assertThat(memberRepository.findMemberRelationship("member_1","member_3", FOLLOW).get().getActivated()).isFalse();
         memberRepository.updateMemberRelationship(MemberRelationship.builder().fromMember(memberRepository.findMemberById("member_1").get()).toMember(memberRepository.findMemberById("member_3").get()).activated(true).relationshipType(FOLLOW).build());
     }
 

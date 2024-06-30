@@ -8,6 +8,7 @@ import com.kube.noon.common.validator.Problems;
 import com.kube.noon.common.validator.ValidationChain;
 import com.kube.noon.member.domain.Member;
 import com.kube.noon.member.dto.memberRelationship.AddMemberRelationshipDto;
+import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.repository.MemberRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -155,14 +156,14 @@ public class MemberScanner {
      * 회원 관계 데이터가 없음 -> 에러X
      */
     //존재하면 OK 존재하지 않으면 에러
-    public void imoMemberRelationshipExist(String fromId, String toId) {
-        if (memberRepository.findMemberRelationship(fromId, toId).isEmpty()) {
+    public void imoMemberRelationshipExist(String fromId, String toId, RelationshipType relationshipType) {
+        if (memberRepository.findMemberRelationship(fromId, toId, relationshipType).isEmpty()) {
             throw new IllegalServiceCallException("존재하지 않는 회원 관계입니다.",new Problems(Map.of("fromId",fromId,"toId",toId)));
         }
     }
     // 존재하지 않으면 OK, 존재하면 에러
-    public void imoMemberRelationshipNotExist(String fromId, String toId) {
-        if (memberRepository.findMemberRelationship(fromId, toId).isPresent()) {
+    public void imoMemberRelationshipNotExist(String fromId, String toId, RelationshipType relationshipType) {
+        if (memberRepository.findMemberRelationship(fromId, toId, relationshipType).isPresent()) {
             throw new IllegalServiceCallException("이미 존재하는 회원 관계입니다.", new Problems(Map.of("fromId", fromId, "toId", toId)));
         }
     }

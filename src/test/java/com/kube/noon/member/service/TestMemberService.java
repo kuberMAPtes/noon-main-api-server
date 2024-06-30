@@ -75,8 +75,8 @@ public class TestMemberService {
                 .relationshipType(RelationshipType.FOLLOW)
                 .build());
         log.info("회원 관계 추가 테스트");
-        assertThat(memberService.findMemberRelationship("member_1","member_10")).isNotNull();
-        log.info(ANSI_GREEN + memberService.findMemberRelationship("member_1","member_10") + ANSI_RESET);
+        assertThat(memberService.findMemberRelationship("member_1","member_10",RelationshipType.FOLLOW)).isNotNull();
+        log.info(ANSI_GREEN + memberService.findMemberRelationship("member_1","member_10",RelationshipType.FOLLOW) + ANSI_RESET);
 //        memberRepository.deleteMemberRelationship("member_1","member_10");
 //        assertThat(memberService.findMemberRelationship("member_1","member_10")).isNull();
     }
@@ -274,7 +274,7 @@ public class TestMemberService {
                 .relationshipType(RelationshipType.FOLLOW)
                 .build());
 
-        MemberRelationshipDto ms = memberService.findMemberRelationship("member_1","member_2");
+        MemberRelationshipDto ms = memberService.findMemberRelationship("member_1","member_2",RelationshipType.FOLLOW);
         assertThat(ms.getActivated()).isFalse();
 
 

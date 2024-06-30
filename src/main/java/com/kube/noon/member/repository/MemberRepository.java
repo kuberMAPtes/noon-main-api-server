@@ -5,6 +5,7 @@ import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.memberRelationship.FindMemberRelationshipListByCriteriaDto;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
+import com.kube.noon.member.enums.RelationshipType;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public interface MemberRepository {
 
     Page<Member> findMemberListByCriteria(MemberSearchCriteriaDto criteria, int page, int size);
 
-    Optional<MemberRelationship> findMemberRelationship(String fromId, String toId);
+    Optional<MemberRelationship> findMemberRelationship(String fromId, String toId, RelationshipType relationshipType);
 
     List<MemberRelationship> findAllMemberRelationshipListByCriteria(MemberRelationshipSearchCriteriaDto criteria);
 

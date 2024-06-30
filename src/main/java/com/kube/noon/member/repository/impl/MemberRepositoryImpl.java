@@ -7,6 +7,7 @@ import com.kube.noon.member.domain.MemberRelationship;
 import com.kube.noon.member.dto.memberRelationship.FindMemberRelationshipListByCriteriaDto;
 import com.kube.noon.member.dto.search.MemberRelationshipSearchCriteriaDto;
 import com.kube.noon.member.dto.search.MemberSearchCriteriaDto;
+import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.enums.Role;
 import com.kube.noon.member.exception.*;
 import com.kube.noon.member.repository.MemberJpaRepository;
@@ -66,15 +67,28 @@ public class MemberRepositoryImpl implements MemberRepository {
     @Override
     public void addMemberRelationship(MemberRelationship memberRelationship) {
         try {
-            memberRelationshipJpaRepository.findByFromMember_MemberIdAndToMember_MemberId(
+            MemberRelationship findedMs = memberRelationshipJpaRepository.findByFromMember_MemberIdAndToMember_MemberIdAndRelationshipType(
                     memberRelationship.getFromMember().getMemberId(),
-                    memberRelationship.getToMember().getMemberId()
-            ).ifPresent((relationship) -> {
-                throw new MemberRelationshipCreationException("회원 관계가 이미 존재합니다");
-            });
-            memberRelationship.setActivated(true);
-            log.info("INSERT 명령어 수행 : {}", memberRelationship);
-            memberRelationshipJpaRepository.save(memberRelationship);
+                    memberRelationship.getToMember().getMemberId(),
+                    memberRelationship.getRelationshipType()
+            ).map((ms)->{//트루이면
+                if(ms.getActivated()){
+                    throw new MemberRelationshipCreationException("회원 관계가 이미 존재합니다 이상한 요청");
+                }else{//펄스이면 트루로 업데이트
+                    return ms;
+                }
+            }).orElse(null);
+            //찾아진게 없다면 추가..
+            if(findedMs==null) {
+                memberRelationship.setActivated(true);
+                log.info("새로운 INSERT 명령어 수행 : {}", memberRelationship);
+                memberRelationshipJpaRepository.save(memberRelationship);
+            }else{
+                findedMs.setActivated(true);
+                log.info("업데이트 명령어 수행 : {}", findedMs);
+                memberRelationshipJpaRepository.save(findedMs);
+
+            }
         } catch (DataAccessException e) {
             log.error("회원 관계 추가 중 오류 발생", e);
             throw new MemberRelationshipCreationException("회원 관계 추가 중 오류 발생", e);
@@ -139,12 +153,13 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
-    public Optional<MemberRelationship> findMemberRelationship(String fromId, String toId) {
+    public Optional<MemberRelationship> findMemberRelationship(String fromId, String toId, RelationshipType relationshipType) {
         try {
             Optional<MemberRelationship> omr = memberRelationshipJpaRepository.
-                    findByFromMember_MemberIdAndToMember_MemberIdAndActivated(
+                    findByFromMember_MemberIdAndToMember_MemberIdAndRelationshipTypeAndActivated(
                             fromId,
                             toId,
+                            relationshipType,
                             true);
             omr.ifPresentOrElse(
                     memberRelationship -> log.info("회원 관계 찾기 성공 : {}", memberRelationship),
@@ -243,9 +258,11 @@ public class MemberRepositoryImpl implements MemberRepository {
     @Override
     public void updateMemberRelationship(MemberRelationship mr) {
         try {
-            MemberRelationship beforeMemberRelationship = memberRelationshipJpaRepository.findByFromMember_MemberIdAndToMember_MemberId(
+            System.out.println(mr.getFromMember().getMemberId()+"그리고"+mr.getToMember().getMemberId()+"그리고"+mr.getRelationshipType());
+            MemberRelationship beforeMemberRelationship = memberRelationshipJpaRepository.findByFromMember_MemberIdAndToMember_MemberIdAndRelationshipType(
                     mr.getFromMember().getMemberId(),
-                    mr.getToMember().getMemberId()
+                    mr.getToMember().getMemberId(),
+                    mr.getRelationshipType()
             ).orElseThrow(() -> new MemberNotFoundException("MemberRelationship not found"));
             if (mr.getRelationshipType() != null) {
                 beforeMemberRelationship.setRelationshipType(mr.getRelationshipType());
