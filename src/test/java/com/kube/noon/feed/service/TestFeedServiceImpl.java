@@ -405,4 +405,18 @@ public class TestFeedServiceImpl {
             System.out.println("FeedId : " + feedId);
         }
     }
+
+    /**
+     * 이벤트 피드에 필요한 FeedEventDto를 가져온다.
+     */
+    @Transactional
+    @Test
+    public void getFeedEventDtoListTest() {
+        List<FeedEventDto> feedEventDtoList = feedRepository.findFeedWithEventDates(10006);
+
+        assertThat(feedEventDtoList.size()).isGreaterThan(0);
+        for(FeedEventDto f : feedEventDtoList) {
+            log.info(f.toString());
+        }
+    }
 }

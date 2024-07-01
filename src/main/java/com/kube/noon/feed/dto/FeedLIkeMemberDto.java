@@ -15,11 +15,13 @@ import java.util.stream.Collectors;
 @ToString
 public class FeedLIkeMemberDto {
     private String memberId;
+    private String writerProfile;
     private String memberNickname;
 
     public static FeedLIkeMemberDto toDto(Member member) {
         return FeedLIkeMemberDto.builder()
                 .memberId(member.getMemberId())
+                .writerProfile(member.getProfilePhotoUrl())
                 .memberNickname(member.getNickname())
                 .build();
     }

@@ -1,9 +1,6 @@
 package com.kube.noon.feed.service;
 
-import com.kube.noon.feed.dto.FeedDto;
-import com.kube.noon.feed.dto.FeedMegaphoneDto;
-import com.kube.noon.feed.dto.FeedSummaryDto;
-import com.kube.noon.feed.dto.UpdateFeedDto;
+import com.kube.noon.feed.dto.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -71,4 +68,7 @@ public interface FeedService {
 
     // 피드의 조회수를 1 올린다.
     int setViewCntUp(int feedId);
+
+    // 건물 내 이벤트 피드를 가져온다
+    List<FeedEventDto> getFeedEventList(int buildingId);
 }

@@ -19,6 +19,7 @@ public class FeedSummaryDto {
     private int feedId;
     private String writerId;
     private String writerNickname;
+    private String writerProfile;
     private String title;
     private String feedText;
     private int buildingId;
@@ -48,6 +49,7 @@ public class FeedSummaryDto {
                 .feedId(feed.getFeedId())
                 .writerId(feed.getWriter().getMemberId())
                 .writerNickname(feed.getWriter().getNickname())
+                .writerProfile(feed.getWriter().getProfilePhotoUrl())
                 .title(feed.getTitle())
                 .feedText(feed.getFeedText())
                 .buildingId(feed.getBuilding() == null ? 0 : feed.getBuilding().getBuildingId())

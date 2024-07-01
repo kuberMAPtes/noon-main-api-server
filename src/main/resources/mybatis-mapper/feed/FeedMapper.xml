@@ -29,15 +29,16 @@
     </resultMap>
 
     <resultMap id="feedSummaryMap" type="com.kube.noon.feed.dto.FeedSummaryDto">
-        <result property="feedId" column="feed_id" jdbcType = "NUMERIC"/>
-        <result property="writerId" column="writer_id" jdbcType = "VARCHAR"/>
-        <result property="writerNickname" column="nickname" jdbcType = "VARCHAR"/>
-        <result property="title" column="title" jdbcType = "VARCHAR"/>
-        <result property="feedText" column="feed_text" jdbcType = "VARCHAR"/>
-        <result property="buildingId" column="building_id" jdbcType = "NUMERIC"/>
-        <result property="buildingName" column="building_name" jdbcType = "VARCHAR"/>
+        <result property="feedId" column="feed_id" jdbcType="NUMERIC"/>
+        <result property="writerId" column="writer_id" jdbcType="VARCHAR"/>
+        <result property="writerNickname" column="nickname" jdbcType="VARCHAR"/>
+        <result property="writerProfile" column="profile_photo_url" jdbcType="VARCHAR"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="feedText" column="feed_text" jdbcType="VARCHAR"/>
+        <result property="buildingId" column="building_id" jdbcType="NUMERIC"/>
+        <result property="buildingName" column="building_name" jdbcType="VARCHAR"/>
         <result property="writtenTime" column="written_time" jdbcType="TIMESTAMP"/>
-        <result property="feedAttachementURL" column="feed_attachment_url" jdbcType = "VARCHAR"/>
+        <result property="feedCategory" column="feed_category" jdbcType="VARCHAR" javaType="com.kube.noon.common.FeedCategory"/>
         <result property="like" column="like" jdbcType="BOOLEAN"/>
         <result property="bookmark" column="bookmark" jdbcType="BOOLEAN"/>
         <result property="mainActivated" column="main_activated" jdbcType="BOOLEAN"/>
@@ -57,7 +58,7 @@
     </select>
 
     <select id = "getFeedPopularity" parameterType="int" resultMap = "feedPopularityMap">
-        SELECT f.feed_id, f.title, f.writer_id, m.nickname, f.view_cnt + 3 * COALESCE(like_count, 0) + 5 * COALESCE(bookmark_count, 0) AS popularity
+        SELECT f.feed_id, f.title, m.profile_photo_url, f.writer_id, m.nickname, f.view_cnt + 3 * COALESCE(like_count, 0) + 5 * COALESCE(bookmark_count, 0) AS popularity
         FROM feed f
                  LEFT JOIN (
             SELECT f.feed_id, COUNT(*) like_count FROM feed f INNER JOIN zzim z ON f.feed_id = z.feed_id WHERE z.zzim_type = 'LIKE' GROUP BY f.feed_id
@@ -84,8 +85,8 @@
         GROUP BY r.tag_text, z.member_id;
     </select>
 
-    <select id = "getAllFeedOrderByPopolarity" resultMap="feedSummaryMap">
-        SELECT f.*, m.nickname, b.building_name, f.view_cnt + 3 * COALESCE(like_count, 0) + 5 * COALESCE(bookmark_count, 0) AS popularity
+    <select id = "getAllFeedOrderByPopolarity" resultMap="feedPopularityMap">
+        SELECT f.feed_id, f.view_cnt + 3 * COALESCE(like_count, 0) + 5 * COALESCE(bookmark_count, 0) AS popularity
         FROM feed f
                  LEFT JOIN (
             SELECT f.feed_id, COUNT(*) like_count FROM feed f INNER JOIN zzim z ON f.feed_id = z.feed_id WHERE z.zzim_type = 'LIKE' GROUP BY f.feed_id

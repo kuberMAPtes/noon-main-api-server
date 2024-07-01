@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 @ToString
 public class FeedEventDto {
     private int feedId;
+    private String title;
+    private int buildingId;
     private LocalDateTime eventDate;
 
     public static FeedEventDto toDto(FeedEvent feedEvent) {
