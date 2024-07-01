@@ -52,7 +52,7 @@ public class ChatMatchingRestController {
         ChatroomDto privateRoomDto = new ChatroomDto();
         privateRoomDto.setChatroomCreatorId(chatApplyDto.getFromId());
         privateRoomDto.setChatroomType(ChatroomType.PRIVATE_CHATTING);
-        privateRoomDto.setChatroomName("사적채팅방 이름을 어떻게 하지 상대에 따라 유동적으로 가야될텐데");
+        privateRoomDto.setChatroomName("[private] " + chatApplyDto.getFromId() + " ❤️ " + chatApplyDto.getToId());
         privateRoomDto.setChatroomMinTemp(0F);
         privateRoomDto.setInvitedMemberId(chatApplyDto.getToId());
 
