@@ -295,7 +295,9 @@ public class ChatroomServiceImpl implements ChatroomService {
         dto.setChatroomMinTemp(chatroom.getChatroomMinTemp());
         dto.setChatroomCreatorId(chatroom.getChatroomCreator().getMemberId());
         dto.setChatroomType(chatroom.getChatroomType()); // Enum 값을 문자열로 변환하여 설정
-        dto.setBuildingId(chatroom.getBuilding().getBuildingId());
+        if(!(chatroom.getBuilding()==null)) {
+            dto.setBuildingId(chatroom.getBuilding().getBuildingId());
+        }
         return dto;
     }
 
