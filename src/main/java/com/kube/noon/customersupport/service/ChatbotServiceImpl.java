@@ -1,6 +1,7 @@
 package com.kube.noon.customersupport.service;
 
 import com.kube.noon.customersupport.domain.ChatbotConversation;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,10 +11,12 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
+@Slf4j
 @Service
 public class ChatbotServiceImpl implements ChatbotService {
     private static final String UNIQUE_USER_ID = "awvoawhifhoizxihovihodsdasd";
@@ -35,7 +38,7 @@ public class ChatbotServiceImpl implements ChatbotService {
         JSONObject contentElement = new JSONObject();
         contentElement.put("type", "text");
         JSONObject contentData = new JSONObject();
-        contentData.put("details", question);
+        contentData.put("details", new String(question.getBytes(), StandardCharsets.UTF_8));
         contentElement.put("data", contentData);
         content.put(contentElement);
         body.put("content", content);
@@ -43,6 +46,9 @@ public class ChatbotServiceImpl implements ChatbotService {
         RequestEntity<String> requestEntity = null;
         try {
             requestEntity = RequestEntity.post(new URI(this.chatbotUrl))
+                    .headers((h) -> {
+                        h.add("Content-Type", "application/json");
+                    })
                     .body(body.toString());
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
