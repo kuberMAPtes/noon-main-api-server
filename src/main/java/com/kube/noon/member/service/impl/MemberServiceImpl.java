@@ -272,7 +272,7 @@ public class MemberServiceImpl implements MemberService {
                 });
     }
 
-    private boolean isMutualFollow(String fromId, String memberId) {
+    public boolean isMutualFollow(String fromId, String memberId) {
         MemberRelationshipDto relationship1 = findMemberRelationship(fromId, memberId, RelationshipType.FOLLOW);
         MemberRelationshipDto relationship2 = findMemberRelationship(memberId, fromId, RelationshipType.FOLLOW);
 
