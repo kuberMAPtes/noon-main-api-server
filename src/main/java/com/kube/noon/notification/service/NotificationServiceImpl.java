@@ -26,6 +26,9 @@ public class NotificationServiceImpl implements NotificationService {
     public void sendNotification(NotificationDto dto) {
         Member receiver = this.memberService.findMemberById(dto.getReceiverId())
                 .orElseThrow(() -> new RuntimeException("그런 회원 없습니다: " + dto.getReceiverId())); // TODO: 구체적인 예외
+        if (receiver.getReceivingAllNotificationAllowed() == null || !receiver.getReceivingAllNotificationAllowed()) {
+            return;
+        }
         saveNotification(receiver, dto);
         this.transmissionAgent.send(receiver, dto.getNotificationText(), dto.getNotificationType());
     }
