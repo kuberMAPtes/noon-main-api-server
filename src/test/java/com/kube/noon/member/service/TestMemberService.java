@@ -92,8 +92,24 @@ public class TestMemberService {
     @DisplayName("회원 프로필  찾기 테스트")
     void findMemberProfileById() {
         log.info("회원 프로필 찾기 테스트!@#!@");
-        System.out.println(memberService.findMemberProfileById("member_1","member_1"));
-        assertThat(memberService.findMemberProfileById("member_1","member_1")).isNotNull();
+        System.out.println(memberService.findMemberProfileById("member_1","member_10"));
+        assertThat(memberService.findMemberProfileById("member_1","member_10").isCanAccess()).isTrue();
+
+        System.out.println(memberService.findMemberProfileById("member_10","member_1"));
+        assertThat(memberService.findMemberProfileById("member_10","member_1").isCanAccess()).isFalse();
+
+        System.out.println(memberService.findMemberProfileById("member_1","member_100"));
+        assertThat(memberService.findMemberProfileById("member_1","member_100").isCanAccess()).isFalse();
+
+        System.out.println(memberService.findMemberProfileById("admin_1","member_1"));
+        assertThat(memberService.findMemberProfileById("admin_1","member_1").isCanAccess()).isTrue();
+
+        System.out.println(memberService.findMemberProfileById("admin_1","member_10"));
+        assertThat(memberService.findMemberProfileById("admin_1","member_10").isCanAccess()).isTrue();
+
+        System.out.println(memberService.findMemberProfileById("admin_1","member_100"));
+        assertThat(memberService.findMemberProfileById("admin_1","member_100").isCanAccess()).isTrue();
+
     }
 
     //이거 private함수를 테스트해보고 주석처리 한 것 입니다.
