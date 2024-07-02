@@ -53,7 +53,7 @@ public class ChatroomRestController {
     // 입장하려는 채팅방조회
     @GetMapping("/getChatroom")
     public Map<String, Object> getChatroom(@RequestParam("roomId") int roomId) throws Exception {
-        System.out.println("        🐬[Controller] 받은 채팅방 ID => " + roomId);
+        System.out.println("        🐬[Controller getChatroom] 받은 채팅방 ID => " + roomId);
 
         // roomId 에 해당하는 채팅방 정보
         ChatroomDto searchedChatroom = chatroomService.getChatroomByRoomId(roomId);
