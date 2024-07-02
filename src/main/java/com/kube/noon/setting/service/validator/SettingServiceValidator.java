@@ -8,10 +8,12 @@ import com.kube.noon.member.service.MemberService;
 import com.kube.noon.setting.dto.SettingDto;
 import com.kube.noon.setting.service.SettingServiceImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
+@Slf4j
 @Validator(targetClass = SettingServiceImpl.class)
 @RequiredArgsConstructor
 public class SettingServiceValidator {
@@ -34,7 +36,7 @@ public class SettingServiceValidator {
                         throw new RuntimeException(e);
                     }
                 });
-        checkProblems(problems);
+        Problems.checkProblems(problems, getClass());
     }
 
     private String convertToOgnl(String getter) {
@@ -46,26 +48,12 @@ public class SettingServiceValidator {
     public void findSettingOfMember(String memberId) {
         Problems problems = new Problems();
         checkIfTheMemberExists(memberId, problems);
-        checkProblems(problems);
+        Problems.checkProblems(problems, getClass());
     }
 
     private void checkIfTheMemberExists(String memberId, Problems problems) {
-        try {
-            this.memberService.findMemberById(memberId);
-        } catch (MemberNotFoundException e) {
+        if (this.memberService.findMemberById(memberId).isEmpty()) {
             problems.put("memberId", "No such member of id=" + memberId);
         }
-    }
-
-    private void checkProblems(Problems problems) {
-        if (isAnyProblem(problems)) {
-            throw new IllegalServiceCallException("Problem in validation in " + this.getClass(), problems);
-        }
-    }
-
-    private boolean isAnyProblem(Problems problems) {
-        // "~이 아니다"라는 논리기 때문에 다소 가독성이 떨어짐
-        // 그래서 따로 메소드로 빼 놓음으로써 의미를 주었다.
-        return !problems.isEmpty();
     }
 }
