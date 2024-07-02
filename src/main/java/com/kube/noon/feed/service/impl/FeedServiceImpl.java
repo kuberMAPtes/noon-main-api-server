@@ -6,10 +6,7 @@ import com.kube.noon.common.zzim.ZzimRepository;
 import com.kube.noon.common.zzim.ZzimType;
 import com.kube.noon.feed.domain.*;
 import com.kube.noon.feed.dto.*;
-import com.kube.noon.feed.repository.FeedEventRepository;
-import com.kube.noon.feed.repository.FeedRepository;
-import com.kube.noon.feed.repository.TagFeedRepository;
-import com.kube.noon.feed.repository.TagRepository;
+import com.kube.noon.feed.repository.*;
 import com.kube.noon.feed.repository.mybatis.FeedMyBatisRepository;
 import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.feed.service.recommend.FeedRecommendationMemberId;
@@ -39,6 +36,7 @@ public class FeedServiceImpl implements FeedService {
 
     private final FeedRepository feedRepository;
     private final FeedMyBatisRepository feedMyBatisRepository;
+    private final FeedCommentRepository feedCommentRepository;
     private final TagRepository tagRepository;
     private final TagFeedRepository tagFeedRepository;
     private final ZzimRepository zzimRepository;
@@ -47,8 +45,8 @@ public class FeedServiceImpl implements FeedService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    // FeedSumaryDto에 좋아요, 북마크 정보 저장
-    private List<FeedSummaryDto> setFeedSummaryDtoLikeAndBookmark(String memberId, List<FeedSummaryDto> feedList) {
+    // FeedSumaryDto에 좋아요, 북마크 여부와 개수, 댓글 개수 저장
+    private List<FeedSummaryDto> setFeedSummaryDtoInfo(String memberId, List<FeedSummaryDto> feedList) {
         if(memberId == null) return feedList;
 
         List<Integer> zzimLikeList = zzimRepository.getFeedIdByMemberIdAndZzimType(memberId, ZzimType.LIKE);
@@ -60,18 +58,23 @@ public class FeedServiceImpl implements FeedService {
         
         return feedList.stream()
                 .map(feed -> {
+                    // 좋아요, 북마크 정보 저장
                     if (zzimLikeList.contains(feed.getFeedId())) {
                         feed.setLike(true);
                     }
                     if (zzimBookmarkList.contains(feed.getFeedId())) {
                         feed.setBookmark(true);
                     }
+
+                    // 좋아요, 댓글 개수 저장
+                    feed.setLikeCount(zzimRepository.getCountByFeedIdZzimType(feed.getFeedId(), ZzimType.LIKE));
+                    feed.setCommentCount(feedCommentRepository.getFeedCommentCount(feed.getFeedId()));
                     return feed;
                 })
                 .collect(Collectors.toList());
     }
 
-    // FeedDto에 좋아요, 북마크 여부를 확인한다.
+    // FeedDto에 좋아요, 북마크 여부를 저장한다.
     private FeedDto setFeedDtoLikeAndBookmark(String memberId, FeedDto feedDto) {
         List<Integer> zzimLikeList = zzimRepository.getFeedIdByMemberIdAndZzimType(memberId, ZzimType.LIKE);
         List<Integer> zzimBookmarkList = zzimRepository.getFeedIdByMemberIdAndZzimType(memberId, ZzimType.BOOKMARK);
@@ -95,7 +98,7 @@ public class FeedServiceImpl implements FeedService {
                         .build()
         );
 
-        List<FeedSummaryDto> feedListByMember = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entities));
+        List<FeedSummaryDto> feedListByMember = setFeedSummaryDtoInfo(memberId, FeedSummaryDto.toDtoList(entities));
 
         return feedListByMember;
     }
@@ -109,7 +112,7 @@ public class FeedServiceImpl implements FeedService {
                 pageable
         );
 
-        List<FeedSummaryDto> feedListByMember = setFeedSummaryDtoLikeAndBookmark(loginMemberId, FeedSummaryDto.toDtoList(entities));
+        List<FeedSummaryDto> feedListByMember = setFeedSummaryDtoInfo(loginMemberId, FeedSummaryDto.toDtoList(entities));
 
         return feedListByMember;
     }
@@ -133,7 +136,7 @@ public class FeedServiceImpl implements FeedService {
             entities = feedRepository.findFeedWithLikesFirst(recommandMember, building);
         }
 
-        List<FeedSummaryDto> feedListByBuilding = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entities));
+        List<FeedSummaryDto> feedListByBuilding = setFeedSummaryDtoInfo(memberId, FeedSummaryDto.toDtoList(entities));
 
         return feedListByBuilding;
     }
@@ -159,7 +162,7 @@ public class FeedServiceImpl implements FeedService {
             entities = feedRepository.findFeedWithLikesFirst(recommandMember, building, pageable);
         }
 
-        List<FeedSummaryDto> feedListByBuilding = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entities));
+        List<FeedSummaryDto> feedListByBuilding = setFeedSummaryDtoInfo(memberId, FeedSummaryDto.toDtoList(entities));
 
         return feedListByBuilding;
     }
@@ -190,7 +193,7 @@ public class FeedServiceImpl implements FeedService {
                         .build()
         );
 
-        List<FeedSummaryDto> feedListByMemberLike = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
+        List<FeedSummaryDto> feedListByMemberLike = setFeedSummaryDtoInfo(memberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByMemberLike;
     }
@@ -203,7 +206,7 @@ public class FeedServiceImpl implements FeedService {
                 Member.builder().memberId(memberId).build(), pageable
         );
 
-        List<FeedSummaryDto> feedListByMemberLike = setFeedSummaryDtoLikeAndBookmark(loginMemberId, FeedSummaryDto.toDtoList(entites));
+        List<FeedSummaryDto> feedListByMemberLike = setFeedSummaryDtoInfo(loginMemberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByMemberLike;
     }
@@ -216,7 +219,7 @@ public class FeedServiceImpl implements FeedService {
                         .build()
         );
 
-        List<FeedSummaryDto> feedListByMemberBookmark = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
+        List<FeedSummaryDto> feedListByMemberBookmark = setFeedSummaryDtoInfo(memberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByMemberBookmark;
     }
@@ -229,7 +232,7 @@ public class FeedServiceImpl implements FeedService {
                 Member.builder().memberId(memberId).build(), pageable
         );
 
-        List<FeedSummaryDto> feedListByMemberBookmark = setFeedSummaryDtoLikeAndBookmark(loginMemberId, FeedSummaryDto.toDtoList(entites));
+        List<FeedSummaryDto> feedListByMemberBookmark = setFeedSummaryDtoInfo(loginMemberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByMemberBookmark;
     }
@@ -242,7 +245,7 @@ public class FeedServiceImpl implements FeedService {
                         .build()
         );
 
-        List<FeedSummaryDto> feedListByBuildingSubscription = setFeedSummaryDtoLikeAndBookmark(memberId, FeedSummaryDto.toDtoList(entites));
+        List<FeedSummaryDto> feedListByBuildingSubscription = setFeedSummaryDtoInfo(memberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByBuildingSubscription;
     }
@@ -255,7 +258,7 @@ public class FeedServiceImpl implements FeedService {
                 Member.builder().memberId(memberId).build(), pageable
         );
 
-        List<FeedSummaryDto> feedListByBuildingSubscription = setFeedSummaryDtoLikeAndBookmark(loginMemberId, FeedSummaryDto.toDtoList(entites));
+        List<FeedSummaryDto> feedListByBuildingSubscription = setFeedSummaryDtoInfo(loginMemberId, FeedSummaryDto.toDtoList(entites));
 
         return feedListByBuildingSubscription;
     }
@@ -281,7 +284,7 @@ public class FeedServiceImpl implements FeedService {
         if (memberId == null || memberId.isEmpty()) { // 만약 memberId 정보가 없다면 그냥 리스트 출력
             return allFeedOrderByPopolarity;
         } else { // 만약 memberId 정보가 있다면 좋아요, 북마크 정보를 반영하고 출력
-            return setFeedSummaryDtoLikeAndBookmark(memberId, allFeedOrderByPopolarity);
+            return setFeedSummaryDtoInfo(memberId, allFeedOrderByPopolarity);
         }
     }
 

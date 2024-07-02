@@ -22,6 +22,7 @@ public class FeedSummaryDto {
     private String writerProfile;
     private String title;
     private String feedText;
+    private Long viewCnt;
     private int buildingId;
     private String buildingName;
     private LocalDateTime writtenTime;
@@ -29,6 +30,8 @@ public class FeedSummaryDto {
     private FeedCategory feedCategory;
     private boolean like;
     private boolean bookmark;
+    private int likeCount;
+    private int commentCount;
     private boolean mainActivated;
 
     public static FeedSummaryDto toDto(Feed feed) {
@@ -45,6 +48,7 @@ public class FeedSummaryDto {
             }
         }
 
+        //
         return FeedSummaryDto.builder()
                 .feedId(feed.getFeedId())
                 .writerId(feed.getWriter().getMemberId())
@@ -52,6 +56,7 @@ public class FeedSummaryDto {
                 .writerProfile(feed.getWriter().getProfilePhotoUrl())
                 .title(feed.getTitle())
                 .feedText(feed.getFeedText())
+                .viewCnt(feed.getViewCnt())
                 .buildingId(feed.getBuilding() == null ? 0 : feed.getBuilding().getBuildingId())
                 .buildingName(feed.getBuilding() == null ? null : feed.getBuilding().getBuildingName())
                 .writtenTime(feed.getWrittenTime())
