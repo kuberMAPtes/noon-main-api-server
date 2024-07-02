@@ -110,7 +110,7 @@ class TestSettingServiceValidator {
     }
 
     private String insertSampleMember() {
-        final String sampleMemberId = "sample-member-id";
+        final String sampleMemberId = "nmember_1232";
         Member sampleMember = new Member();
         sampleMember.setMemberId(sampleMemberId);
         sampleMember.setPwd("1q2w3e4r");

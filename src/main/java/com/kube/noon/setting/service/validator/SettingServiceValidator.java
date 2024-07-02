@@ -1,9 +1,7 @@
 package com.kube.noon.setting.service.validator;
 
-import com.kube.noon.common.validator.IllegalServiceCallException;
 import com.kube.noon.common.validator.Problems;
 import com.kube.noon.common.validator.Validator;
-import com.kube.noon.member.exception.MemberNotFoundException;
 import com.kube.noon.member.service.MemberService;
 import com.kube.noon.setting.dto.SettingDto;
 import com.kube.noon.setting.service.SettingServiceImpl;
@@ -12,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Validator(targetClass = SettingServiceImpl.class)
@@ -20,23 +19,30 @@ public class SettingServiceValidator {
     private final MemberService memberService;
 
     public void updateSetting(String memberId, SettingDto newSetting) {
-        Problems problems = new Problems();
-
+        Problems problems = validateNull(newSetting);
         checkIfTheMemberExists(memberId, problems);
+        Problems.checkProblems(problems, getClass());
+    }
 
-        Arrays.stream(newSetting.getClass().getDeclaredMethods())
+    private Problems validateNull(SettingDto toCheck) {
+        return new Problems(Arrays.stream(toCheck.getClass().getDeclaredMethods())
                 .filter((method) -> method.getName().startsWith("get"))
-                .forEach((method) -> {
+                .filter((method) -> {
                     try {
-                        if (method.invoke(newSetting) == null) {
-                            problems.put(convertToOgnl(method.getName()), "Should be not null, but is null");
-                        }
+                        return method.invoke(toCheck) == null;
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         e.printStackTrace();
                         throw new RuntimeException(e);
                     }
-                });
-        Problems.checkProblems(problems, getClass());
+                })
+                .collect(
+                        Collectors.toMap(
+                                (m) -> convertToOgnl(m.getName()),
+                                (m) -> "Should be not null, but is null",
+                                (v1, v2) -> v2
+                        )
+                )
+        );
     }
 
     private String convertToOgnl(String getter) {
