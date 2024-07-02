@@ -145,9 +145,17 @@ public class BuildingProfileRestController {
     /**
      * 건물 아이디로 구독자 목록 가져오기
      */
-    @GetMapping("/getSubscribers")
+    @RequestMapping(value = "/getSubscribers", params = "buildingId")
     public List<MemberDto> getSubscribers(@RequestParam("buildingId") int buildingId) {
         return buildingProfileService.getSubscribers(buildingId);
+    }
+
+    /**
+     * 건물 아이디, 회원 아이디로 해당 회원에게 공개된 구독자 목록 조회
+     */
+    @RequestMapping(value = "/getSubscribers", params = {"buildingId", "viewerId"})
+    public List<SubscriberDto> getSubscribers(@RequestParam("buildingId") int buildingId, @RequestParam("viewerId") String viewerId) {
+        return buildingProfileService.getSubscribers(buildingId, viewerId);
     }
 
     /**
