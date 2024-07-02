@@ -234,10 +234,9 @@ public class MemberServiceImpl implements MemberService {
             log.info("차단된 회원: FromID={}, MemberID={}", fromId, memberId);
             return Optional.of(new ProfileAccessResultDto(false, "차단한 회원의 프로필입니다.", null));
         }
-
-        MemberRelationshipDto memberRelationshipDto = findMemberRelationship(fromId, memberId,RelationshipType.FOLLOW);
         return memberRepository.findMemberById(memberId)
                 .map(findedMember -> {
+
                     PublicRange profilePublicRange = findedMember.getMemberProfilePublicRange();
                     log.info("프로필 공개 범위 확인: MemberID={}, 공개 범위={}", memberId, profilePublicRange);
                     switch (profilePublicRange) {
@@ -248,6 +247,10 @@ public class MemberServiceImpl implements MemberService {
                             log.info("프로필 비공개: 접근 불가");
                             return new ProfileAccessResultDto(false, "비공개된 프로필입니다.", null);
                         case FOLLOWER_ONLY:
+                            MemberRelationshipDto memberRelationshipDto = findMemberRelationship(fromId, memberId,RelationshipType.FOLLOW);
+                            if(memberRelationshipDto == null){
+                                return new ProfileAccessResultDto(false, "팔로워만 볼 수 있는 프로필입니다.", null);
+                            }
                             log.info("팔로워 전용 프로필: 접근 가능 여부={}", memberRelationshipDto.getRelationshipType() == RelationshipType.FOLLOW);
                             if (memberRelationshipDto.getRelationshipType() == RelationshipType.FOLLOW) {
                                 return new ProfileAccessResultDto(true, "팔로워로서 프로필에 접근할 수 있습니다.", createMemberProfileDto(findedMember, memberId));
