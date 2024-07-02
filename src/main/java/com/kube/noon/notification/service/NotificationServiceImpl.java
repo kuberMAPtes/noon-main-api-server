@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @Service
@@ -24,8 +25,14 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public void sendNotification(NotificationDto dto) {
-        Member receiver = this.memberService.findMemberById(dto.getReceiverId())
-                .orElseThrow(() -> new RuntimeException("그런 회원 없습니다: " + dto.getReceiverId())); // TODO: 구체적인 예외
+        Member receiver;
+        try {
+            receiver = this.memberService.findMemberById(dto.getReceiverId())
+                    .orElseThrow(() -> new NoSuchElementException("그런 회원 없습니다: " + dto.getReceiverId()));
+        } catch (NoSuchElementException e) {
+            log.warn("대상 회원이 존재하지 않음", e);
+            return;
+        }
         if (receiver.getReceivingAllNotificationAllowed() == null || !receiver.getReceivingAllNotificationAllowed()) {
             return;
         }
