@@ -36,9 +36,9 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
      * @param writer 회원ID를 받는다.
      * @return List<Feed>
      */
-    List<Feed> findByWriterAndActivatedTrue(Member writer);
+    List<Feed> findByWriterAndActivatedTrueOrderByWrittenTimeDesc(Member writer);
 
-    List<Feed> findByWriterAndActivatedTrue(Member writer, Pageable pageable);
+    List<Feed> findByWriterAndActivatedTrueOrderByWrittenTimeDesc(Member writer, Pageable pageable);
 
     /**
      * 건물별로 작성된 피드를 가져온다. 단, 활성화가 된 피드만 가져온다.
@@ -48,6 +48,10 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     List<Feed> findByBuildingAndActivatedTrue(Building building);
 
     List<Feed> findByBuildingAndActivatedTrue(Building building, Pageable pageable);
+
+    List<Feed> findByBuildingAndActivatedTrueOrderByWrittenTimeDesc(Building building);
+
+    List<Feed> findByBuildingAndActivatedTrueOrderByWrittenTimeDesc(Building building, Pageable pageable);
 
     /**
      * 건물별 피드 중 카테고리에 알맞는 피드를 가져온다 : 주사용처 -> 확성기, 이벤트

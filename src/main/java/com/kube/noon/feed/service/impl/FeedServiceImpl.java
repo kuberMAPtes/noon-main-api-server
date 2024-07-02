@@ -92,7 +92,7 @@ public class FeedServiceImpl implements FeedService {
 
     @Override
     public List<FeedSummaryDto> getFeedListByMember(String memberId) {
-        List<Feed> entities = feedRepository.findByWriterAndActivatedTrue(
+        List<Feed> entities = feedRepository.findByWriterAndActivatedTrueOrderByWrittenTimeDesc(
                 Member.builder()
                         .memberId(memberId)
                         .build()
@@ -107,7 +107,7 @@ public class FeedServiceImpl implements FeedService {
     public List<FeedSummaryDto> getFeedListByMember(String memberId, String loginMemberId, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page, pageSize);
 
-        List<Feed> entities = feedRepository.findByWriterAndActivatedTrue(
+        List<Feed> entities = feedRepository.findByWriterAndActivatedTrueOrderByWrittenTimeDesc(
                 Member.builder().memberId(memberId).build(),
                 pageable
         );
@@ -127,7 +127,7 @@ public class FeedServiceImpl implements FeedService {
 
         // 추천 맴버가 없다면 빌딩 그대로 보여주기
         if(memberIdList == null || memberIdList.isEmpty()) {
-            entities = feedRepository.findByBuildingAndActivatedTrue(building);
+            entities = feedRepository.findByBuildingAndActivatedTrueOrderByWrittenTimeDesc(building);
         } else {
             Random rand = new Random();
             String recommandMemberId = memberIdList.get(rand.nextInt(memberIdList.size()));
@@ -153,7 +153,7 @@ public class FeedServiceImpl implements FeedService {
 
         // 추천 맴버가 없다면 빌딩 그대로 보여주기
         if(memberIdList == null || memberIdList.isEmpty()) {
-            entities = feedRepository.findByBuildingAndActivatedTrue(building, pageable);
+            entities = feedRepository.findByBuildingAndActivatedTrueOrderByWrittenTimeDesc(building, pageable);
         } else {
             Random rand = new Random();
             String recommandMemberId = memberIdList.get(rand.nextInt(memberIdList.size()));
