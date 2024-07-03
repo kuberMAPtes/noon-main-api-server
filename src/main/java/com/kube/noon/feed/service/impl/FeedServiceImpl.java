@@ -12,6 +12,7 @@ import com.kube.noon.feed.service.FeedService;
 import com.kube.noon.feed.service.recommend.FeedRecommendationMemberId;
 import com.kube.noon.feed.util.CalculatorUtil;
 import com.kube.noon.member.domain.Member;
+import com.kube.noon.member.repository.MemberRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -41,6 +43,7 @@ public class FeedServiceImpl implements FeedService {
     private final TagFeedRepository tagFeedRepository;
     private final ZzimRepository zzimRepository;
     private final FeedEventRepository feedEventRepository;
+    private final MemberRepository memberRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -151,15 +154,29 @@ public class FeedServiceImpl implements FeedService {
         FeedRecommendationMemberId.initData(feedMyBatisRepository.getMemberLikeTag());
         List<String> memberIdList = FeedRecommendationMemberId.getMemberLikeTagsRecommendation(memberId);
 
+        System.out.println("size : " + memberIdList.size());
+
         // 추천 맴버가 없다면 빌딩 그대로 보여주기
         if(memberIdList == null || memberIdList.isEmpty()) {
             entities = feedRepository.findByBuildingAndActivatedTrueOrderByWrittenTimeDesc(building, pageable);
         } else {
+            System.out.println("recommend start");
             Random rand = new Random();
-            String recommandMemberId = memberIdList.get(rand.nextInt(memberIdList.size()));
+            String recommandMemberId = memberIdList.get(rand.nextInt(memberIdList.size() - 1));
             Member recommandMember = Member.builder().memberId(recommandMemberId).build();
 
+
             entities = feedRepository.findFeedWithLikesFirst(recommandMember, building, pageable);
+            Optional<Member> recommendMemberInfo = memberRepository.findMemberById(recommandMemberId);
+            String recommendMemberNickname = recommendMemberInfo.orElse(Member.builder().nickname("Error").build()).getNickname();
+
+            List<Integer> recommandMemberFeedIdList = zzimRepository.getFeedIdByMemberIdAndZzimType(recommandMemberId, ZzimType.LIKE);
+
+            for (Feed feed : entities) {
+                if(recommandMemberFeedIdList.contains(feed.getFeedId())) {
+                    feed.setRecommendMember(recommendMemberNickname);
+                }
+            }
         }
 
         List<FeedSummaryDto> feedListByBuilding = setFeedSummaryDtoInfo(memberId, FeedSummaryDto.toDtoList(entities));
@@ -331,10 +348,14 @@ public class FeedServiceImpl implements FeedService {
         // 피드 종류가 이벤트일 때, 이벤트 지정하기
         FeedCategory feedCategory = feedDto.getFeedCategory();
         LocalDateTime eventDate = feedDto.getEventDate();
+
         if(feedCategory == FeedCategory.EVENT && eventDate != null) {
+            ZonedDateTime eventDateZoneKr = feedDto.getEventDate().atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+            LocalDateTime eventDateResult = eventDateZoneKr.toLocalDateTime();
+
             FeedEvent event = FeedEvent.builder()
                     .feedId(feedId)
-                    .eventDate(eventDate)
+                    .eventDate(eventDateResult)
                     .build();
 
             feedEventRepository.save(event);

@@ -73,6 +73,10 @@ public class Feed {
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedAttachment> attachments;
 
+    // 추천 알고리즘을 위한 임시 저장
+    @Transient
+    private String recommendMember;
+    
     @Override
     public String toString() {
         return "MemberId : " + writer.getMemberId()

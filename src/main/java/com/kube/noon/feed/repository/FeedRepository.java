@@ -4,6 +4,7 @@ import com.kube.noon.building.domain.Building;
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.dto.FeedEventDto;
+import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.member.domain.Member;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -77,14 +78,14 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     @Query("""
             SELECT f FROM Feed f 
             INNER JOIN Zzim z ON f.feedId = z.feedId 
-            WHERE z.zzimType = 'LIKE' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true
+            WHERE z.zzimType = 'LIKE' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true ORDER BY z.feedId DESC
            """)
     List<Feed> findByMemberLikeFeed(@Param("member") Member member);
 
     @Query("""
             SELECT f FROM Feed f 
             INNER JOIN Zzim z ON f.feedId = z.feedId 
-            WHERE z.zzimType = 'LIKE' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true
+            WHERE z.zzimType = 'LIKE' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true ORDER BY z.feedId DESC
            """)
     List<Feed> findByMemberLikeFeed(@Param("member") Member member, Pageable pageable);
 
@@ -126,14 +127,14 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     @Query("""
             SELECT f FROM Feed f 
             INNER JOIN Zzim z ON f.feedId = z.feedId 
-            WHERE z.zzimType = 'BOOKMARK' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true 
+            WHERE z.zzimType = 'BOOKMARK' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true ORDER BY z.feedId DESC
            """)
     List<Feed> findByMemberBookmarkFeed(@Param("member") Member member);
 
     @Query("""
             SELECT f FROM Feed f 
             INNER JOIN Zzim z ON f.feedId = z.feedId 
-            WHERE z.zzimType = 'BOOKMARK' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true 
+            WHERE z.zzimType = 'BOOKMARK' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true ORDER BY z.feedId DESC
            """)
     List<Feed> findByMemberBookmarkFeed(@Param("member") Member member, Pageable pageable);
 
@@ -146,14 +147,14 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     @Query("""
             SELECT f FROM Feed f 
             INNER JOIN Zzim z ON f.building.buildingId = z.buildingId 
-            WHERE z.zzimType = 'SUBSCRIPTION' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true
+            WHERE z.zzimType = 'SUBSCRIPTION' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true ORDER BY z.feedId DESC
            """)
     List<Feed> findByMemberBuildingSubscription(@Param("member") Member member);
 
     @Query("""
             SELECT f FROM Feed f 
             INNER JOIN Zzim z ON f.building.buildingId = z.buildingId 
-            WHERE z.zzimType = 'SUBSCRIPTION' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true
+            WHERE z.zzimType = 'SUBSCRIPTION' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true ORDER BY z.feedId DESC
            """)
     List<Feed> findByMemberBuildingSubscription(@Param("member") Member member, Pageable pageable);
 
