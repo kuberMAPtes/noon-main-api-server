@@ -387,13 +387,13 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
             }
 
             int liveliness;
-            if (messageCount < 200) {
+            if (messageCount < 10) {
                 liveliness = 1;
-            } else if (messageCount < 400) {
+            } else if (messageCount < 20) {
                 liveliness = 2;
-            } else if (messageCount < 600) {
+            } else if (messageCount < 30) {
                 liveliness = 3;
-            } else if (messageCount < 800) {
+            } else if (messageCount < 40) {
                 liveliness = 4;
             } else {
                 liveliness = 5;
