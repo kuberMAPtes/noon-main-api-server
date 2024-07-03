@@ -33,7 +33,8 @@ public class FeedSummaryDto {
     private int likeCount;
     private int commentCount;
     private boolean mainActivated;
-
+    private String recommendMember; // 알고리즘 추천 피드임을 밝힘
+    
     public static FeedSummaryDto toDto(Feed feed) {
         
         // 유효한 첨부파일 걸러내기
@@ -61,6 +62,7 @@ public class FeedSummaryDto {
                 .buildingName(feed.getBuilding() == null ? null : feed.getBuilding().getBuildingName())
                 .writtenTime(feed.getWrittenTime())
                 .feedCategory(feed.getFeedCategory())
+                .recommendMember(feed.getRecommendMember())
                 .mainActivated(feed.isMainActivated())
                 .feedAttachmentId((attachments == null || attachments.isEmpty()) ? 0 : attachments.get(0).getAttachmentId())
                 .build();

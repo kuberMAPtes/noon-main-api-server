@@ -4,6 +4,7 @@ import com.kube.noon.building.domain.Building;
 import com.kube.noon.common.FeedCategory;
 import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.dto.FeedEventDto;
+import com.kube.noon.feed.dto.FeedSummaryDto;
 import com.kube.noon.member.domain.Member;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
