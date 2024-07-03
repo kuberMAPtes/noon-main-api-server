@@ -348,10 +348,14 @@ public class FeedServiceImpl implements FeedService {
         // 피드 종류가 이벤트일 때, 이벤트 지정하기
         FeedCategory feedCategory = feedDto.getFeedCategory();
         LocalDateTime eventDate = feedDto.getEventDate();
+
         if(feedCategory == FeedCategory.EVENT && eventDate != null) {
+            ZonedDateTime eventDateZoneKr = feedDto.getEventDate().atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+            LocalDateTime eventDateResult = eventDateZoneKr.toLocalDateTime();
+
             FeedEvent event = FeedEvent.builder()
                     .feedId(feedId)
-                    .eventDate(eventDate)
+                    .eventDate(eventDateResult)
                     .build();
 
             feedEventRepository.save(event);
