@@ -208,7 +208,7 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
             ON f.feed_id = liked_feeds.feed_id
             WHERE f.building_id = :#{#building.buildingId}
               AND f.activated = true
-            ORDER BY liked_feeds.feed_id IS NULL, f.written_time;
+            ORDER BY liked_feeds.feed_id IS NULL, f.written_time DESC;
            """, nativeQuery = true)
     List<Feed> findFeedWithLikesFirst(@Param("member") Member member, @Param("building") Building building, Pageable pageable);
 
