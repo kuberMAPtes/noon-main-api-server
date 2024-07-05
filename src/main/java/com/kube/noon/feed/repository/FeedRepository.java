@@ -147,14 +147,14 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     @Query("""
             SELECT f FROM Feed f 
             INNER JOIN Zzim z ON f.building.buildingId = z.buildingId 
-            WHERE z.zzimType = 'SUBSCRIPTION' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true ORDER BY z.feedId DESC
+            WHERE z.zzimType = 'SUBSCRIPTION' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true ORDER BY f.writtenTime DESC
            """)
     List<Feed> findByMemberBuildingSubscription(@Param("member") Member member);
 
     @Query("""
             SELECT f FROM Feed f 
             INNER JOIN Zzim z ON f.building.buildingId = z.buildingId 
-            WHERE z.zzimType = 'SUBSCRIPTION' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true ORDER BY z.feedId DESC
+            WHERE z.zzimType = 'SUBSCRIPTION' AND z.memberId = :#{#member.memberId} AND f.activated = true AND z.activated = true ORDER BY f.writtenTime DESC
            """)
     List<Feed> findByMemberBuildingSubscription(@Param("member") Member member, Pageable pageable);
 
