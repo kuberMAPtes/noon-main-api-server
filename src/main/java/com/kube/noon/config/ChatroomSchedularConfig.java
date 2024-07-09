@@ -46,7 +46,7 @@ public class ChatroomSchedularConfig {
     public SimpleTriggerImpl deleteChatRoomsTrigger(JobDetail deleteChatRoomsJobDetail) {
         SimpleTriggerImpl trigger = new SimpleTriggerImpl();
         trigger.setJobKey(deleteChatRoomsJobDetail.getKey()); // Job키를 받기
-        trigger.setRepeatInterval(1000*3600*24); // 5분간격 (밀리초 단위)
+        trigger.setRepeatInterval(1000*3600*24/24/12); // 5분간격 (밀리초 단위)
         trigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY); // 무한 반복
         trigger.setKey(new TriggerKey("deleteChatRoomsTrigger"));
 
