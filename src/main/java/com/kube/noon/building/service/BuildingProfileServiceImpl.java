@@ -353,14 +353,13 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
                 .map((b) -> {
                     List<Zzim> subscriptionList = this.zzimRepository.findByBuildingIdAndMemberIdAndActivated(b.getBuildingId(), memberId, true);
 
-                    subscriptionList.stream().map((Zzim zzim) -> {
-
+                    subscriptionList = subscriptionList.stream().map((Zzim zzim) -> {
                         System.out.println("🧸24_07_09 :: 찜 정보 확인 :: zzim = " + zzim);
-
                         return zzim == null
                                 ? new Zzim(0, "", 0, 0, "", null, false)
                                 : zzim;
-                    });
+                    }).toList();
+
 
 
                     return new MemberBuildingSubscriptionResponseDto(
