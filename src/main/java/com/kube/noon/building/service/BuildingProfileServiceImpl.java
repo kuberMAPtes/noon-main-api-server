@@ -116,7 +116,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
         }else{
 
             zzimRepository.updateZzimActivated(buildingId, memberId, true);
-            return BuildingZzimDto.fromEntity(zzimRepository.findByBuildingIdAndMemberId(buildingId, memberId));
+            return BuildingZzimDto.fromEntity(zzimRepository.findByBuildingIdAndMemberIdAndActivated(buildingId, memberId, true));
 
         }
     }
@@ -286,7 +286,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
         zzimRepository.updateZzimActivated(buildingId, memberId, false);
 
-        Zzim zzim = zzimRepository.findByBuildingIdAndMemberId(buildingId, memberId);
+        Zzim zzim = zzimRepository.findByBuildingIdAndMemberIdAndActivated(buildingId, memberId, true);
 
         return BuildingZzimDto.fromEntity(zzim);
     }
@@ -346,7 +346,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
         return buildings.stream()
                 .map(BuildingDto::fromEntity)
                 .map((b) -> {
-                    Zzim subscription = this.zzimRepository.findByBuildingIdAndMemberId(b.getBuildingId(), memberId);
+                    Zzim subscription = this.zzimRepository.findByBuildingIdAndMemberIdAndActivated(b.getBuildingId(), memberId, true);
                     subscription = subscription == null
                             ? new Zzim(0, "", 0, 0, "", null, false)
                             : subscription;
