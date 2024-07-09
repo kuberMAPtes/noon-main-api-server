@@ -50,7 +50,7 @@ public class ChatroomServiceImpl implements ChatroomService {
         // 채팅방 저장할 chatroom entity 제작해서 저장
         Chatroom chatroom = new Chatroom();
 
-        System.out.println("        🦐[addChatroom ServiceImpl] 채팅 생성자Id => " + requestChatroom.getChatroomCreatorId());
+        System.out.println("        🦐[addChatroom ServiceImpl] 채팅 생성자 requestChatroom => " + requestChatroom);
         chatroom.setChatroomName(requestChatroom.getChatroomName());
 
         // requestChatroom.getChatroomID() 로 멤버를 조회하여 멤버 ID 아닌 멤버 객체를 addChatroom 에 넣어주기
@@ -119,7 +119,7 @@ public class ChatroomServiceImpl implements ChatroomService {
 
             ChatEntrance chatEntrance2 = new ChatEntrance();
             chatEntrance2.setChatroom(savedChatroom);
-            Optional<Member> chatroomCreator2 = memberJpaRepository.findMemberByMemberId(requestChatroom.getChatroomCreatorId());
+            Optional<Member> chatroomCreator2 = memberJpaRepository.findMemberByMemberId(requestChatroom.getInvitedMemberId());
             if (chatroomCreator2.isPresent()) {
                 chatEntrance2.setChatroomMember(chatroomCreator2.get());
             } else {
@@ -291,11 +291,14 @@ public class ChatroomServiceImpl implements ChatroomService {
     private ChatroomDto convertToChatroomDto(Chatroom chatroom) {
         ChatroomDto dto = new ChatroomDto();
         dto.setChatroomID(chatroom.getChatroomId());
+        dto.setChatroomID(chatroom.getChatroomId());
         dto.setChatroomName(chatroom.getChatroomName());
         dto.setChatroomMinTemp(chatroom.getChatroomMinTemp());
-        dto.setChatroomCreatorId(chatroom.getChatroomCreator().getMemberId());
+        dto.setChatroomCreator(chatroom.getChatroomCreator());
         dto.setChatroomType(chatroom.getChatroomType()); // Enum 값을 문자열로 변환하여 설정
-        dto.setBuildingId(chatroom.getBuilding().getBuildingId());
+        if(!(chatroom.getBuilding()==null)) {
+            dto.setBuildingId(chatroom.getBuilding().getBuildingId());
+        }
         return dto;
     }
 

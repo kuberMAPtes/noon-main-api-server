@@ -1,20 +1,17 @@
 package com.kube.noon.building.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kube.noon.building.domain.Building;
 import com.kube.noon.building.dto.*;
 import com.kube.noon.building.exception.NotRegisteredBuildingException;
 import com.kube.noon.building.repository.BuildingSummaryRepository;
 import com.kube.noon.building.repository.mapper.BuildingProfileMapper;
 import com.kube.noon.building.repository.BuildingProfileRepository;
-import com.kube.noon.building.service.buildingwiki.BuildingWikiEmptyServiceImpl;
-import com.kube.noon.building.service.buildingwiki.BuildingWikiRestTemplateServiceImpl;
 import com.kube.noon.chat.domain.Chatroom;
 import com.kube.noon.chat.dto.ChatroomDto;
 import com.kube.noon.chat.dto.LiveliestChatroomDto;
 import com.kube.noon.chat.repository.ChatroomRepository;
-import com.kube.noon.chat.serviceImpl.ChatroomSearchServiceImpl;
+import com.kube.noon.chat.service.ChatroomSearchService;
+import com.kube.noon.common.PublicRange;
 import com.kube.noon.common.binder.DtoEntityBinder;
 import com.kube.noon.common.constant.PagingConstants;
 import com.kube.noon.common.zzim.Zzim;
@@ -24,7 +21,10 @@ import com.kube.noon.feed.domain.Feed;
 import com.kube.noon.feed.repository.FeedRepository;
 import com.kube.noon.member.binder.mapper.member.MemberDtoBinderImpl;
 import com.kube.noon.member.dto.member.MemberDto;
+import com.kube.noon.member.dto.memberRelationship.MemberRelationshipDto;
+import com.kube.noon.member.enums.RelationshipType;
 import com.kube.noon.member.repository.impl.MemberRepositoryImpl;
+import com.kube.noon.member.service.impl.MemberServiceImpl;
 import com.kube.noon.places.domain.Position;
 import com.kube.noon.places.domain.PositionRange;
 import com.kube.noon.places.dto.PlaceDto;
@@ -75,7 +75,8 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
     private final SortHandlerMethodArgumentResolverCustomizer sortCustomizer;
     private final MemberRepositoryImpl memberRepositoryImpl;
     private final MemberDtoBinderImpl memberDtoBinderImpl;
-    private final ChatroomSearchServiceImpl chatroomSearchService;
+    private final ChatroomSearchService chatroomSearchService;
+    private final MemberServiceImpl memberService;
 
     private static final int CHART_DATA_LIMIT = 20;
 
@@ -177,6 +178,67 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
             subscribers.add(memberDtoBinderImpl.toDto(memberRepositoryImpl.findMemberById(memberId).orElseThrow()));
         }
         log.info("Building subscribers={}",subscribers);
+
+        return subscribers;
+    }
+
+
+    /**
+     * 건물 아이디, 회원 아이디로 해당 회원에게 공개된 구독자 목록 조회
+     */
+    @Override
+    public List<SubscriberDto> getSubscribers(int buildingId, String viewerId) {
+
+        List<SubscriberDto> subscribers = new ArrayList<>();
+        PublicRange memberPublicRange;
+
+        //구독자들의 공개 여부 체크
+        List<String> subscriberIds = zzimRepository.findMemberIdsByBuildingId(buildingId);
+        log.info(buildingId+"의 전체 구독자 목록:"+subscriberIds);
+        for(String memberId : subscriberIds){
+
+            MemberDto member = memberDtoBinderImpl.toDto(memberRepositoryImpl.findMemberById(memberId).orElseThrow());
+            memberPublicRange = member.getBuildingSubscriptionPublicRange();
+            SubscriberDto subscriberDto = SubscriberDto.builder().member(member).build();
+
+            log.info(member.getMemberId()+"의 공개범위는 "+memberPublicRange);
+
+            if(viewerId.equals(memberId)){
+                subscriberDto.setVisible(true);
+            }else{
+                if( memberPublicRange == PublicRange.PRIVATE ){
+
+                    subscriberDto.setVisible(false);
+
+                }else if(memberPublicRange == PublicRange.FOLLOWER_ONLY){
+
+                    MemberRelationshipDto memberRelationshipDto = memberService.findMemberRelationship(viewerId, memberId,RelationshipType.FOLLOW);
+
+                    if(memberRelationshipDto==null){
+                        subscriberDto.setVisible(false);
+                    }else{
+                        subscriberDto.setVisible(
+                                memberRelationshipDto.getRelationshipType() == RelationshipType.FOLLOW ? true : false
+                        );
+                    }
+
+                }else if(memberPublicRange == PublicRange.MUTUAL_ONLY){
+
+                    subscriberDto.setVisible(
+                            memberService.isMutualFollow(viewerId, memberId)
+                    );
+
+                }else{
+                    subscriberDto.setVisible(true);
+                }
+            }
+
+            log.info("subscriberDto: "+subscriberDto);
+            subscribers.add(subscriberDto);
+            log.info("추가된 목록:"+subscribers);
+
+        }
+        log.info("Building subscribers with isVisible={}", subscribers);
 
         return subscribers;
     }
@@ -325,13 +387,13 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
             }
 
             int liveliness;
-            if (messageCount < 200) {
+            if (messageCount < 10) {
                 liveliness = 1;
-            } else if (messageCount < 400) {
+            } else if (messageCount < 20) {
                 liveliness = 2;
-            } else if (messageCount < 600) {
+            } else if (messageCount < 30) {
                 liveliness = 3;
-            } else if (messageCount < 800) {
+            } else if (messageCount < 40) {
                 liveliness = 4;
             } else {
                 liveliness = 5;

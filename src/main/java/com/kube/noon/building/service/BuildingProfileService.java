@@ -14,6 +14,7 @@ public interface BuildingProfileService {
     BuildingZzimDto addSubscription(String memberId, int buildingId);
     BuildingDto addSubscription(BuildingApplicantDto buildingApplicantDto);
     List<MemberDto> getSubscribers(int buildingId);
+    List<SubscriberDto> getSubscribers(int buildingId, String viewerId);
     List<MemberDto> getSubscribers(String roadAddr);
     BuildingZzimDto deleteSubscription(String memberId, int buildingId);
     List<BuildingDto> addSubscriptionFromSomeone(String memberId, String someoneId);

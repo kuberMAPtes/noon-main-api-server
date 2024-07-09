@@ -43,6 +43,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -128,7 +130,7 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
         feed.setWriter(memberRepositoryImpl.findMemberById(writerId).orElseThrow());
         feed.setTitle(title);
         feed.setFeedText(text);
-        feed.setWrittenTime(LocalDateTime.now());
+        feed.setWrittenTime(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime());
         feed.setFeedCategory(FeedCategory.NOTICE);
         feed.setPublicRange(PublicRange.PUBLIC);
         feed.setViewCnt(0L);
@@ -248,6 +250,7 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
     public List<ReportDto> getReportListByPageable(int pageNumber) {
 
         Pageable pageable = PageRequest.of(pageNumber, 5);
+        //Pageable pageable = PageRequest.of(pageNumber, 5, Sort.by(Sort.Direction.DESC, "writtenTime"));
         Page<Report> reportPage = reportRepository.findAll(pageable);
 
         return reportPage.getContent().stream()
@@ -345,8 +348,8 @@ public class CustomerSupportServiceImpl implements CustomerSupportService{
         LocalDateTime memberUnlockTime = reportee.orElseThrow().getUnlockTime();
         int unlockDuration = UnlockDuration.valueOf(reqUnlockDuration).getDays();
 
-        if(memberUnlockTime.isBefore(LocalDateTime.now())){
-            updateMemberDto.setUnlockTime(LocalDateTime.now().plusDays(unlockDuration));
+        if(memberUnlockTime.isBefore(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime())){
+            updateMemberDto.setUnlockTime(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime().plusDays(unlockDuration));
         }else{
             updateMemberDto.setUnlockTime(memberUnlockTime.plusDays(unlockDuration));
         }

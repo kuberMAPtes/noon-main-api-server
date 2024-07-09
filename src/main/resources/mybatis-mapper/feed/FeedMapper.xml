@@ -54,7 +54,8 @@
             (SELECT t.tag_text FROM tag t
             INNER JOIN tag_feed tf ON t.tag_id = tf.tag_id
             INNER JOIN feed f ON tf.feed_id = f.feed_id) r
-        GROUP BY r.tag_text limit 5;
+        GROUP BY r.tag_text
+        ORDER BY count DESC limit 5;
     </select>
 
     <select id = "getFeedPopularity" parameterType="int" resultMap = "feedPopularityMap">
@@ -69,8 +70,9 @@
                  LEFT JOIN
              members m ON f.writer_id = m.member_id
         WHERE f.building_id = #{buildingId}
+        AND f.activated = true
         ORDER BY popularity DESC
-            LIMIT 5;
+        LIMIT 5;
     </select>
 
 
@@ -98,6 +100,7 @@
              members m ON f.writer_id = m.member_id
                  LEFT JOIN
              building b ON f.building_id = b.building_id
+        WHERE f.activated = true
         ORDER BY popularity DESC
         LIMIT #{limit} OFFSET #{offset};
     </select>

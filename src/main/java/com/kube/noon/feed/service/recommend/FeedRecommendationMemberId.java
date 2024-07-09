@@ -62,6 +62,8 @@ public class FeedRecommendationMemberId {
 
             long[] mostSimlarUserIds = recommender.mostSimilarUserIDs(memberId.hashCode(), 3);
 
+            System.out.println("mostSimlarUserIds : " + mostSimlarUserIds.length);
+
             for (long userId : mostSimlarUserIds) {
                 memberIdList.add(members.get(userId));
             }

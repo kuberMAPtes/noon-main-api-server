@@ -21,4 +21,24 @@ public class Problems extends HashMap<String, Object> {
     public Problems(Map<String, Object> problems) {
         super(problems);
     }
+
+    public static void checkProblems(Problems problems) {
+        checkProblems(problems, "");
+    }
+
+    public static void checkProblems(Problems problems, Class<?> cls) {
+        checkProblems(problems, "Problem in validation in " + cls);
+    }
+
+    public static void checkProblems(Problems problems, String message) {
+        if (isAnyProblem(problems)) {
+            throw new IllegalServiceCallException(message, problems);
+        }
+    }
+
+    private static boolean isAnyProblem(Problems problems) {
+        // "~이 아니다"라는 논리기 때문에 다소 가독성이 떨어짐
+        // 그래서 따로 메소드로 빼 놓음으로써 의미를 주었다.
+        return !problems.isEmpty();
+    }
 }

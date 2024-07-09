@@ -22,6 +22,7 @@ public class FeedSummaryDto {
     private String writerProfile;
     private String title;
     private String feedText;
+    private Long viewCnt;
     private int buildingId;
     private String buildingName;
     private LocalDateTime writtenTime;
@@ -29,8 +30,11 @@ public class FeedSummaryDto {
     private FeedCategory feedCategory;
     private boolean like;
     private boolean bookmark;
+    private int likeCount;
+    private int commentCount;
     private boolean mainActivated;
-
+    private String recommendMember; // 알고리즘 추천 피드임을 밝힘
+    
     public static FeedSummaryDto toDto(Feed feed) {
         
         // 유효한 첨부파일 걸러내기
@@ -45,6 +49,7 @@ public class FeedSummaryDto {
             }
         }
 
+        //
         return FeedSummaryDto.builder()
                 .feedId(feed.getFeedId())
                 .writerId(feed.getWriter().getMemberId())
@@ -52,10 +57,12 @@ public class FeedSummaryDto {
                 .writerProfile(feed.getWriter().getProfilePhotoUrl())
                 .title(feed.getTitle())
                 .feedText(feed.getFeedText())
+                .viewCnt(feed.getViewCnt())
                 .buildingId(feed.getBuilding() == null ? 0 : feed.getBuilding().getBuildingId())
                 .buildingName(feed.getBuilding() == null ? null : feed.getBuilding().getBuildingName())
                 .writtenTime(feed.getWrittenTime())
                 .feedCategory(feed.getFeedCategory())
+                .recommendMember(feed.getRecommendMember())
                 .mainActivated(feed.isMainActivated())
                 .feedAttachmentId((attachments == null || attachments.isEmpty()) ? 0 : attachments.get(0).getAttachmentId())
                 .build();
