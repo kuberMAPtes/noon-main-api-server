@@ -9,6 +9,7 @@ import lombok.*;
 @Table(name = "zzim")
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class Zzim {
 
     @Id
