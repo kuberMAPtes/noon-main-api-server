@@ -116,7 +116,12 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
         }else{
 
             zzimRepository.updateZzimActivated(buildingId, memberId, true);
-            return BuildingZzimDto.fromEntity(zzimRepository.findByBuildingIdAndMemberIdAndActivated(buildingId, memberId, true));
+
+            List<Zzim> ZzimList = zzimRepository.findByBuildingIdAndMemberIdAndActivated(buildingId, memberId, true);
+
+
+
+            return BuildingZzimDto.fromEntity(ZzimList.get(0));
 
         }
     }
@@ -286,9 +291,9 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
 
         zzimRepository.updateZzimActivated(buildingId, memberId, false);
 
-        Zzim zzim = zzimRepository.findByBuildingIdAndMemberIdAndActivated(buildingId, memberId, true);
+        List<Zzim> zzimList = zzimRepository.findByBuildingIdAndMemberIdAndActivated(buildingId, memberId, true);
 
-        return BuildingZzimDto.fromEntity(zzim);
+        return BuildingZzimDto.fromEntity(zzimList.get(0));
     }
 
 
@@ -346,13 +351,21 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
         return buildings.stream()
                 .map(BuildingDto::fromEntity)
                 .map((b) -> {
-                    Zzim subscription = this.zzimRepository.findByBuildingIdAndMemberIdAndActivated(b.getBuildingId(), memberId, true);
-                    subscription = subscription == null
-                            ? new Zzim(0, "", 0, 0, "", null, false)
-                            : subscription;
+                    List<Zzim> subscriptionList = this.zzimRepository.findByBuildingIdAndMemberIdAndActivated(b.getBuildingId(), memberId, true);
+
+                    subscriptionList.stream().map((Zzim zzim) -> {
+
+                        System.out.println("🧸24_07_09 :: 찜 정보 확인 :: zzim = " + zzim);
+
+                        return zzim == null
+                                ? new Zzim(0, "", 0, 0, "", null, false)
+                                : zzim;
+                    });
+
+
                     return new MemberBuildingSubscriptionResponseDto(
                             b,
-                            DtoEntityBinder.INSTANCE.toDto(this.memberRepositoryImpl.findMemberById(subscription.getSubscriptionProviderId())
+                            DtoEntityBinder.INSTANCE.toDto(this.memberRepositoryImpl.findMemberById(subscriptionList.get(0).getSubscriptionProviderId())
                                     .orElse(null), MemberDto.class)
                     );
                 })

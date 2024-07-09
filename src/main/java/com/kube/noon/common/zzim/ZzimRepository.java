@@ -44,7 +44,7 @@ public interface ZzimRepository extends JpaRepository<Zzim, Integer> {
      * @return Zzim엔티티
      * @author 허예지
      */
-    Zzim findByBuildingIdAndMemberIdAndActivated(int buildingId, String memberId, boolean activated);
+    List<Zzim> findByBuildingIdAndMemberIdAndActivated(int buildingId, String memberId, boolean activated);
 
 
     /**
