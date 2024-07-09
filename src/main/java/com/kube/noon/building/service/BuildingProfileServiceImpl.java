@@ -352,7 +352,7 @@ public class BuildingProfileServiceImpl implements BuildingProfileService {
                 .map(BuildingDto::fromEntity)
                 .map((b) -> {
                     List<Zzim> subscriptionList = this.zzimRepository.findByBuildingIdAndMemberIdAndActivated(b.getBuildingId(), memberId, true);
-
+                    System.out.println("사이즈 :: "+subscriptionList.size());
                     subscriptionList = subscriptionList.stream().map((Zzim zzim) -> {
                         System.out.println("🧸24_07_09 :: 찜 정보 확인 :: zzim = " + zzim.toString());
                         return zzim == null
