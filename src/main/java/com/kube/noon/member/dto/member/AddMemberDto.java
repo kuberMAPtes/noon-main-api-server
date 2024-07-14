@@ -24,7 +24,7 @@ public class AddMemberDto {
     private String pwd;
 
     @NotBlank(message = "닉네임이 없습니다.")
-    @Pattern(regexp = "^[a-zA-Z0-9가-힣_ ]{2,20}$", message = "닉네임 형식이 올바르지 않습니다(2~20자). 올바른 형식 예: 가_힣")
+//    @Pattern(regexp = "^[a-zA-Z0-9가-힣_ ]{2,20}$", message = "닉네임 형식이 올바르지 않습니다(2~20자). 올바른 형식 예: 가_힣")
     private String nickname;
 
     private String phoneNumber;
