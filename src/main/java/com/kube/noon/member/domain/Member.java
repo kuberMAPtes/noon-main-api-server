@@ -24,14 +24,14 @@ public class Member implements UserDetails {
     private static final String ANSI_RESET = "\u001B[0m";
     private static final String ANSI_RED = "\u001B[31m";
     @Id
-    @Column(name = "member_id", length = 20)
+    @Column(name = "member_id", length = 50)
     private String memberId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "member_role", nullable = false, columnDefinition = "ENUM('MEMBER','ADMIN') default 'MEMBER'")
     private Role memberRole = Role.MEMBER;
 
-    @Column(name = "nickname", length = 30, unique = true, nullable = false)
+    @Column(name = "nickname", length = 50, unique = true, nullable = false)
     private String nickname;//
 
     @Column(name = "pwd", length = 5000, nullable = false)

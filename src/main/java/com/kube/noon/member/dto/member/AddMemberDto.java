@@ -17,7 +17,7 @@ public class AddMemberDto {
     //체크 : 비지니스로직에서 있는지 없는지 검사했었었나? 검사안해도되겠네
     @NotBlank(message = "회원 아이디가 없습니다.")
 //    @Size(min = 6, max = 16, message = "회원 아이디는 6자 이상 16자 이하여야 합니다.")
-    @Pattern(regexp = "^(?=.*[a-zA-Z])[a-zA-Z0-9_]{6,16}$", message = "아이디 형식이 올바르지 않습니다(6~16자). 올바른 형식 예: abc123")
+//    @Pattern(regexp = "^(?=.*[a-zA-Z])[a-zA-Z0-9_]{6,16}$", message = "아이디 형식이 올바르지 않습니다(6~16자). 올바른 형식 예: abc123")
     private String memberId;
 
     @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9!@#\\$%\\^&\\*_]{8,16}$", message = "비밀번호 형식이 올바르지 않습니다(8자~16자). 올바른 형식 예 : abc123!@,kubermap3201")
