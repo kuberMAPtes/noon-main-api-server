@@ -37,7 +37,7 @@ public class MemberValidationRule {
 
                     memberScanner.imoDataNotNull(dto.getMemberId());
                     memberScanner.imoMemberIdNotExist(dto.getMemberId());
-                    memberScanner.imoMemberIdPatternO(dto.getMemberId());
+                    //memberScanner.imoMemberIdPatternO(dto.getMemberId());
                     memberScanner.imoNotBadWord(dto.getMemberId());
 
                     memberScanner.imoDataNotNull(dto.getNickname());
