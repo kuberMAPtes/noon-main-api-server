@@ -2,6 +2,8 @@
 
 네이버 클라우드 캠프 7기 3팀 KuberMAPtes
 
+https://github.com/kuberMAPtes
+
 ## Member 😏
 
 - 김도엽 ([WinterHana](https://github.com/WinterHana))
